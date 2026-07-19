@@ -1,0 +1,122 @@
+/* layout */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+.sidebar {
+  border-right: 1px solid var(--of-border);
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.logo {
+  font-family: var(--of-font-mono);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.logo-dot {
+  color: var(--of-primary);
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar-nav a {
+  padding: 10px 12px;
+  border-radius: var(--of-radius-md);
+  color: var(--of-body);
+  font-size: 14px;
+  font-weight: 500;
+}
+.sidebar-nav a:hover {
+  background: var(--of-surface-alt);
+  color: var(--of-ink);
+}
+.sidebar-nav a.active {
+  background: var(--of-accent-soft);
+  color: var(--of-primary);
+  font-weight: 700;
+}
+.content {
+  padding: 44px 48px;
+  max-width: 1080px;
+}
+.content > .of-h2 {
+  margin-bottom: 8px;
+}
+.page-desc {
+  margin: 0 0 28px;
+  color: var(--of-body);
+  font-size: 15px;
+}
+
+/* dashboard kanban */
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kanban-card {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kanban-card strong {
+  font-size: 15px;
+}
+.kanban-card .role {
+  font-size: 13px;
+  color: var(--of-body);
+}
+
+/* shared bits */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--of-border);
+}
+.data-table th {
+  font-family: var(--of-font-mono);
+  font-size: 12px;
+  color: var(--of-faint);
+  font-weight: 500;
+}
+.draft-box {
+  background: var(--of-surface-alt);
+  border-radius: var(--of-radius-md);
+  padding: 16px 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--of-ink);
+}
