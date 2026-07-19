@@ -16,29 +16,27 @@ const NAV = [
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="layout">
-        <aside className="sidebar">
-          <span className="logo">
-            ONEFORM<span className="logo-dot">.</span>
-          </span>
-          <nav className="sidebar-nav">
-            {NAV.map(({ to, label }) => (
-              <NavLink key={to} to={to} end={to === '/'}>
-                {label}
-              </NavLink>
-            ))}
-          </nav>
-        </aside>
-        <main className="content">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/essays" element={<Essays />} />
-            <Route path="/forms" element={<Forms />} />
-          </Routes>
-        </main>
-      </div>
+      <header className="topbar">
+        <span className="logo">
+          ONEFORM<span className="logo-dot">.</span>
+        </span>
+      </header>
+      <main className="content">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/companies" element={<Companies />} />
+          <Route path="/essays" element={<Essays />} />
+          <Route path="/forms" element={<Forms />} />
+        </Routes>
+      </main>
+      <nav className="tabbar">
+        {NAV.map(({ to, label }) => (
+          <NavLink key={to} to={to} end={to === '/'}>
+            {label}
+          </NavLink>
+        ))}
+      </nav>
     </BrowserRouter>
   )
 }
