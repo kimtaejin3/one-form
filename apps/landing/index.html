@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ONEFORM — 지원서 통합 플랫폼</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#fbfcfe;font-family:'Pretendard',sans-serif;color:#0f1e34;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  *{box-sizing:border-box;}
+  a{color:#2f6bff;text-decoration:none;}
+  a:hover{color:#1b4fd6;}
+  ::selection{background:#cfdcff;}
+</style>
+</head>
+<body>
+
+<div style="max-width:1180px; margin:0 auto; background:#fbfcfe;">
+
+  <!-- NAV -->
+  <div style="position:sticky; top:0; z-index:20; background:rgba(251,252,254,.85); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:space-between; padding:22px 48px; border-bottom:1px solid #e6edf8;">
+    <span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; color:#0f1e34; letter-spacing:.02em;">ONEFORM<span style="color:#2f6bff;">.</span></span>
+    <div style="display:flex; gap:30px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.06em; color:#5b6b82;">
+      <a href="#problem" style="color:#5b6b82;">01_문제</a>
+      <a href="#solution" style="color:#5b6b82;">02_솔루션</a>
+      <a href="#tech" style="color:#5b6b82;">03_기술</a>
+      <a href="#features" style="color:#5b6b82;">04_기능</a>
+      <a href="#mvp" style="color:#5b6b82;">05_MVP</a>
+    </div>
+    <span style="background:#0f1e34; color:#fff; padding:10px 20px; border-radius:8px; font-weight:700; font-size:13px;">시작하기 →</span>
+  </div>
+
+  <!-- HERO -->
+  <div style="padding:104px 64px 80px; text-align:center; border-bottom:1px solid #e6edf8;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.16em; color:#2f6bff; margin-bottom:28px;">지원서 통합 플랫폼</div>
+    <h1 style="margin:0 auto 26px; font-size:64px; line-height:1.06; font-weight:800; color:#0f1e34; letter-spacing:-.04em; max-width:840px; text-wrap:balance;">하나의 프로필,<br>모든 양식에 자동으로.</h1>
+    <p style="margin:0 auto 36px; font-size:19px; line-height:1.6; color:#5b6b82; max-width:620px;">기업 자체 양식·HWP·DOCX·웹 서식까지 — 마스터 프로필이 알아서 맞춰 채웁니다. 반복 지원의 병목을 기술로 없앱니다.</p>
+    <div style="display:inline-flex; gap:14px; align-items:center;">
+      <span style="background:#0f1e34; color:#fff; padding:15px 30px; border-radius:8px; font-weight:700; font-size:15px; white-space:nowrap;">무료로 시작하기 →</span>
+      <span style="color:#0f1e34; padding:15px 8px; font-weight:700; font-size:15px; border-bottom:2px solid #2f6bff; white-space:nowrap;">기능 살펴보기</span>
+    </div>
+    <div style="margin-top:24px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bf; letter-spacing:.06em;">PDF · DOCX · HWP · WEB FORM · CHROME EXTENSION</div>
+    <div style="margin-top:60px; aspect-ratio:16/7; border-radius:16px; background:repeating-linear-gradient(135deg,#f0f4fb 0 11px,#e7edf6 11px 22px); border:1px solid #dbe4f0; display:flex; align-items:center; justify-content:center; color:#8593a8; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.05em;">[ 통합 지원 워크스페이스 — 와이드 스크린샷 ]</div>
+  </div>
+
+  <!-- 01 PROBLEM -->
+  <div id="problem" style="padding:80px 64px; border-bottom:1px solid #e6edf8;">
+    <div style="display:flex; align-items:baseline; gap:18px; margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#2f6bff; font-weight:700;">01</span><h2 style="margin:0; font-size:32px; font-weight:800; color:#0f1e34; letter-spacing:-.02em;">문제 — 파편화된 지원 경험</h2></div>
+    <p style="margin:0 0 34px; font-size:16px; color:#5b6b82; max-width:660px; line-height:1.6;">구직자는 매번 지원할 때마다 이력 데이터를 기업 규격에 맞춰 다시 손보는 반복 노동에 시달립니다.</p>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid #e6edf8;">
+      <div style="padding:28px 26px 28px 0; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bf; margin-bottom:14px;">PAIN A</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">이력의 파편화</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">잡코리아·원티드 등 사이트마다 양식이 흩어져 서로 공유되지 않습니다.</div>
+      </div>
+      <div style="padding:28px 26px 28px 0; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bf; margin-bottom:14px;">PAIN B</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">자사 양식의 장벽</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">기업 자체 사이트·HWP·DOCX 요구 시 이력을 매번 수동으로 옮겨 넣어야 합니다.</div>
+      </div>
+      <div style="padding:28px 26px 28px 0; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bf; margin-bottom:14px;">PAIN C</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">맥락 없는 AI 작성</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">기존 도구는 초안·첨삭에 머물러, 기업 전략과 내 경험을 직접 연결해야 합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 SOLUTION -->
+  <div id="solution" style="padding:80px 64px; border-bottom:1px solid #e6edf8;">
+    <div style="display:flex; align-items:baseline; gap:18px; margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#2f6bff; font-weight:700;">02</span><h2 style="margin:0; font-size:32px; font-weight:800; color:#0f1e34; letter-spacing:-.02em;">솔루션 — 작동 방식</h2></div>
+    <p style="margin:0 0 34px; font-size:16px; color:#5b6b82; max-width:660px; line-height:1.6;">단 하나의 마스터 프로필을 만들면, 업로드부터 자동 완성·통합 관리까지 5단계로 흐릅니다.</p>
+    <div style="display:flex; flex-direction:column;">
+      <div style="display:grid; grid-template-columns:88px 1.1fr 2fr; gap:24px; align-items:center; padding:24px 0; border-top:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:#2f6bff;">01</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34;">이력서 업로드</div>
+        <div style="font-size:15px; line-height:1.6; color:#5b6b82;">PDF·워드·양식을 정규화해 마스터 DB에 통합 저장</div>
+      </div>
+      <div style="display:grid; grid-template-columns:88px 1.1fr 2fr; gap:24px; align-items:center; padding:24px 0; border-top:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:#2f6bff;">02</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34;">타겟 기업 분석</div>
+        <div style="font-size:15px; line-height:1.6; color:#5b6b82;">DART·특허·보도자료를 실시간 크롤링해 기업 지식 그래프 구축</div>
+      </div>
+      <div style="display:grid; grid-template-columns:88px 1.1fr 2fr; gap:24px; align-items:center; padding:24px 0; border-top:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:#2f6bff;">03</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34;">시맨틱 매핑</div>
+        <div style="font-size:15px; line-height:1.6; color:#5b6b82;">내 STAR 경험과 기업 과제를 임베딩으로 정밀 연결</div>
+      </div>
+      <div style="display:grid; grid-template-columns:88px 1.1fr 2fr; gap:24px; align-items:center; padding:24px 0; border-top:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:#2f6bff;">04</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34;">양식 자동 변환</div>
+        <div style="font-size:15px; line-height:1.6; color:#5b6b82;">HWP·DOCX·웹 폼에 맞춰 서식 손상 없이 자동 완성</div>
+      </div>
+      <div style="display:grid; grid-template-columns:88px 1.1fr 2fr; gap:24px; align-items:center; padding:24px 0; border-top:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:#2f6bff;">05</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34;">통합 관리</div>
+        <div style="font-size:15px; line-height:1.6; color:#5b6b82;">전 채널 지원 현황을 칸반 대시보드에서 한눈에 트래킹</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 TECH -->
+  <div id="tech" style="padding:80px 64px; border-bottom:1px solid #e6edf8; background:#f4f7fc;">
+    <div style="display:flex; align-items:baseline; gap:18px; margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#2f6bff; font-weight:700;">03</span><h2 style="margin:0; font-size:32px; font-weight:800; color:#0f1e34; letter-spacing:-.02em;">기술 차별화</h2></div>
+    <p style="margin:0 0 34px; font-size:16px; color:#5b6b82; max-width:660px; line-height:1.6;">단순 텍스트 매칭이 아니라, 임베딩 시맨틱 분석으로 경험과 기업 과제를 정밀하게 연결합니다.</p>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:20px;">
+      <div style="background:#fff; border:1px solid #e6edf8; border-radius:12px; padding:28px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#2f6bff; margin-bottom:12px;">3.1</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">문맥 인식 이력 매핑</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">LLM 임베딩으로 항목 의미와 글자 수 제한에 맞는 경험 블록을 선택·조율.</div>
+      </div>
+      <div style="background:#fff; border:1px solid #e6edf8; border-radius:12px; padding:28px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#2f6bff; margin-bottom:12px;">3.2</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">오피스 서식 복원</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">파일 파서로 표 구조·스타일을 파악해 완성본 파일을 실시간 생성.</div>
+      </div>
+      <div style="background:#fff; border:1px solid #e6edf8; border-radius:12px; padding:28px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#2f6bff; margin-bottom:12px;">3.3</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">웹 오토필 에이전트</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">브라우저 익스텐션 위젯이 DOM을 스캔해 원클릭으로 자동 기입.</div>
+      </div>
+      <div style="background:#fff; border:1px solid #e6edf8; border-radius:12px; padding:28px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#2f6bff; margin-bottom:12px;">3.4</div>
+        <div style="font-size:18px; font-weight:700; color:#0f1e34; margin-bottom:8px;">시맨틱 정렬 엔진</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">기업 지식 그래프와 사용자 경험을 구조적으로 연결하는 정렬 엔진.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 FEATURES -->
+  <div id="features" style="padding:80px 64px; border-bottom:1px solid #e6edf8;">
+    <div style="display:flex; align-items:baseline; gap:18px; margin-bottom:34px;"><span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#2f6bff; font-weight:700;">04</span><h2 style="margin:0; font-size:32px; font-weight:800; color:#0f1e34; letter-spacing:-.02em;">핵심 기능</h2></div>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); border-top:1px solid #e6edf8;">
+      <div style="padding:28px 28px 28px 0; border-bottom:1px solid #e6edf8; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9aa8bf; margin-bottom:12px;">PROFILE</div>
+        <div style="font-size:19px; font-weight:700; color:#0f1e34; margin-bottom:8px;">통합 프로필 관리</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">여러 포맷 이력서를 파싱·정규화하고, 경험을 STAR 단위로 세분화 아카이빙합니다.</div>
+      </div>
+      <div style="padding:28px 28px 28px 0; border-bottom:1px solid #e6edf8; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9aa8bf; margin-bottom:12px;">FORMAT</div>
+        <div style="font-size:19px; font-weight:700; color:#0f1e34; margin-bottom:8px;">만능 자사 양식 가공</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">DOCX·XLSX·HWP 테이블 레이아웃을 자체 해석해 폰트·마진 손상 없이 실시간 빌드.</div>
+      </div>
+      <div style="padding:28px 28px 28px 0; border-bottom:1px solid #e6edf8; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9aa8bf; margin-bottom:12px;">AUTOFILL</div>
+        <div style="font-size:19px; font-weight:700; color:#0f1e34; margin-bottom:8px;">크롬 오토필 에이전트</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">채용 폼 DOM을 스캔해 이름·경력·자소서 입력란을 1초 만에 자동 기입.</div>
+      </div>
+      <div style="padding:28px 28px 28px 0; border-bottom:1px solid #e6edf8; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9aa8bf; margin-bottom:12px;">WRITING</div>
+        <div style="font-size:19px; font-weight:700; color:#0f1e34; margin-bottom:8px;">다변형 자소서 작성기</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">시맨틱 양방향 얼라인먼트 RAG로 기업 니즈와 내 강점을 연결한 초안을 생성.</div>
+      </div>
+      <div style="padding:28px 28px 28px 0; border-bottom:1px solid #e6edf8; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9aa8bf; margin-bottom:12px;">INTEL</div>
+        <div style="font-size:19px; font-weight:700; color:#0f1e34; margin-bottom:8px;">기업·직무 인텔리전스</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">실시간 기업 분석, JD 핵심 역량 모델링, 강점 매칭 보드를 제공.</div>
+      </div>
+      <div style="padding:28px 28px 28px 0; border-bottom:1px solid #e6edf8; border-right:1px solid #e6edf8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9aa8bf; margin-bottom:12px;">TRACKER</div>
+        <div style="font-size:19px; font-weight:700; color:#0f1e34; margin-bottom:8px;">지원 상태 트래커</div>
+        <div style="font-size:14px; line-height:1.6; color:#5b6b82;">전 채널 지원 현황을 칸반으로 통합하고 마감·면접 스마트 리마인더 제공.</div>
+      </div>
+    </div>
+    <div style="margin-top:44px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+      <div style="aspect-ratio:3/4; border-radius:12px; background:repeating-linear-gradient(135deg,#f0f4fb 0 11px,#e7edf6 11px 22px); border:1px solid #dbe4f0; display:flex; align-items:center; justify-content:center; color:#8593a8; font-family:'JetBrains Mono',monospace; font-size:11px; text-align:center;">[ STAR 경험<br>에디터 ]</div>
+      <div style="aspect-ratio:3/4; border-radius:12px; background:repeating-linear-gradient(135deg,#f0f4fb 0 11px,#e7edf6 11px 22px); border:1px solid #dbe4f0; display:flex; align-items:center; justify-content:center; color:#8593a8; font-family:'JetBrains Mono',monospace; font-size:11px; text-align:center;">[ 자소서<br>초안 생성 ]</div>
+      <div style="aspect-ratio:3/4; border-radius:12px; background:repeating-linear-gradient(135deg,#f0f4fb 0 11px,#e7edf6 11px 22px); border:1px solid #dbe4f0; display:flex; align-items:center; justify-content:center; color:#8593a8; font-family:'JetBrains Mono',monospace; font-size:11px; text-align:center;">[ 양식 매핑<br>뷰어 ]</div>
+    </div>
+  </div>
+
+  <!-- 05 MVP -->
+  <div id="mvp" style="padding:80px 64px; border-bottom:1px solid #e6edf8;">
+    <div style="display:flex; align-items:baseline; gap:18px; margin-bottom:14px;"><span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:#2f6bff; font-weight:700;">05</span><h2 style="margin:0; font-size:32px; font-weight:800; color:#0f1e34; letter-spacing:-.02em;">MVP — 먼저 선보일 기능</h2></div>
+    <p style="margin:0 0 34px; font-size:16px; color:#5b6b82; max-width:660px; line-height:1.6;">가장 빠르게 가치를 검증할 7가지 핵심 기능부터 출시합니다.</p>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px;">
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">스마트 이력서 수집 (OCR·LLM 적재)</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">STAR 경험 가이드 에디터</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">자사 양식 업로드 &amp; 매핑 필터</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">실시간 기업 정보 요약 브리프</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">시맨틱 바인딩 AI 초안 제너레이터</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">크롬 오토필 위젯</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; padding:16px 18px; border:1px solid #e6edf8; border-radius:10px; background:#fff;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#eaf1ff;color:#2f6bff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">✓</div>
+        <span style="font-size:15px; color:#0f1e34; font-weight:500;">자소서 문항 통합 관리 허브</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="padding:96px 64px; text-align:center;">
+    <h2 style="margin:0 0 14px; font-size:38px; font-weight:800; color:#0f1e34; letter-spacing:-.03em;">지원서 재작성의 병목을 없애다.</h2>
+    <p style="margin:0 0 30px; font-family:'JetBrains Mono',monospace; font-size:14px; color:#5b6b82; letter-spacing:.04em;">ONEFORM — ONE PROFILE, EVERY APPLICATION.</p>
+    <span style="background:#0f1e34; color:#fff; padding:16px 34px; border-radius:8px; font-weight:700; font-size:15px; white-space:nowrap;">무료로 시작하기 →</span>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="padding:44px 64px; border-top:1px solid #e6edf8; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; color:#0f1e34;">ONEFORM<span style="color:#2f6bff;">.</span></span>
+    <div style="display:flex; gap:26px; font-size:13px; color:#8593a8;"><span>회사 소개</span><span>이용약관</span><span>개인정보처리방침</span><span>문의</span></div>
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#9aa8bf;">© 2026 ONEFORM</span>
+  </div>
+
+</div>
+</body>
+</html>
