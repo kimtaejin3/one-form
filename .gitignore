@@ -1,0 +1,20 @@
+# deps
+node_modules/
+
+# build outputs
+dist/
+.turbo/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# env & local
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# logs
+*.log
