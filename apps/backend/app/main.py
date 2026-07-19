@@ -128,6 +128,68 @@ async def generate_draft(req: DraftRequest):
     })
 
 
+@app.get("/api/activities")
+async def list_activities():
+    return await mock([
+        {
+            "id": 1,
+            "name": "멋쟁이사자처럼 대학 13기",
+            "category": "IT 동아리",
+            "period": "2026.09 – 2027.02",
+            "fit": 94,
+            "fills_gap": ["실서비스 배포 경험", "협업 프로젝트 리드"],
+            "expected_experience": "아이디어톤부터 런칭까지 팀 프로젝트를 이끌며 기획–개발–배포 전 과정을 STAR 경험으로 정리할 수 있습니다.",
+            "connections": [
+                {"company": "토스", "role": "풀스택 개발자"},
+                {"company": "카카오", "role": "웹 개발자"},
+            ],
+        },
+        {
+            "id": 2,
+            "name": "DND 12기",
+            "category": "IT 동아리",
+            "period": "2026.08 – 2026.10",
+            "fit": 91,
+            "fills_gap": ["디자이너 협업", "짧은 주기 배포"],
+            "expected_experience": "디자이너와 8주간 사이드 프로젝트를 완성하며 직군 간 협업과 일정 관리 경험을 확보합니다.",
+            "connections": [{"company": "네이버", "role": "프론트엔드 개발자"}],
+        },
+        {
+            "id": 3,
+            "name": "오픈소스 컨트리뷰션 아카데미",
+            "category": "대외활동",
+            "period": "2026.08 – 2026.11",
+            "fit": 88,
+            "fills_gap": ["대규모 코드베이스 분석", "코드 리뷰 대응"],
+            "expected_experience": "실제 오픈소스에 PR을 머지시키며 리뷰 대응과 코드 품질 개선 사례를 축적합니다.",
+            "connections": [
+                {"company": "라인", "role": "UI 엔지니어"},
+                {"company": "네이버", "role": "프론트엔드 개발자"},
+            ],
+        },
+        {
+            "id": 4,
+            "name": "쿠팡 물류 테크 해커톤",
+            "category": "대외활동",
+            "period": "2026.09 (48시간)",
+            "fit": 85,
+            "fills_gap": ["커머스·물류 도메인 이해", "실시간 데이터 처리"],
+            "expected_experience": "물류 도메인 문제를 48시간 안에 해결한 경험 — 기존 CRDT·WebSocket 경험과 묶어 실시간 처리 강점을 강화합니다.",
+            "connections": [{"company": "쿠팡", "role": "프론트엔드 엔지니어"}],
+        },
+        {
+            "id": 5,
+            "name": "구름톤 유니브",
+            "category": "대외활동",
+            "period": "2026.10",
+            "fit": 79,
+            "fills_gap": ["빠른 프로토타이핑", "네트워킹"],
+            "expected_experience": "짧은 몰입 기간에 완성한 프로토타입으로 실행력을 보여주는 에피소드를 만듭니다.",
+            "connections": [{"company": "토스", "role": "풀스택 개발자"}],
+        },
+    ])
+
+
 @app.post("/api/forms/convert")
 async def convert_form():
     return await mock({

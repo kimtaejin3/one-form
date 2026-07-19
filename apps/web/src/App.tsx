@@ -4,6 +4,7 @@ import Profile from './pages/Profile'
 import Companies from './pages/Companies'
 import Essays from './pages/Essays'
 import Forms from './pages/Forms'
+import Activities from './pages/Activities'
 
 const NAV = [
   { to: '/', label: '대시보드' },
@@ -11,6 +12,7 @@ const NAV = [
   { to: '/companies', label: '기업 인텔리전스' },
   { to: '/essays', label: '자소서 허브' },
   { to: '/forms', label: '양식 변환' },
+  { to: '/activities', label: '활동 추천' },
 ]
 
 export default function App() {
@@ -37,6 +39,7 @@ export default function App() {
           <Route path="/companies" element={<Companies />} />
           <Route path="/essays" element={<Essays />} />
           <Route path="/forms" element={<Forms />} />
+          <Route path="/activities" element={<Activities />} />
         </Routes>
       </main>
     </BrowserRouter>

@@ -16,6 +16,7 @@ flowchart TD
     WEB --> COMPANY["/companies 기업 인텔리전스<br/>기업 브리프 · 강점 매칭 §4.4"]
     WEB --> ESSAY["/essays 자소서 허브<br/>문항 관리 · AI 초안 §4.3"]
     WEB --> FORMS["/forms 양식 변환<br/>자사 양식 매핑 뷰어 §4.2"]
+    WEB --> ACT["/activities 활동 추천<br/>역량 갭 기반 동아리·대외활동 §4.6"]
 ```
 
 ## 핵심 유저 플로우
@@ -29,7 +30,8 @@ flowchart LR
     D --> S["지원 제출"]
     F --> S
     S --> K["칸반 트래킹<br/>리마인더"]
-    K -.->|"역량 갭 분석 §4.6 (후순위)"| M
+    K -->|"역량 갭 분석 §4.6"| R["활동 추천"]
+    R -.-> M
 ```
 
 ## 페이지 ↔ 기획서 ↔ API 매핑
@@ -41,6 +43,7 @@ flowchart LR
 | `/companies` 기업 인텔리전스 | §4.4, §5 | 기업명 입력 → 사업/제품/JD 역량/강점 매칭 브리프 | `POST /api/companies/analyze` |
 | `/essays` 자소서 허브 | §4.3, §5 | 문항 목록(글자 수·마감), AI 초안 생성 | `GET /api/essays` · `POST /api/essays/draft` |
 | `/forms` 양식 변환 | §4.2, §5 | 양식 업로드 → 필드 매핑 시뮬레이션 | `POST /api/forms/convert` |
+| `/activities` 활동 추천 | §4.6 | 역량 갭 보완 활동 추천 — 예상 경험·기업/직무 연결 표시 | `GET /api/activities` |
 
 MVP(§5) 중 '크롬 오토필 위젯'은 브라우저 익스텐션이라 web 범위 밖 — 후속 작업.
 
