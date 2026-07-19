@@ -1,12 +1,14 @@
 /* layout */
-.topbar {
+.chrome {
   position: sticky;
   top: 0;
   z-index: 20;
-  padding: 18px 32px;
-  border-bottom: 1px solid var(--of-border);
   background: rgba(251, 252, 254, 0.85);
   backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--of-border);
+}
+.topbar {
+  padding: 16px 32px 6px;
 }
 .logo {
   font-family: var(--of-font-mono);
@@ -18,20 +20,13 @@
   color: var(--of-primary);
 }
 .tabbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
   display: flex;
-  justify-content: center;
   gap: 4px;
-  padding: 10px 16px;
-  background: var(--of-surface);
-  border-top: 1px solid var(--of-border);
+  overflow-x: auto;
+  padding: 6px 24px 10px;
 }
 .tabbar a {
-  padding: 10px 18px;
+  padding: 8px 14px;
   border-radius: var(--of-radius-md);
   color: var(--of-body);
   font-size: 14px;
@@ -48,7 +43,7 @@
   font-weight: 700;
 }
 .content {
-  padding: 36px 32px 120px;
+  padding: 36px 32px 64px;
   max-width: 1080px;
   margin: 0 auto;
 }

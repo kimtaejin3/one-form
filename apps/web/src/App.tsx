@@ -16,10 +16,19 @@ const NAV = [
 export default function App() {
   return (
     <BrowserRouter>
-      <header className="topbar">
-        <span className="logo">
-          ONEFORM<span className="logo-dot">.</span>
-        </span>
+      <header className="chrome">
+        <div className="topbar">
+          <span className="logo">
+            ONEFORM<span className="logo-dot">.</span>
+          </span>
+        </div>
+        <nav className="tabbar">
+          {NAV.map(({ to, label }) => (
+            <NavLink key={to} to={to} end={to === '/'}>
+              {label}
+            </NavLink>
+          ))}
+        </nav>
       </header>
       <main className="content">
         <Routes>
@@ -30,13 +39,6 @@ export default function App() {
           <Route path="/forms" element={<Forms />} />
         </Routes>
       </main>
-      <nav className="tabbar">
-        {NAV.map(({ to, label }) => (
-          <NavLink key={to} to={to} end={to === '/'}>
-            {label}
-          </NavLink>
-        ))}
-      </nav>
     </BrowserRouter>
   )
 }
