@@ -11,7 +11,7 @@ flowchart TD
     ONEFORM --> WEB["웹앱 · apps/web<br/>핵심 워크스페이스"]
     ONEFORM --> EXT["크롬 익스텐션 (예정)<br/>웹 폼 오토필 위젯 §3.3"]
 
-    WEB --> DASH["/ 대시보드<br/>지원 현황 칸반 §4.5"]
+    WEB --> JOBS["/ 채용공고<br/>직무 매칭 공고 피드 §4.6"]
     WEB --> PROFILE["/profile 마스터 프로필<br/>이력서 수집 · STAR 경험 §4.1"]
     WEB --> COMPANY["/companies 기업 인텔리전스<br/>기업 브리프 · 강점 매칭 §4.4"]
     WEB --> ESSAY["/essays 자소서 허브<br/>문항 관리 · AI 초안 §4.3"]
@@ -38,7 +38,7 @@ flowchart LR
 
 | 페이지 | 기획서 | 기능 (목 단계) | Mock API |
 | --- | --- | --- | --- |
-| `/` 대시보드 | §4.5 | 지원 현황 칸반 (작성 중 → 지원 완료 → 서류 합격 → 면접 예정) | `GET /api/applications` |
+| `/` 채용공고 | §4.6 | 내 직무에 맞는 채용공고 피드 (카드 그리드) | `GET /api/jobs` |
 | `/profile` 마스터 프로필 | §4.1, §5 | 이력서 업로드(수집 목), 기본 스펙, STAR 경험 카드 | `GET /api/profile` · `POST /api/profile/resume` |
 | `/companies` 기업 인텔리전스 | §4.4, §5 | 기업명 입력 → 사업/제품/JD 역량/강점 매칭 브리프 | `POST /api/companies/analyze` |
 | `/essays` 자소서 허브 | §4.3, §5 | 문항 목록(글자 수·마감), AI 초안 생성 | `GET /api/essays` · `POST /api/essays/draft` |
