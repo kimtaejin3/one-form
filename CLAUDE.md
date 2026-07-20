@@ -49,6 +49,21 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
 - 제목은 한국어 명령형, 50자 이내 (예: `feat(web): 지원서 목록 페이지 추가`)
 - 성격이 다른 변경은 커밋을 분리할 것 (여러 앱을 건드려도 목적이 하나면 한 커밋)
 
+## web 코딩 규칙
+
+- **데이터 페칭은 TanStack Query v5.** `useEffect`로 직접 fetch하지 말 것.
+  - 조회(GET)는 `queries/<도메인>.ts`에 `queryOptions`로 정의하고 페이지에서 `useSuspenseQuery`로 소비
+    (`data`가 항상 정의됨 — 로딩/에러 분기 불필요).
+  - 변경(POST)은 `useMutation` (`isPending`/`data`/`variables`로 상태 표현).
+  - 로딩·에러는 페이지가 아니라 `components/AsyncBoundary`(Suspense + ErrorBoundary)가 담당.
+    App의 각 라우트가 이걸로 감싸져 있다.
+- `useEffect`는 가급적 지양. 파생 상태는 렌더 중 계산, 서버 상태는 Query에 위임.
+- **SRP**: 컴포넌트 하나에 한 책임. 레이아웃(`components/Header`·`TabBar`),
+  아이콘(`components/Icon` — path는 여기 한 곳), 페이지(`pages/*`)를 섞지 말 것.
+- props는 인터페이스가 바로 읽히게. 깊은 props drilling·다수 props 나열 금지
+  (필요하면 컴포넌트를 쪼개거나 서버 상태는 Query로 각자 가져오게).
+- 한 컴포넌트 최대 ~500줄. 넘으면 분리.
+
 ## 아키텍처에서 비자명한 부분
 
 - **backend는 Python 앱이지만 turbo 그래프에 포함된다.** `apps/backend/package.json`의
