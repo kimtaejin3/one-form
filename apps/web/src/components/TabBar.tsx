@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { Icon, type IconName } from './Icon'
 
 const NAV: { to: string; label: string; icon: IconName }[] = [
-  { to: '/', label: '대시보드', icon: 'dashboard' },
+  { to: '/', label: '채용공고', icon: 'work' },
   { to: '/profile', label: '마스터 프로필', icon: 'person' },
   { to: '/companies', label: '기업 인텔리전스', icon: 'business' },
   { to: '/essays', label: '자소서 허브', icon: 'description' },
