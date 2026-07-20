@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { Card } from '@one-form/design-system'
 import { post } from '../api'
+import Dropzone from '../components/Dropzone'
 
 type ConvertResult = {
   form_name: string
@@ -8,25 +9,20 @@ type ConvertResult = {
 }
 
 export default function Forms() {
-  const [result, setResult] = useState<ConvertResult | null>(null)
-  const [converting, setConverting] = useState(false)
-
-  async function onUpload() {
-    setConverting(true)
-    setResult(await post<ConvertResult>('/forms/convert'))
-    setConverting(false)
-  }
+  const convert = useMutation({ mutationFn: () => post<ConvertResult>('/forms/convert') })
+  const result = convert.data
 
   return (
-    <>
-      <h2 className="of-h2">양식 변환</h2>
-      <p className="page-desc">자사 양식(DOCX·HWP)을 업로드하면 마스터 프로필 필드와 자동 매핑합니다.</p>
-      <div className="row" style={{ marginBottom: 28 }}>
-        <label className="of-btn of-btn--sm">
-          {converting ? '매핑 중…' : '양식 업로드'}
-          <input type="file" hidden accept=".docx,.xlsx,.hwp" onChange={onUpload} disabled={converting} />
-        </label>
-      </div>
+    <div className="stack">
+      <Dropzone
+        title="기업 양식 파일을 올려보세요"
+        desc="HWP · DOCX · XLSX · 웹 서식 URL 지원 — 마스터 프로필로 자동 완성됩니다."
+        accept=".docx,.xlsx,.hwp"
+        buttonLabel="파일 선택"
+        busy={convert.isPending}
+        busyLabel="매핑 중…"
+        onFile={() => convert.mutate()}
+      />
       {result && (
         <Card>
           <strong>{result.form_name} — 매핑 시뮬레이션</strong>
@@ -52,6 +48,6 @@ export default function Forms() {
           </table>
         </Card>
       )}
-    </>
+    </div>
   )
 }

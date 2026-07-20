@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { Button, Card, Input } from '@one-form/design-system'
 import { post } from '../api'
 
@@ -12,32 +13,29 @@ type Brief = {
 
 export default function Companies() {
   const [name, setName] = useState('')
-  const [brief, setBrief] = useState<Brief | null>(null)
-  const [loading, setLoading] = useState(false)
+  const analyze = useMutation({
+    mutationFn: (companyName: string) => post<Brief>('/companies/analyze', { name: companyName }),
+  })
+  const brief = analyze.data
 
-  async function onSubmit(e: FormEvent) {
+  function onSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return
-    setLoading(true)
-    setBrief(await post<Brief>('/companies/analyze', { name }))
-    setLoading(false)
+    if (name.trim()) analyze.mutate(name)
   }
 
   return (
-    <>
-      <h2 className="of-h2">기업 인텔리전스</h2>
-      <p className="page-desc">기업명을 입력하면 사업·제품·JD 역량을 요약 브리프로 정리합니다.</p>
-      <form className="row" onSubmit={onSubmit} style={{ maxWidth: 480, marginBottom: 28 }}>
+    <div className="stack">
+      <form className="row" onSubmit={onSubmit} style={{ maxWidth: 480 }}>
         <Input
           placeholder="기업명 입력 (예: 쿠팡)"
           value={name}
           onChange={(e) => setName(e.target.value)}
           style={{ flex: 1, width: 'auto' }}
         />
-        <Button disabled={loading}>{loading ? '분석 중…' : '분석'}</Button>
+        <Button disabled={analyze.isPending}>{analyze.isPending ? '분석 중…' : '분석'}</Button>
       </form>
       {brief && (
-        <div className="stack">
+        <>
           <Card>
             <div className="stack">
               <strong>{brief.name} — 분석 브리프</strong>
@@ -88,8 +86,8 @@ export default function Companies() {
               </tbody>
             </table>
           </Card>
-        </div>
+        </>
       )}
-    </>
+    </div>
   )
 }
