@@ -45,29 +45,34 @@ async def list_applications():
 @app.get("/api/profile")
 async def get_profile():
     return await mock({
-        "name": "김지원",
-        "email": "jiwon@example.com",
-        "education": "한국대학교 컴퓨터공학과 졸업 예정 (2027.02)",
-        "certificates": ["정보처리기사", "SQLD", "TOEIC 900"],
-        "experiences": [
-            {
-                "id": 1,
-                "title": "교내 해커톤 우승 — 실시간 협업 노트 서비스",
-                "situation": "24시간 해커톤에 4인 팀으로 참가",
-                "task": "실시간 동시 편집 기능 담당",
-                "action": "CRDT 기반 동기화 로직을 구현하고 WebSocket 서버를 설계",
-                "result": "심사위원 만장일치 대상, 교내 서비스로 채택",
-                "tags": ["React", "WebSocket", "CRDT"],
-            },
-            {
-                "id": 2,
-                "title": "핀테크 스타트업 인턴 — 결제 실패율 개선",
-                "situation": "백엔드 팀 인턴으로 합류",
-                "task": "간헐적 결제 실패의 원인 분석과 개선",
-                "action": "로그 파이프라인을 구축해 타임아웃 패턴을 찾고 재시도 정책을 재설계",
-                "result": "결제 실패율 3.2% → 0.4%로 감소",
-                "tags": ["Python", "FastAPI", "데이터 분석"],
-            },
+        "personal": {
+            "name": "김지원",
+            "name_en": "Kim Jiwon",
+            "name_cn": "金志願",
+            "address": "서울특별시 성동구 왕십리로 222, 101동 1004호",
+            "phone": "010-1234-5678",
+            "email": "jiwon@example.com",
+            "emergency_phone": "010-9876-5432",
+            "emergency_relation": "부",
+        },
+        "educations": [
+            {"school": "한국대학교 컴퓨터공학과", "period": "2021.03 – 2027.02", "status": "졸업 예정", "note": "학점 4.1 / 4.5"},
+            {"school": "서울고등학교", "period": "2018.03 – 2021.02", "status": "졸업", "note": "이과"},
+        ],
+        "awards": [
+            {"title": "교내 해커톤 대상", "org": "한국대학교", "date": "2025.11"},
+            {"title": "공개SW 개발자대회 장려상", "org": "과학기술정보통신부", "date": "2025.09"},
+        ],
+        "languages": [
+            {"name": "영어", "test": "TOEIC", "score": "900"},
+            {"name": "영어", "test": "OPIc", "score": "IH"},
+            {"name": "일본어", "test": "JLPT", "score": "N2"},
+        ],
+        "certificates": ["정보처리기사", "SQLD"],
+        "career": [
+            {"type": "경험", "title": "핀테크 스타트업 백엔드 인턴", "org": "OO페이", "period": "2025.06 – 2025.08", "description": "결제 시스템 안정화 프로젝트에 참여해 실패율 개선 작업을 담당."},
+            {"type": "활동", "title": "멋쟁이사자처럼 대학 12기", "org": "한국대학교", "period": "2024.03 – 2024.12", "description": "웹 서비스 팀 프로젝트를 진행하고 데모데이에서 발표."},
+            {"type": "교육", "title": "우아한테크코스 프리코스", "org": "우아한형제들", "period": "2025.11 – 2025.12", "description": "JavaScript 미션 4주 과정을 수료."},
         ],
     })
 
