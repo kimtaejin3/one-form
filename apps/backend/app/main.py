@@ -31,15 +31,20 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/api/applications")
-async def list_applications():
-    return await mock([
-        {"id": 1, "company": "네이버", "role": "프론트엔드 개발자", "channel": "자사 홈페이지", "status": "서류 합격", "deadline": "2026-08-01"},
-        {"id": 2, "company": "토스", "role": "풀스택 개발자", "channel": "토스 채용", "status": "지원 완료", "deadline": "2026-07-25"},
-        {"id": 3, "company": "카카오", "role": "웹 개발자", "channel": "카카오 커리어", "status": "작성 중", "deadline": "2026-07-30"},
-        {"id": 4, "company": "쿠팡", "role": "프론트엔드 엔지니어", "channel": "원티드", "status": "면접 예정", "deadline": "2026-08-10"},
-        {"id": 5, "company": "라인", "role": "UI 엔지니어", "channel": "자사 홈페이지", "status": "작성 중", "deadline": "2026-08-05"},
-    ])
+@app.get("/api/jobs")
+async def list_jobs():
+    # ponytail: 목 — 실제로는 마스터 프로필 직무로 매칭 필터. 지금은 개발 직무 고정.
+    return await mock({
+        "role": "백엔드 개발",
+        "jobs": [
+            {"id": 1, "company": "네이버", "domain": "navercorp.com", "conditions": "경력무관 · 정규직 · 경기 판교", "title": "[NAVER] 검색 플랫폼 백엔드 개발자", "tags": ["검색", "대용량트래픽", "Java"], "dday": "D-7", "source": "자사 채용", "match_reason": "실시간 동기화로 쌓은 대용량 처리 경험이 검색 트래픽 설계와 잘 맞아요"},
+            {"id": 2, "company": "카카오", "domain": "kakaocorp.com", "conditions": "3년 이상 · 정규직 · 제주", "title": "[카카오] 커머스 백엔드 엔지니어", "tags": ["커머스", "Spring", "MSA"], "dday": "D-12", "source": "원티드", "match_reason": "결제 안정화 프로젝트 경험이 커머스 백엔드의 신뢰성 요구와 통해요"},
+            {"id": 3, "company": "토스", "domain": "toss.im", "conditions": "경력무관 · 정규직 · 서울", "title": "[토스] Server Developer (Backend)", "tags": ["핀테크", "Kotlin", "대용량"], "dday": "상시", "source": "자사 채용", "match_reason": "결제 실패율 3.2%→0.4% 개선 경험이 핀테크 서버 직무에 딱 맞아요"},
+            {"id": 4, "company": "쿠팡", "domain": "coupang.com", "conditions": "3년 이상 · 정규직 · 서울", "title": "[쿠팡] Backend Engineer, 물류 플랫폼", "tags": ["물류", "대규모시스템", "AWS"], "dday": "D-20", "source": "링크드인", "match_reason": "실시간 시스템 설계 경험이 대규모 물류 플랫폼과 연결돼요"},
+            {"id": 5, "company": "라인", "domain": "line.me", "conditions": "경력무관 · 정규직 · 서울", "title": "[LINE] 메신저 백엔드 개발자", "tags": ["메신저", "실시간", "Java"], "dday": "D-5", "source": "자사 채용", "match_reason": "CRDT·WebSocket 실시간 협업 경험이 메신저 백엔드와 정확히 맞아요"},
+            {"id": 6, "company": "당근", "domain": "daangn.com", "conditions": "3년 이하 · 정규직 · 서울", "title": "[당근] 커뮤니티 서버 개발자", "tags": ["로컬커뮤니티", "Go", "Kubernetes"], "dday": "상시", "source": "원티드", "match_reason": "서비스를 처음부터 설계한 경험이 커뮤니티 서버 개발과 잘 어울려요"},
+        ],
+    })
 
 
 @app.get("/api/profile")
