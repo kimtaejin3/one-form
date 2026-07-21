@@ -1,0 +1,47 @@
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import type { ReactElement } from 'react'
+import { Header } from '@/widgets/header'
+import { AsyncBoundary } from '@/shared/ui'
+import { JobsPage } from '@/pages/jobs'
+import { ProfilePage } from '@/pages/profile'
+import { CompaniesPage } from '@/pages/companies'
+import { EssaysPage } from '@/pages/essays'
+import { FormsPage } from '@/pages/forms'
+import { ActivitiesPage } from '@/pages/activities'
+import { AccountPage } from '@/pages/account'
+import { SettingsPage } from '@/pages/settings'
+
+const ROUTES: { path: string; element: ReactElement }[] = [
+  { path: '/', element: <JobsPage /> },
+  { path: '/profile', element: <ProfilePage /> },
+  { path: '/companies', element: <CompaniesPage /> },
+  { path: '/essays', element: <EssaysPage /> },
+  { path: '/forms', element: <FormsPage /> },
+  { path: '/activities', element: <ActivitiesPage /> },
+  { path: '/account', element: <AccountPage /> },
+  { path: '/settings', element: <SettingsPage /> },
+]
+
+// 경로가 바뀔 때마다 Routes를 새로 마운트해, 새 페이지가 suspend하면
+// 이전 화면을 붙잡지 않고 곧바로 로딩(Suspense fallback)이 보이게 한다.
+function AppRoutes() {
+  const location = useLocation()
+  return (
+    <Routes location={location} key={location.pathname}>
+      {ROUTES.map(({ path, element }) => (
+        <Route key={path} path={path} element={<AsyncBoundary>{element}</AsyncBoundary>} />
+      ))}
+    </Routes>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Header />
+      <main className="content">
+        <AppRoutes />
+      </main>
+    </BrowserRouter>
+  )
+}

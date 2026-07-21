@@ -4,5 +4,43 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/shared/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          { "patterns": ["@/app/**", "@/pages/**", "@/widgets/**", "@/features/**", "@/entities/**"] }
+        ]
+      }
+    },
+    {
+      "files": ["src/entities/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          { "patterns": ["@/app/**", "@/pages/**", "@/widgets/**", "@/features/**"] }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": ["@/app/**", "@/pages/**", "@/widgets/**"] }]
+      }
+    },
+    {
+      "files": ["src/widgets/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": ["@/app/**", "@/pages/**"] }]
+      }
+    },
+    {
+      "files": ["src/pages/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": ["@/app/**"] }]
+      }
+    }
+  ]
 }
