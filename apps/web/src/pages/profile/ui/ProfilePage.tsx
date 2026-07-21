@@ -40,55 +40,17 @@ export default function ProfilePage() {
       <Card>
         <div className="stack">
           <strong>학력</strong>
-          {profile.educations.map((edu) => (
-            <div key={edu.school} className="stack" style={{ gap: 2 }}>
-              <span>
-                {edu.school} <span className="of-chip">{edu.status}</span>
-              </span>
-              <span className="of-mono">
-                {edu.period} · {edu.note}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <div className="stack">
-          <strong>어학</strong>
-          {profile.languages.map((lang) => (
-            <div key={lang.test} className="row">
-              <span>{lang.name}</span>
-              <span className="of-mono">
-                {lang.test} · {lang.score}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <div className="stack">
-          <strong>수상</strong>
-          {profile.awards.map((aw) => (
-            <div key={aw.title} className="stack" style={{ gap: 2 }}>
-              <span>{aw.title}</span>
-              <span className="of-mono">
-                {aw.org} · {aw.date}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <div className="stack">
-          <strong>자격증</strong>
-          <div className="row">
-            {profile.certificates.map((c) => (
-              <span key={c} className="of-chip">
-                {c}
-              </span>
+          <div className="resume-list">
+            {profile.educations.map((edu) => (
+              <div key={edu.school} className="resume-entry">
+                <span className="resume-entry__title">
+                  {edu.school} <span className="of-chip">{edu.status}</span>
+                </span>
+                <span className="resume-entry__meta">
+                  {edu.major} · {edu.period}
+                  {edu.gpa && ` · 학점 ${edu.gpa}`}
+                </span>
+              </div>
             ))}
           </div>
         </div>
@@ -96,18 +58,127 @@ export default function ProfilePage() {
 
       <Card>
         <div className="stack">
-          <strong>경험 / 활동 / 교육</strong>
-          {profile.career.map((c) => (
-            <div key={c.title} className="stack" style={{ gap: 2 }}>
-              <span>
-                <span className="of-chip">{c.type}</span> {c.title}
-              </span>
-              <span className="of-mono">
-                {c.org} · {c.period}
-              </span>
-              <span>{c.description}</span>
-            </div>
-          ))}
+          <strong>경력</strong>
+          <div className="resume-list">
+            {profile.careers.map((c) => (
+              <div key={c.company} className="resume-entry">
+                <span className="resume-entry__title">
+                  {c.company} <span className="of-chip">{c.role}</span>
+                </span>
+                <span className="resume-entry__meta">{c.period}</span>
+                <ul className="resume-entry__list">
+                  {c.highlights.map((h) => (
+                    <li key={h}>{h}</li>
+                  ))}
+                </ul>
+                <div className="row">
+                  {c.stack.map((s) => (
+                    <span key={s} className="of-chip">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="stack">
+          <strong>프로젝트</strong>
+          <div className="resume-list">
+            {profile.projects.map((p) => (
+              <div key={p.name} className="resume-entry">
+                <span className="resume-entry__title">{p.name}</span>
+                <span className="resume-entry__meta">
+                  {p.role} · {p.period}
+                </span>
+                <span className="resume-entry__desc">{p.summary}</span>
+                <ul className="resume-entry__list">
+                  {p.highlights.map((h) => (
+                    <li key={h}>{h}</li>
+                  ))}
+                </ul>
+                <div className="row">
+                  {p.stack.map((s) => (
+                    <span key={s} className="of-chip">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="stack">
+          <strong>자격증</strong>
+          <div className="resume-list">
+            {profile.certificates.map((c) => (
+              <div key={c.name} className="resume-entry">
+                <span className="resume-entry__title">{c.name}</span>
+                <span className="resume-entry__meta">
+                  {c.issuer} · {c.date} 취득
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="stack">
+          <strong>어학</strong>
+          <div className="resume-list">
+            {profile.languages.map((lang) => (
+              <div key={lang.test} className="resume-entry">
+                <span className="resume-entry__title">
+                  {lang.language} · {lang.test}
+                </span>
+                <span className="resume-entry__meta">
+                  {lang.score} · {lang.date} 취득
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="stack">
+          <strong>수상</strong>
+          <div className="resume-list">
+            {profile.awards.map((aw) => (
+              <div key={aw.title} className="resume-entry">
+                <span className="resume-entry__title">{aw.title}</span>
+                <span className="resume-entry__meta">
+                  {aw.org} · {aw.date}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="stack">
+          <strong>대외활동 / 교육</strong>
+          <div className="resume-list">
+            {profile.activities.map((a) => (
+              <div key={a.title} className="resume-entry">
+                <span className="resume-entry__title">
+                  <span className="of-chip">{a.type}</span> {a.title}
+                </span>
+                <span className="resume-entry__meta">
+                  {a.org} · {a.period}
+                </span>
+                <span className="resume-entry__desc">{a.description}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </Card>
     </div>
