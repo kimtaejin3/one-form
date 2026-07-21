@@ -12,5 +12,8 @@ export type Job = {
 
 export type JobFeed = {
   role: string
+  total: number
+  page: number
+  size: number
   jobs: Job[]
 }

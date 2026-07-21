@@ -83,6 +83,10 @@ a:hover {
 .of-btn:hover {
   opacity: 0.88;
 }
+.of-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 .of-btn:focus-visible {
   outline: 2px solid var(--of-primary);
   outline-offset: 2px;

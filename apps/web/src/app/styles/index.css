@@ -159,10 +159,50 @@
 }
 
 /* job feed */
+.job-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid var(--of-border-strong);
+  border-radius: var(--of-radius-md);
+  font-family: var(--of-font-sans);
+  font-size: 14px;
+  color: var(--of-ink);
+  background: var(--of-surface);
+  cursor: pointer;
+}
+.filter-chip {
+  padding: 7px 14px;
+  border: 1px solid var(--of-border-strong);
+  border-radius: 999px;
+  background: var(--of-surface);
+  color: var(--of-body);
+  font-family: var(--of-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.filter-chip--on {
+  background: var(--of-accent-soft);
+  border-color: transparent;
+  color: var(--of-primary);
+  font-weight: 700;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 4px;
+}
 .job-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
+  transition: opacity 0.15s ease;
 }
 .job-card {
   display: flex;
@@ -181,6 +221,12 @@
 .job-head {
   display: flex;
   align-items: flex-start;
+  gap: 12px;
+}
+.activity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
 }
 .job-logo {
@@ -311,6 +357,7 @@
 }
 .personal-body {
   display: flex;
+  flex-direction: row-reverse;
   gap: 24px;
   align-items: flex-start;
 }
@@ -327,6 +374,12 @@
   font-family: var(--of-font-mono);
   font-size: 12px;
   color: var(--of-faint);
+  overflow: hidden;
+}
+.id-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .info-grid {
   flex: 1;
@@ -380,6 +433,33 @@
   font-size: 14px;
   line-height: 1.55;
   color: var(--of-body);
+}
+
+/* 링크 (포트폴리오·GitHub 등) */
+.link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.link-item {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 14px;
+}
+.link-item__label {
+  flex-shrink: 0;
+  min-width: 84px;
+  font-family: var(--of-font-mono);
+  font-size: 12.5px;
+  color: var(--of-faint);
+}
+.link-item__url {
+  color: var(--of-primary);
+  word-break: break-all;
+}
+.link-item:hover .link-item__url {
+  text-decoration: underline;
 }
 .info-grid dt {
   font-family: var(--of-font-mono);

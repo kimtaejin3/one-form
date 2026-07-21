@@ -14,7 +14,13 @@ export default function ProfilePage() {
         <div className="stack">
           <strong>개인정보</strong>
           <div className="personal-body">
-            <div className="id-photo">증명사진</div>
+            <div className="id-photo">
+              {profile.personal.photo ? (
+                <img src={profile.personal.photo} alt="증명사진" />
+              ) : (
+                '증명사진'
+              )}
+            </div>
             <dl className="info-grid">
               <dt>이름</dt>
               <dd>{profile.personal.name}</dd>
@@ -33,6 +39,26 @@ export default function ProfilePage() {
               <dt>비상 연락처 관계</dt>
               <dd>{profile.personal.emergency_relation}</dd>
             </dl>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="stack">
+          <strong>링크</strong>
+          <div className="link-list">
+            {profile.links.map((l) => (
+              <a
+                key={l.url}
+                href={l.url}
+                target="_blank"
+                rel="noreferrer"
+                className="link-item"
+              >
+                <span className="link-item__label">{l.label}</span>
+                <span className="link-item__url">{l.url}</span>
+              </a>
+            ))}
           </div>
         </div>
       </Card>

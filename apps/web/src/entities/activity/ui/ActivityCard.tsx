@@ -1,37 +1,34 @@
-import { Card } from '@one-form/design-system'
+import { Icon } from '@/shared/ui'
 import type { Activity } from '../model'
 
 export default function ActivityCard({ activity }: { activity: Activity }) {
   return (
-    <Card>
-      <div className="stack">
-        <div className="row">
-          <strong>{activity.name}</strong>
-          <span className="of-chip">{activity.category}</span>
-          <span className="of-mono">
-            {activity.period} · 적합도 {activity.fit}%
-          </span>
-        </div>
-        <div className="row">
-          <span className="of-mono">보완 역량</span>
-          {activity.fills_gap.map((g) => (
-            <span key={g} className="of-chip">
-              {g}
-            </span>
-          ))}
-        </div>
-        <span>
-          <b>이 활동으로 쓸 경험</b> — {activity.expected_experience}
-        </span>
-        <div className="row">
-          <span className="of-mono">연결 가능</span>
-          {activity.connections.map((c) => (
-            <span key={c.company + c.role} className="of-chip">
-              {c.company} · {c.role}
-            </span>
-          ))}
-        </div>
+    <article className="job-card">
+      <div className="activity-head">
+        <span className="of-chip">{activity.category}</span>
+        <span className="job-cond">{activity.dday}</span>
       </div>
-    </Card>
+      <h3 className="job-title">{activity.name}</h3>
+      <span className="of-mono">
+        {activity.organizer} · {activity.period}
+      </span>
+      <div className="job-tags">
+        {activity.fills_gap.map((g) => (
+          <span key={g}>#{g}</span>
+        ))}
+      </div>
+      <p className="job-match">
+        <Icon name="spark" size={15} />
+        {activity.expected_experience}
+      </p>
+      <div className="job-foot">
+        <span className="job-badge">적합도 {activity.fit}%</span>
+        {activity.connections[0] && (
+          <span className="job-badge">
+            {activity.connections[0].company} · {activity.connections[0].role}
+          </span>
+        )}
+      </div>
+    </article>
   )
 }

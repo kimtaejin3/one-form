@@ -2,7 +2,22 @@ import { queryOptions } from '@tanstack/react-query'
 import { api } from '@/shared/api'
 import type { JobFeed } from './model'
 
-export const jobsQuery = queryOptions({
-  queryKey: ['jobs'],
-  queryFn: () => api<JobFeed>('/jobs'),
-})
+export type JobFilters = {
+  role: string
+  experience: string
+  employment: string
+  location: string
+  page: number
+}
+
+export function jobsQuery(f: JobFilters) {
+  const params = new URLSearchParams({ page: String(f.page) })
+  if (f.role) params.set('role', f.role)
+  if (f.experience) params.set('experience', f.experience)
+  if (f.employment) params.set('employment', f.employment)
+  if (f.location) params.set('location', f.location)
+  return queryOptions({
+    queryKey: ['jobs', f],
+    queryFn: () => api<JobFeed>(`/jobs?${params.toString()}`),
+  })
+}
