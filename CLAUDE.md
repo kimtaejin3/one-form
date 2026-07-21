@@ -51,17 +51,32 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
 
 ## web 코딩 규칙
 
+### FSD (Feature-Sliced Design) 구조
+
+- 레이어: `app → pages → widgets → features → entities → shared` (아래로만 의존).
+  - `app` — 진입점·라우팅·프로바이더·전역 스타일 (`app/App.tsx`, `app/providers`, `app/styles`)
+  - `pages/<page>/ui/<Page>.tsx` — feature·entity를 조합만. 페이지는 얇게.
+  - `widgets/<widget>` — 복합 UI 블록 (`widgets/header`: Header + TabBar)
+  - `features/<action>` — 사용자 액션 (`analyze-company`·`generate-draft`·`upload-resume`·`convert-form`).
+    `model`(mutation 훅)과 `ui`로 나눈다.
+  - `entities/<entity>` — 도메인 (`job`·`profile`·`essay`·`activity`). `model`(타입)·`api`(queryOptions)·`ui`(카드).
+  - `shared` — 도메인 무관 (`shared/api` 클라이언트, `shared/ui`: Icon·Loading·AsyncBoundary·Dropzone).
+    아이콘 path는 `shared/ui/Icon` 한 곳. `@one-form/design-system`(Button·Card·Input)은 별개 외부 패키지.
+- **슬라이스는 `index.ts`(public API)로만 노출**하고, 다른 슬라이스는 `@/<layer>/<slice>`로 임포트한다
+  (`@` = `src`, vite·tsconfig alias). 내부 파일 직접 임포트 금지.
+- **레이어 경계는 oxlint가 강제한다** (`.oxlintrc.json`의 `no-restricted-imports` overrides).
+  상위 레이어를 임포트하면 lint 에러. 새 코드는 알맞은 레이어에 둘 것.
+
+### 데이터·상태
+
 - **데이터 페칭은 TanStack Query v5.** `useEffect`로 직접 fetch하지 말 것.
-  - 조회(GET)는 `queries/<도메인>.ts`에 `queryOptions`로 정의하고 페이지에서 `useSuspenseQuery`로 소비
+  - 조회(GET)는 `entities/<e>/api.ts`에 `queryOptions`로 정의하고 페이지에서 `useSuspenseQuery`로 소비
     (`data`가 항상 정의됨 — 로딩/에러 분기 불필요).
-  - 변경(POST)은 `useMutation` (`isPending`/`data`/`variables`로 상태 표현).
-  - 로딩·에러는 페이지가 아니라 `components/AsyncBoundary`(Suspense + ErrorBoundary)가 담당.
+  - 변경(POST)은 `features/<action>/model.ts`에 `useMutation` 훅으로 (`isPending`/`data`/`variables`로 상태 표현).
+  - 로딩·에러는 페이지가 아니라 `shared/ui/AsyncBoundary`(Suspense + ErrorBoundary)가 담당.
     App의 각 라우트가 이걸로 감싸져 있다.
 - `useEffect`는 가급적 지양. 파생 상태는 렌더 중 계산, 서버 상태는 Query에 위임.
-- **SRP**: 컴포넌트 하나에 한 책임. 레이아웃(`components/Header`·`TabBar`),
-  아이콘(`components/Icon` — path는 여기 한 곳), 페이지(`pages/*`)를 섞지 말 것.
-- props는 인터페이스가 바로 읽히게. 깊은 props drilling·다수 props 나열 금지
-  (필요하면 컴포넌트를 쪼개거나 서버 상태는 Query로 각자 가져오게).
+- props는 인터페이스가 바로 읽히게. 깊은 props drilling·다수 props 나열 금지.
 - 한 컴포넌트 최대 ~500줄. 넘으면 분리.
 
 ## 아키텍처에서 비자명한 부분
