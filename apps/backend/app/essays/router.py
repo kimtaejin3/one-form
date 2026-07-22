@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 
 from app.essays import repository
-from app.essays.schemas import DraftRequest
+from app.essays.schemas import DraftRequest, Essay
 
 router = APIRouter(prefix="/api/essays", tags=["essays"])
 
 
-@router.get("")
+@router.get("", response_model=list[Essay])
 async def list_essays():
     return await repository.list_essays()
 
