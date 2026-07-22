@@ -71,6 +71,95 @@
   border-radius: 50%;
   background: #ef4444;
 }
+
+/* 알림 플로팅 팝오버 */
+.notif {
+  position: relative;
+  display: flex;
+}
+.popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.notif-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: 340px;
+  max-height: 72vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--of-surface);
+  border: 1px solid var(--of-border);
+  border-radius: var(--of-radius-lg);
+  box-shadow: 0 12px 32px rgba(15, 30, 52, 0.14);
+}
+.notif-popover__head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--of-border);
+}
+.notif-popover__loading {
+  padding: 28px;
+  text-align: center;
+}
+.notif-popover__all {
+  padding: 13px 16px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-top: 1px solid var(--of-border);
+}
+.notif-popover__all:hover {
+  background: var(--of-surface-alt);
+}
+
+/* 알림 아이템 (팝오버·전체 페이지 공용) */
+.notif-list {
+  display: flex;
+  flex-direction: column;
+}
+.notif-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--of-border);
+}
+.notif-item:first-child {
+  border-top: 0;
+}
+.notif-item--unread {
+  background: var(--of-accent-soft);
+}
+.notif-item__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.notif-item__title {
+  font-size: 14px;
+}
+.notif-item__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--of-primary);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.notif-item__msg {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--of-body);
+}
+.notif-item__time {
+  font-family: var(--of-font-mono);
+  font-size: 12px;
+  color: var(--of-faint);
+}
 .avatar {
   width: 34px;
   height: 34px;

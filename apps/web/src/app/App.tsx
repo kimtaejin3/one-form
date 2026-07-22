@@ -10,6 +10,7 @@ import { FormsPage } from '@/pages/forms'
 import { ActivitiesPage } from '@/pages/activities'
 import { AccountPage } from '@/pages/account'
 import { SettingsPage } from '@/pages/settings'
+import { NotificationsPage } from '@/pages/notifications'
 
 const ROUTES: { path: string; element: ReactElement }[] = [
   { path: '/', element: <JobsPage /> },
@@ -20,6 +21,7 @@ const ROUTES: { path: string; element: ReactElement }[] = [
   { path: '/activities', element: <ActivitiesPage /> },
   { path: '/account', element: <AccountPage /> },
   { path: '/settings', element: <SettingsPage /> },
+  { path: '/notifications', element: <NotificationsPage /> },
 ]
 
 // 경로가 바뀔 때마다 Routes를 새로 마운트해, 새 페이지가 suspend하면
