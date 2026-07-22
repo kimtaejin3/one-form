@@ -93,6 +93,14 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
 - **백엔드는 목(mock) 단계다.** 데이터 접근이 `app/core/mock.py`의 `mock()` 헬퍼로 1초 지연 후
   더미를 반환한다 (DB 없음). 실제 구현 시 각 `repository`의 `mock()` 호출을 진짜 쿼리로 바꾸면
   된다 (router·service·schemas는 그대로). 페이지↔API 매핑과 IA는 `docs/IA.md` 참고.
+- **FE↔BE 타입은 백엔드가 단일 소스다.** 백엔드 Pydantic(`app/<도메인>/schemas.py`)이 원본이고,
+  프론트 타입은 여기서 생성된다: `gen_openapi.py`가 OpenAPI를 덤프 → `openapi-typescript`가
+  `apps/web/src/shared/api/schema.ts`로 변환 → `entities/*/model.ts`가 `components['schemas'][...]`를
+  재-export. **프론트에 타입을 손으로 쓰지 말 것.** 새 응답 타입이 필요하면 백엔드 라우터에
+  `response_model=`을 지정하고 `pnpm gen:api`(루트)로 재생성. 필드명이 어긋나면 프론트가 컴파일
+  에러로 죽는다. `openapi.json`은 중간물(gitignore), `schema.ts`는 커밋(체크아웃 즉시 타입체크되게).
+  → 도메인당 `schemas.py` 클래스명은 전역 유일해야 한다(OpenAPI 스키마명 충돌 방지, 예: 프로필의
+  `ProfileActivity` vs activities의 `Activity`).
 - **포트는 CORS와 결합돼 있다.** `apps/backend/app/main.py`의 CORS 허용 목록이
   localhost:3000(landing)/3001(web)로 고정. 포트를 바꾸면 양쪽을 같이 바꿔야 한다.
 - **design-system 임포트는 두 갈래다.** 컴포넌트는 `import { Button } from '@one-form/design-system'`,

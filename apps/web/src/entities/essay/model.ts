@@ -1,8 +1,3 @@
-export type Essay = {
-  id: number
-  company: string
-  question: string
-  char_limit: number
-  deadline: string
-  status: string
-}
+import type { components } from '@/shared/api'
+
+export type Essay = components['schemas']['Essay']
