@@ -86,9 +86,13 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
 - **API 경로는 FastAPI 안에서부터 `/api` 프리픽스를 갖는다** (예: `/api/health`).
   web의 Vite dev 서버가 `/api/*`를 경로 재작성 없이 8000번으로 프록시하기 때문
   (`apps/web/vite.config.ts`). 새 엔드포인트도 `/api/...`로 만들 것.
-- **백엔드는 목(mock) 단계다.** 모든 엔드포인트가 `mock()` 헬퍼로 1초 지연 후 더미 데이터를
-  반환한다 (DB 없음). 실제 구현 시 `mock()` 호출만 걷어내면 된다. 페이지↔API 매핑과 IA는
-  `docs/IA.md` 참고.
+- **백엔드는 도메인별 레이어 구조다.** `app/<도메인>/`(jobs·profile·companies·essays·
+  activities·notifications·forms)마다 `router`(HTTP)·`repository`(데이터 접근)로 나뉘고,
+  POST 바디가 있으면 `schemas`(Pydantic), 로직이 있으면 `service`가 붙는다(현재 jobs만 —
+  필터·페이지네이션). `main.py`는 CORS + `include_router`만. 도메인 추가 시 이 4파일 패턴을 따를 것.
+- **백엔드는 목(mock) 단계다.** 데이터 접근이 `app/core/mock.py`의 `mock()` 헬퍼로 1초 지연 후
+  더미를 반환한다 (DB 없음). 실제 구현 시 각 `repository`의 `mock()` 호출을 진짜 쿼리로 바꾸면
+  된다 (router·service·schemas는 그대로). 페이지↔API 매핑과 IA는 `docs/IA.md` 참고.
 - **포트는 CORS와 결합돼 있다.** `apps/backend/app/main.py`의 CORS 허용 목록이
   localhost:3000(landing)/3001(web)로 고정. 포트를 바꾸면 양쪽을 같이 바꿔야 한다.
 - **design-system 임포트는 두 갈래다.** 컴포넌트는 `import { Button } from '@one-form/design-system'`,
