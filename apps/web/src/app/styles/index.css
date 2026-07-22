@@ -480,6 +480,18 @@
   font-size: 14px;
 }
 
+/* 이력서 (전체 한 장) */
+.resume {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.resume-section__title {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 /* 이력서 항목 리스트 (학력·어학·수상·자격증·경험) */
 .resume-list {
   display: flex;
