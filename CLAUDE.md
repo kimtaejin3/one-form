@@ -39,7 +39,17 @@ uv add <pkg>          # 의존성 추가 (pyproject.toml 갱신)
 pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
 ```
 
-테스트는 아직 없다.
+## 테스트
+
+- **백엔드(pytest):** `pnpm --filter @one-form/backend test` (또는 `apps/backend`에서 `uv run pytest`).
+  `apps/backend/tests/` — jobs 필터·페이지네이션 로직 + 전 엔드포인트 스모크. `conftest.py`가
+  `MOCK_DELAY_SECONDS=0`으로 목 sleep을 없애 밀리초로 돈다. 로직·계약(응답 shape)만 검증하고
+  순수 목 값은 얕게(200 + 최소 필드)만.
+- **프론트(vitest + jsdom):** `pnpm --filter @one-form/web test`. 로직 있는 컴포넌트만
+  (`JobsPage.test.tsx`: 필터 변경 → 요청 파라미터·page 리셋). 순수 표시용 컴포넌트는 테스트 안 함.
+- **CI:** `.github/workflows/ci.yml` — web(lint·build·test)/backend(pytest)/contract(OpenAPI→TS 드리프트).
+- FE↔BE 계약은 테스트가 아니라 OpenAPI→TS 타입 생성으로 컴파일러가 강제(아래 참조). E2E(Playwright)는
+  아직 없음(docs/TODO.md).
 
 ## 커밋 규칙
 
