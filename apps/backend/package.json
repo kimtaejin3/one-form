@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "uv run uvicorn app.main:app --reload --port 8000",
     "start": "uv run uvicorn app.main:app --host 0.0.0.0 --port 8000",
-    "gen:openapi": "uv run python gen_openapi.py"
+    "gen:openapi": "uv run python gen_openapi.py",
+    "test": "uv run pytest -q"
   }
 }
