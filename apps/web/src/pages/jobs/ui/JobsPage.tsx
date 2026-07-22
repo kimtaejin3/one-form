@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { JobCard, jobsQuery } from '@/entities/job'
-import { Loading } from '@/shared/ui'
+import { FilterSelect, Loading } from '@/shared/ui'
 
 // 페이지네이션은 매 변경마다 전체를 suspend시키면 UX가 나빠, useSuspenseQuery 대신
 // useQuery + keepPreviousData로 이전 목록을 유지한 채 갱신한다.
@@ -10,25 +10,23 @@ const EXPERIENCE = ['신입', '경력무관', '1년 이상', '3년 이상', '5�
 const EMPLOYMENT = ['정규직', '계약직', '인턴', '전환형인턴']
 const LOCATION = ['서울', '경기 판교', '부산', '제주', '원격']
 
+type Filters = { role: string; experience: string; employment: string; location: string }
+const EMPTY_FILTERS: Filters = { role: '', experience: '', employment: '', location: '' }
+
 export default function JobsPage() {
-  const [role, setRole] = useState('')
-  const [experience, setExperience] = useState('')
-  const [employment, setEmployment] = useState('')
-  const [location, setLocation] = useState('')
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [page, setPage] = useState(1)
 
   const { data, isFetching } = useQuery({
-    ...jobsQuery({ role, experience, employment, location, page }),
+    ...jobsQuery({ ...filters, page }),
     placeholderData: keepPreviousData,
     throwOnError: true,
   })
 
   // 필터를 바꾸면 항상 1페이지부터
-  function onFilter(set: (v: string) => void) {
-    return (v: string) => {
-      set(v)
-      setPage(1)
-    }
+  function setFilter(key: keyof Filters, value: string) {
+    setFilters((f) => ({ ...f, [key]: value }))
+    setPage(1)
   }
 
   if (!data) return <Loading />
@@ -42,10 +40,10 @@ export default function JobsPage() {
       </span>
 
       <div className="job-filters">
-        <FilterSelect label="직무" value={role} options={ROLE} onChange={onFilter(setRole)} />
-        <FilterSelect label="경력" value={experience} options={EXPERIENCE} onChange={onFilter(setExperience)} />
-        <FilterSelect label="고용형태" value={employment} options={EMPLOYMENT} onChange={onFilter(setEmployment)} />
-        <FilterSelect label="지역" value={location} options={LOCATION} onChange={onFilter(setLocation)} />
+        <FilterSelect label="직무" value={filters.role} options={ROLE} onChange={(v) => setFilter('role', v)} />
+        <FilterSelect label="경력" value={filters.experience} options={EXPERIENCE} onChange={(v) => setFilter('experience', v)} />
+        <FilterSelect label="고용형태" value={filters.employment} options={EMPLOYMENT} onChange={(v) => setFilter('employment', v)} />
+        <FilterSelect label="지역" value={filters.location} options={LOCATION} onChange={(v) => setFilter('location', v)} />
       </div>
 
       {data.jobs.length === 0 ? (
@@ -74,33 +72,5 @@ export default function JobsPage() {
         </button>
       </div>
     </div>
-  )
-}
-
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  value: string
-  options: string[]
-  onChange: (v: string) => void
-}) {
-  return (
-    <select
-      className="filter-select"
-      value={value}
-      aria-label={label}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">{label} 전체</option>
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-    </select>
   )
 }
