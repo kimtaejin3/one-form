@@ -13,6 +13,7 @@ export default function EssayCard({ essay }: { essay: Essay }) {
       <div className="stack">
         <div className="row">
           <span className="of-chip">{essay.company}</span>
+          <span className="of-chip">{essay.tag}</span>
           <span className="of-mono">
             {essay.char_limit}자 · ~{essay.deadline} · {essay.status}
           </span>
