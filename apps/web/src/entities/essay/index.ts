@@ -1,3 +1,3 @@
-export { essaysQuery } from './api'
-export type { Essay } from './model'
-export { default as EssayListItem } from './ui/EssayListItem'
+export { questionsQuery } from './api'
+export { fillCompany, type Question, type QuestionCompany } from './model'
+export { default as QuestionListItem } from './ui/QuestionListItem'

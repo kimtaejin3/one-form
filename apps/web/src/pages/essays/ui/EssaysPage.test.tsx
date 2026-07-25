@@ -1,13 +1,50 @@
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import EssaysPage from './EssaysPage'
 
+// 문항 풀 + 기업 매핑. 1은 두 회사가 공유(재사용), 4는 어떤 회사도 안 쓰는 공통 문항.
 const BASE = [
-  { id: 1, company: '네이버', tag: '경험', question: '네이버 문항 늦은 마감', char_limit: 10, deadline: '2026-08-01', status: '미작성', answer: '' },
-  { id: 2, company: '토스', tag: '역량', question: '토스 문항', char_limit: 1000, deadline: '2026-07-30', status: '초안 완료', answer: '토스에 저장해 둔 답변\n둘째 줄' },
-  { id: 3, company: '네이버', tag: '포부', question: '네이버 문항 이른 마감', char_limit: 500, deadline: '2026-07-26', status: '작성 중', answer: '' },
+  {
+    id: 1,
+    tag: '지원동기',
+    prompt: '{회사}에 지원한 이유는?',
+    char_limit: 700,
+    answer: '',
+    status: '미작성',
+    companies: [
+      { name: '네이버', deadline: '2026-07-28' },
+      { name: '토스', deadline: '2026-07-26' },
+    ],
+  },
+  {
+    id: 2,
+    tag: '경험',
+    prompt: '문제를 해결한 경험은?',
+    char_limit: 10,
+    answer: '토스에 저장해 둔 답변\n둘째 줄',
+    status: '초안 완료',
+    companies: [{ name: '토스', deadline: '2026-07-26' }],
+  },
+  {
+    id: 3,
+    tag: '포부',
+    prompt: '입사 후 포부는?',
+    char_limit: 500,
+    answer: '',
+    status: '작성 중',
+    companies: [{ name: '네이버', deadline: '2026-07-28' }],
+  },
+  {
+    id: 4,
+    tag: '자기소개',
+    prompt: '본인을 한 문장으로 소개하면?',
+    char_limit: 500,
+    answer: '',
+    status: '미작성',
+    companies: [],
+  },
 ]
 
 // 저장이 GET 결과에 반영되는 서버를 흉내낸다 — 매 응답을 복사해 돌려주지 않으면
@@ -15,29 +52,33 @@ const BASE = [
 let store: typeof BASE
 
 beforeEach(() => {
-  store = BASE.map((e) => ({ ...e }))
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  vi.setSystemTime(new Date('2026-07-25T09:00:00'))
+  store = BASE.map((q) => ({ ...q }))
   globalThis.fetch = vi.fn(async (url, init) => {
     const path = String(url)
     if (path.includes('/essays/draft')) {
-      return { ok: true, json: async () => ({ essay_id: 3, draft: 'AI가 쓴 초안' }) }
+      return { ok: true, json: async () => ({ question_id: 3, draft: 'AI가 쓴 초안' }) }
     }
-    const saved = path.match(/\/essays\/(\d+)\/answer$/)
+    const saved = path.match(/\/essays\/questions\/(\d+)\/answer$/)
     if (saved) {
       const body = JSON.parse(String((init as RequestInit).body))
-      const essay = store.find((e) => e.id === Number(saved[1]))!
-      Object.assign(essay, { answer: body.content, status: body.status })
-      return { ok: true, json: async () => ({ ...essay }) }
+      const question = store.find((q) => q.id === Number(saved[1]))!
+      Object.assign(question, { answer: body.content, status: body.status })
+      return { ok: true, json: async () => ({ ...question }) }
     }
-    return { ok: true, json: async () => store.map((e) => ({ ...e })) }
+    return { ok: true, json: async () => store.map((q) => ({ ...q })) }
   }) as unknown as typeof fetch
 })
+
+afterEach(() => vi.useRealTimers())
 
 function fetchCalls() {
   return (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls
 }
 
 function items() {
-  return screen.getAllByRole('button', { name: /문항/ })
+  return screen.getAllByRole('button', { name: /\?/ })
 }
 
 function item(label: string) {
@@ -61,68 +102,124 @@ function renderPage() {
   )
 }
 
-test('기본은 전체 문항이 마감 임박순으로 보이고, 회사 필터로 좁힌다', async () => {
+function toCompanyView() {
+  fireEvent.click(screen.getByRole('tab', { name: '기업별' }))
+}
+
+async function pickCompany(name: string) {
+  fireEvent.click(screen.getByRole('combobox', { name: '기업 선택' }))
+  fireEvent.click(await screen.findByRole('option', { name }))
+}
+
+test('문항별 뷰는 문항 풀 전체를 재사용 범위와 함께 보여준다', async () => {
   renderPage()
 
-  // 회사 무관 전체 목록 — 마감 임박순
-  await waitFor(() => expect(items()).toHaveLength(3))
-  expect(items().map((el) => el.querySelector('.of-essay-item__q')?.textContent)).toEqual([
-    '네이버 문항 이른 마감',
-    '토스 문항',
-    '네이버 문항 늦은 마감',
-  ])
-  expect(screen.getByRole('tab', { name: '전체' })).toHaveAttribute('aria-selected', 'true')
-  // 각 행에 회사·문항유형이 붙는다
-  expect(within(item('토스 문항')).getByText('토스 · 역량')).toBeTruthy()
+  await waitFor(() => expect(items()).toHaveLength(4))
+  expect(within(item('지원한 이유')).getByText('2개 기업 사용 · 700자')).toBeTruthy()
+  expect(within(item('한 문장으로 소개')).getByText('공통 · 500자')).toBeTruthy()
+  expect(screen.getByText('진행: 전체 4문항 중 1 완료')).toBeTruthy()
+  // 기업 맥락이 없으므로 {회사}는 '귀사'
+  expect(item('지원한 이유').textContent).toContain('귀사에 지원한 이유는?')
+})
 
-  fireEvent.click(screen.getByRole('tab', { name: '네이버' }))
+test('기업별 뷰는 그 회사 문항만 보여주고 마감 D-day를 붙인다', async () => {
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(4))
+
+  toCompanyView()
+  // 마감 임박순 첫 회사(토스)가 기본 선택 — 토스 문항 2개만
   expect(items()).toHaveLength(2)
-  expect(screen.queryByText('토스 문항')).toBeNull()
+  expect(screen.getByText('마감 2026-07-26 · D-1')).toBeTruthy()
+  expect(screen.queryByText(/입사 후 포부/)).toBeNull()
 
-  fireEvent.click(screen.getByRole('tab', { name: '전체' }))
-  expect(items()).toHaveLength(3)
+  await pickCompany('네이버')
+  expect(items()).toHaveLength(2)
+  expect(screen.getByText('마감 2026-07-28 · D-3')).toBeTruthy()
+  expect(item('입사 후 포부')).toBeTruthy()
+  // 기업 맥락이 붙어 {회사}가 회사명으로 치환된다
+  expect(item('지원한 이유').textContent).toContain('네이버에 지원한 이유는?')
+
+  // 문항별로 돌아오면 다시 전체 풀
+  fireEvent.click(screen.getByRole('tab', { name: '문항별' }))
+  expect(items()).toHaveLength(4)
 })
 
-test('문항을 선택하면 저장된 답변이 에디터에 로드되고 리스트엔 첫 줄만 미리보기된다', async () => {
+test('검색이 문항 텍스트·유형·회사명으로 목록을 좁힌다', async () => {
   renderPage()
-  // 답변 없는 문항(이른 마감)이 기본 선택 — 미리보기는 "미작성"
-  expect(await screen.findByLabelText('자소서 본문')).toHaveValue('')
-  expect(preview('이른 마감')).toBe('미작성')
+  await waitFor(() => expect(items()).toHaveLength(4))
+  const box = screen.getByLabelText('문항 검색')
 
-  fireEvent.click(item('토스 문항'))
-  expect(screen.getByLabelText('자소서 본문')).toHaveValue('토스에 저장해 둔 답변\n둘째 줄')
-  expect(preview('토스 문항')).toBe('토스에 저장해 둔 답변')
+  fireEvent.change(box, { target: { value: '포부' } }) // 유형
+  expect(items()).toHaveLength(1)
+  expect(item('입사 후 포부')).toBeTruthy()
+
+  fireEvent.change(box, { target: { value: '토스' } }) // 회사명
+  expect(items()).toHaveLength(2)
+
+  fireEvent.change(box, { target: { value: '한 문장으로' } }) // 문항 텍스트
+  expect(items()).toHaveLength(1)
+
+  fireEvent.change(box, { target: { value: '없는말' } })
+  expect(screen.queryAllByRole('button', { name: /\?/ })).toHaveLength(0)
+  expect(screen.getByText('해당하는 문항이 없어요.')).toBeTruthy()
 })
 
-test('저장하면 PUT으로 답변이 올라가고 미리보기·완료율이 갱신된다', async () => {
+test('본문은 원본으로 편집하고 미리보기가 현재 맥락으로 치환한다', async () => {
   renderPage()
   const textarea = await screen.findByLabelText('자소서 본문')
-  expect(screen.getByText('진행: 3개 중 1 완료')).toBeTruthy()
 
-  fireEvent.change(textarea, { target: { value: '저장할 답변 첫 줄\n둘째 줄' } })
+  fireEvent.change(textarea, { target: { value: '저는 {회사}의 인재상에 맞습니다.' } })
+  // 문항별 = 기업 맥락 없음 → 귀사
+  expect(screen.getByLabelText('답변 미리보기').textContent).toBe('저는 귀사의 인재상에 맞습니다.')
+
+  toCompanyView()
+  await pickCompany('네이버')
+  fireEvent.click(item('지원한 이유'))
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('저는 {회사}의 인재상에 맞습니다.') // 원본 유지
+  expect(screen.getByLabelText('답변 미리보기').textContent).toBe('저는 네이버의 인재상에 맞습니다.')
+})
+
+test('{회사} 삽입 버튼이 커서 자리에 토큰을 넣는다', async () => {
+  renderPage()
+  const textarea = (await screen.findByLabelText('자소서 본문')) as HTMLTextAreaElement
+
+  fireEvent.change(textarea, { target: { value: '저는 입니다' } })
+  textarea.setSelectionRange(3, 3)
+  fireEvent.click(screen.getByRole('button', { name: '{회사} 삽입' }))
+
+  expect(textarea).toHaveValue('저는 {회사}입니다')
+  expect(screen.getByLabelText('답변 미리보기').textContent).toBe('저는 귀사입니다')
+})
+
+test('저장은 문항 id로 올라가고 미리보기·완료율이 갱신된다', async () => {
+  renderPage()
+  const textarea = await screen.findByLabelText('자소서 본문')
+  expect(screen.getByText('진행: 전체 4문항 중 1 완료')).toBeTruthy()
+
+  fireEvent.change(textarea, { target: { value: '{회사} 답변 첫 줄\n둘째 줄' } })
   fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
-  await waitFor(() => expect(preview('이른 마감')).toBe('저장할 답변 첫 줄'))
+  await waitFor(() => expect(preview('지원한 이유')).toBe('귀사 답변 첫 줄'))
   const [url, init] = fetchCalls().find(([u]) => String(u).includes('/answer'))!
-  expect(String(url)).toBe('/api/essays/3/answer')
+  expect(String(url)).toBe('/api/essays/questions/1/answer')
   expect((init as RequestInit).method).toBe('PUT')
   expect(JSON.parse(String((init as RequestInit).body))).toEqual({
-    content: '저장할 답변 첫 줄\n둘째 줄',
+    content: '{회사} 답변 첫 줄\n둘째 줄', // 저장은 원본(토큰 포함)
     status: '작성 중',
   })
 
-  // 사용자가 "초안 완료"로 표시 → 완료 수도 서버 값으로 다시 그려진다
   fireEvent.click(screen.getByLabelText('초안 완료'))
-  await waitFor(() => expect(screen.getByText('진행: 3개 중 2 완료')).toBeTruthy())
+  await waitFor(() => expect(screen.getByText('진행: 전체 4문항 중 2 완료')).toBeTruthy())
 })
 
 test('본문을 비우고 저장하면 상태가 미작성으로 돌아간다', async () => {
   renderPage()
-  fireEvent.click(await screen.findByRole('tab', { name: '토스' }))
+  await screen.findByLabelText('자소서 본문')
+  fireEvent.click(item('문제를 해결한 경험'))
   fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '' } })
   fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
-  await waitFor(() => expect(preview('토스 문항')).toBe('미작성'))
+  await waitFor(() => expect(preview('문제를 해결한 경험')).toBe('미작성'))
   const [, init] = fetchCalls().find(([u]) => String(u).includes('/answer'))!
   expect(JSON.parse(String((init as RequestInit).body)).status).toBe('미작성')
 })
@@ -130,19 +227,19 @@ test('본문을 비우고 저장하면 상태가 미작성으로 돌아간다', 
 // 그냥 [저장]이 사용자가 표시해 둔 "초안 완료"를 말없이 "작성 중"으로 되돌리면 완료율이 깨진다.
 test('초안 완료 문항을 다시 저장해도 완료로 남고, 체크를 풀면 작성 중으로 내려간다', async () => {
   renderPage()
-  fireEvent.click(await screen.findByRole('tab', { name: '토스' }))
-  expect(screen.getByText('진행: 3개 중 1 완료')).toBeTruthy()
+  await screen.findByLabelText('자소서 본문')
+  fireEvent.click(item('문제를 해결한 경험'))
 
   fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '고쳐 쓴 답변' } })
   fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
-  await waitFor(() => expect(preview('토스 문항')).toBe('고쳐 쓴 답변'))
+  await waitFor(() => expect(preview('문제를 해결한 경험')).toBe('고쳐 쓴 답변'))
   const [, init] = fetchCalls().find(([u]) => String(u).includes('/answer'))!
   expect(JSON.parse(String((init as RequestInit).body)).status).toBe('초안 완료')
-  expect(screen.getByText('진행: 3개 중 1 완료')).toBeTruthy()
+  expect(screen.getByText('진행: 전체 4문항 중 1 완료')).toBeTruthy()
 
   fireEvent.click(screen.getByLabelText('초안 완료'))
-  await waitFor(() => expect(screen.getByText('진행: 3개 중 0 완료')).toBeTruthy())
+  await waitFor(() => expect(screen.getByText('진행: 전체 4문항 중 0 완료')).toBeTruthy())
 })
 
 test('AI 초안이 textarea에 들어가고 글자 수 초과를 경고한다', async () => {
@@ -151,30 +248,16 @@ test('AI 초안이 textarea에 들어가고 글자 수 초과를 경고한다', 
 
   fireEvent.click(screen.getByRole('button', { name: 'AI 초안 생성' }))
   await waitFor(() => expect(screen.getByLabelText('자소서 본문')).toHaveValue('AI가 쓴 초안'))
+  const [, draftInit] = fetchCalls().find(([u]) => String(u).includes('/draft'))!
+  expect(JSON.parse(String((draftInit as RequestInit).body))).toEqual({ question_id: 1 })
+  expect(screen.getByText('8 / 700자')).toBeTruthy()
 
-  // 선택된 문항(char_limit 500)은 여유, 10자 제한 문항으로 옮기면 초과 경고
-  expect(screen.getByText('8 / 500자')).toBeTruthy()
-  fireEvent.click(item('늦은 마감'))
-  fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '열두글자를넘기는본문입니다' } })
+  // char_limit 10인 문항으로 옮기면 초과 경고
+  fireEvent.click(item('문제를 해결한 경험'))
+  fireEvent.change(screen.getByLabelText('자소서 본문'), {
+    target: { value: '열두글자를넘기는본문입니다' },
+  })
   expect(screen.getByText(/자 초과/)).toBeTruthy()
-})
-
-test('회사 필터 탭은 ←/→로 이동하고 양끝에서 순환한다', async () => {
-  renderPage()
-  await screen.findByLabelText('자소서 본문')
-  const tablist = screen.getByRole('tablist')
-
-  fireEvent.keyDown(tablist, { key: 'ArrowRight' })
-  expect(screen.getByRole('tab', { name: '네이버' })).toHaveAttribute('aria-selected', 'true')
-  expect(screen.getByRole('tab', { name: '네이버' })).toHaveFocus()
-
-  // 마지막 탭에서 오른쪽 → 첫 탭으로 순환
-  fireEvent.keyDown(tablist, { key: 'ArrowRight' })
-  expect(screen.getByRole('tab', { name: '토스' })).toHaveAttribute('aria-selected', 'true')
-  fireEvent.keyDown(tablist, { key: 'ArrowRight' })
-  expect(screen.getByRole('tab', { name: '전체' })).toHaveAttribute('aria-selected', 'true')
-  fireEvent.keyDown(tablist, { key: 'ArrowLeft' })
-  expect(screen.getByRole('tab', { name: '토스' })).toHaveAttribute('aria-selected', 'true')
 })
 
 // 재구조가 만든 데이터 소실 회귀(문항 전환 = 본문 초기화)를 못박는다.
@@ -184,10 +267,10 @@ test('문항을 옮겼다 돌아와도 저장 전 본문이 유지된다', async
     target: { value: '내가 쓴 소중한 본문' },
   })
 
-  fireEvent.click(item('늦은 마감'))
+  fireEvent.click(item('입사 후 포부'))
   expect(screen.getByLabelText('자소서 본문')).toHaveValue('') // 다른 문항은 자기 본문(빈 값)
 
-  fireEvent.click(item('이른 마감'))
+  fireEvent.click(item('지원한 이유'))
   expect(screen.getByLabelText('자소서 본문')).toHaveValue('내가 쓴 소중한 본문')
 })
 
@@ -199,7 +282,6 @@ test('작성 중 본문이 있으면 초안 생성 전에 덮어쓰기를 확인
     target: { value: '내가 쓴 소중한 본문' },
   })
 
-  // 취소하면 요청도 안 나가고 본문도 그대로
   fireEvent.click(screen.getByRole('button', { name: 'AI 초안 다시 생성' }))
   expect(confirmed).toHaveBeenCalled()
   expect(fetchCalls().some(([u]) => String(u).includes('/essays/draft'))).toBe(false)
@@ -218,10 +300,10 @@ test('status마다 다른 배지 클래스로 시각 구분된다', async () => 
   await screen.findByLabelText('자소서 본문')
 
   const badge = (label: string) => item(label).querySelector('.of-status')!
-  expect(badge('이른 마감').textContent).toBe('작성 중')
-  expect(badge('이른 마감').className).toContain('of-status--doing')
-  expect(badge('늦은 마감').className).toContain('of-status--todo')
-  expect(badge('토스 문항').className).toContain('of-status--done')
+  expect(badge('입사 후 포부').textContent).toBe('작성 중')
+  expect(badge('입사 후 포부').className).toContain('of-status--doing')
+  expect(badge('지원한 이유').className).toContain('of-status--todo')
+  expect(badge('문제를 해결한 경험').className).toContain('of-status--done')
 })
 
 // mutate 변수로 대상 문항을 넘기는 이유를 못박는다. 응답이 늦게 와도 "지금 보고 있는 문항"이
@@ -232,17 +314,17 @@ test('생성 중 다른 문항으로 옮겨도 초안은 요청한 문항에만 
   globalThis.fetch = vi.fn(async (url) => {
     if (!String(url).includes('/essays/draft')) return { ok: true, json: async () => store }
     await pending
-    return { ok: true, json: async () => ({ essay_id: 3, draft: 'AI가 쓴 초안' }) }
+    return { ok: true, json: async () => ({ question_id: 1, draft: 'AI가 쓴 초안' }) }
   }) as unknown as typeof fetch
 
   renderPage()
   await screen.findByLabelText('자소서 본문')
 
-  fireEvent.click(screen.getByRole('button', { name: 'AI 초안 생성' })) // 이른 마감에 요청
-  fireEvent.click(item('늦은 마감')) // 응답 전에 이동
+  fireEvent.click(screen.getByRole('button', { name: 'AI 초안 생성' })) // 1번 문항에 요청
+  fireEvent.click(item('입사 후 포부')) // 응답 전에 이동
   release()
 
   await waitFor(() => expect(screen.getByLabelText('자소서 본문')).toHaveValue(''))
-  fireEvent.click(item('이른 마감'))
+  fireEvent.click(item('지원한 이유'))
   expect(screen.getByLabelText('자소서 본문')).toHaveValue('AI가 쓴 초안')
 })
