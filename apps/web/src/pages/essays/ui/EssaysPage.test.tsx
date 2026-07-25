@@ -127,6 +127,24 @@ test('본문을 비우고 저장하면 상태가 미작성으로 돌아간다', 
   expect(JSON.parse(String((init as RequestInit).body)).status).toBe('미작성')
 })
 
+// 그냥 [저장]이 사용자가 표시해 둔 "초안 완료"를 말없이 "작성 중"으로 되돌리면 완료율이 깨진다.
+test('초안 완료 문항을 다시 저장해도 완료로 남고, 체크를 풀면 작성 중으로 내려간다', async () => {
+  renderPage()
+  fireEvent.click(await screen.findByRole('tab', { name: '토스' }))
+  expect(screen.getByText('진행: 3개 중 1 완료')).toBeTruthy()
+
+  fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '고쳐 쓴 답변' } })
+  fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+  await waitFor(() => expect(preview('토스 문항')).toBe('고쳐 쓴 답변'))
+  const [, init] = fetchCalls().find(([u]) => String(u).includes('/answer'))!
+  expect(JSON.parse(String((init as RequestInit).body)).status).toBe('초안 완료')
+  expect(screen.getByText('진행: 3개 중 1 완료')).toBeTruthy()
+
+  fireEvent.click(screen.getByLabelText('초안 완료'))
+  await waitFor(() => expect(screen.getByText('진행: 3개 중 0 완료')).toBeTruthy())
+})
+
 test('AI 초안이 textarea에 들어가고 글자 수 초과를 경고한다', async () => {
   renderPage()
   await screen.findByLabelText('자소서 본문')
