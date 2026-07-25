@@ -150,3 +150,112 @@ a:hover {
   font-size: 13px;
   font-weight: 500;
 }
+
+/* Dropdown — 커스텀 셀렉트(네이티브 select 아님) */
+.of-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.of-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 160px;
+  padding: 8px 12px;
+  border: 1px solid var(--of-border-strong);
+  border-radius: var(--of-radius-md);
+  background: var(--of-surface);
+  color: var(--of-ink);
+  font-family: var(--of-font-sans);
+  font-size: 14px;
+  cursor: pointer;
+}
+.of-dropdown__trigger:hover {
+  border-color: var(--of-primary);
+}
+.of-dropdown__trigger:focus-visible {
+  outline: 2px solid var(--of-primary);
+  outline-offset: 1px;
+}
+.of-dropdown__caret {
+  color: var(--of-muted);
+  font-size: 11px;
+}
+.of-dropdown__list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  max-height: 280px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  overflow-y: auto;
+  background: var(--of-surface);
+  border: 1px solid var(--of-border);
+  border-radius: var(--of-radius-md);
+  box-shadow: 0 8px 24px rgba(15, 30, 52, 0.12);
+}
+.of-dropdown__opt {
+  padding: 8px 10px;
+  border-radius: var(--of-radius-sm);
+  color: var(--of-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.of-dropdown__opt--active {
+  background: var(--of-surface-alt);
+  color: var(--of-ink);
+}
+.of-dropdown__opt--on {
+  color: var(--of-primary);
+  font-weight: 600;
+}
+
+/* Modal — 오버레이 다이얼로그 */
+.of-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 30, 52, 0.4);
+}
+.of-modal__panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  background: var(--of-surface);
+  border: 1px solid var(--of-border);
+  border-radius: var(--of-radius-lg);
+  box-shadow: 0 24px 64px rgba(15, 30, 52, 0.24);
+}
+.of-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--of-border);
+  color: var(--of-ink);
+}
+.of-modal__close {
+  border: 0;
+  background: transparent;
+  color: var(--of-muted);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+.of-modal__close:hover {
+  color: var(--of-ink);
+}
+.of-modal__body {
+  padding: 16px 20px;
+  overflow-y: auto;
+}
