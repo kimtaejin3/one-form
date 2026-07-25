@@ -5,6 +5,8 @@ description = "one-form FastAPI backend"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.116",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.14.2",
     "uvicorn[standard]>=0.30",
 ]
 

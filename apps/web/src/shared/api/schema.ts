@@ -371,6 +371,8 @@ export interface components {
             dday: string;
             /** Source */
             source: string;
+            /** Match Rate */
+            match_rate: number;
             /** Match Reason */
             match_reason: string;
         };

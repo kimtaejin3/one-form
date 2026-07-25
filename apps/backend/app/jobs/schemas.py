@@ -10,6 +10,7 @@ class Job(BaseModel):
     tags: list[str]
     dday: str
     source: str
+    match_rate: int  # 0~100 — 프로필↔공고 임베딩 코사인(상위 K개는 LLM 보정)
     match_reason: str
 
 

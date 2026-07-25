@@ -1,7 +1,8 @@
 """jobs 도메인 — 유일하게 로직(필터·페이지네이션)이 있어 통합 테스트의 핵심."""
 
 JOB_FIELDS = {
-    "id", "company", "domain", "conditions", "title", "tags", "dday", "source", "match_reason",
+    "id", "company", "domain", "conditions", "title", "tags", "dday", "source",
+    "match_rate", "match_reason",
 }
 
 
