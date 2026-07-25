@@ -328,3 +328,26 @@ test('생성 중 다른 문항으로 옮겨도 초안은 요청한 문항에만 
   fireEvent.click(item('지원한 이유'))
   expect(screen.getByLabelText('자소서 본문')).toHaveValue('AI가 쓴 초안')
 })
+
+// 재설계의 핵심 주장: 답변은 기업이 아니라 문항에 붙는다. 한 번 저장한 답변이 그 문항을 묻는
+// 모든 기업 뷰에 그대로 나타나고, 회사명만 맥락에 맞게 갈려야 한다.
+test('문항에 저장한 답변은 그 문항을 쓰는 모든 기업에서 재사용된다', async () => {
+  renderPage()
+  const textarea = await screen.findByLabelText('자소서 본문') // 1번(네이버·토스 공유)
+
+  fireEvent.change(textarea, { target: { value: '{회사}에 기여하겠습니다' } })
+  fireEvent.click(screen.getByRole('button', { name: '저장' }))
+  await waitFor(() => expect(preview('지원한 이유')).toBe('귀사에 기여하겠습니다'))
+
+  // 저장 요청은 회사가 아니라 문항 id로만 나간다 — 기업별 저장이 따로 없다.
+  expect(fetchCalls().filter(([u]) => String(u).includes('/answer'))).toHaveLength(1)
+
+  toCompanyView()
+  await pickCompany('네이버')
+  expect(preview('지원한 이유')).toBe('네이버에 기여하겠습니다')
+
+  await pickCompany('토스')
+  expect(preview('지원한 이유')).toBe('토스에 기여하겠습니다')
+  // 같은 원본 하나를 재사용한다 — 회사마다 다시 쓰지 않는다.
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('{회사}에 기여하겠습니다')
+})
