@@ -5,8 +5,8 @@ import { put, type components } from '@/shared/api'
 type AnswerUpdate = components['schemas']['AnswerUpdate']
 
 /**
- * 답변 저장. 저장은 기업이 아니라 **문항 id** 기준이라 그 문항을 묻는 모든 기업에 함께 반영된다.
- * 저장 후 문항 풀을 invalidate해 미리보기와 진행 요약이 서버 값으로 다시 그려진다.
+ * 답변 저장. 저장 단위는 (기업 × 문항) 슬롯이라 바디에 company가 들어가고, 같은 문항이라도
+ * 다른 기업 답변은 건드리지 않는다. 저장 후 문항 풀을 invalidate해 목록·진행 요약이 다시 그려진다.
  */
 export function useSaveAnswer() {
   const qc = useQueryClient()

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Dropdown, Input, Pagination } from '@one-form/design-system'
-import { QuestionListItem, questionsQuery, type Question } from '@/entities/essay'
+import { COMMON, QuestionListItem, questionsQuery, slotKey, type Question } from '@/entities/essay'
 import EssayEditor from './EssayEditor'
 
 const VIEWS = [
@@ -15,7 +15,7 @@ const PAGE_SIZE = 8
 
 /** 검색은 문항 텍스트·유형·이 문항을 쓰는 회사명까지 훑는다. */
 function matches(q: Question, needle: string) {
-  const hay = [q.prompt, q.tag, ...q.companies.map((c) => c.name)].join(' ').toLowerCase()
+  const hay = [q.prompt, q.tag, ...q.slots.map((s) => s.company)].join(' ').toLowerCase()
   return hay.includes(needle.trim().toLowerCase())
 }
 
@@ -28,9 +28,9 @@ function dday(deadline: string) {
 }
 
 /**
- * 자소서 허브 — 답변은 문항에 붙어 재사용되므로 문항 풀이 기본이고, 기업은 그 풀을 보는
- * 또 하나의 렌즈(그 회사가 묻는 문항 + 마감)일 뿐이다. 서버 상태는 문항 풀 쿼리 하나뿐이고
- * 검색·유형·뷰·회사·페이지·선택은 useState, 목록·페이지 슬라이스·선택·치환은 렌더 중 파생한다.
+ * 자소서 허브 — 문항은 유니크하지만 답변은 (문항 × 기업) 슬롯마다 별개다. 문항별 뷰는 문항을 고른 뒤
+ * 에디터에서 기업을 고르고, 기업별 뷰는 회사를 고정한 채 그 회사 슬롯을 편집한다. 서버 상태는
+ * 문항 풀 쿼리 하나뿐이고 검색·유형·뷰·회사·페이지·선택은 useState, 목록·슬롯은 렌더 중 파생한다.
  */
 export default function EssaysPage() {
   const { data: questions } = useSuspenseQuery(questionsQuery)
@@ -38,14 +38,16 @@ export default function EssaysPage() {
   const [view, setView] = useState<View>('question')
   const [pickedTag, setPickedTag] = useState(ALL_TAGS)
   const [pickedCompany, setPickedCompany] = useState('')
+  const [pickedSlot, setPickedSlot] = useState('') // 문항별 뷰 에디터의 기업
   const [pickedPage, setPickedPage] = useState(1)
   const [pickedId, setPickedId] = useState<number | null>(null)
-  // 편집 중 본문은 문항 id별로 페이지가 들고 있는다 — 문항을 옮겼다 돌아와도 남아 있어야 한다.
-  // 손대지 않은 문항은 서버에 저장된 답변을 그대로 보여준다.
-  const [edits, setEdits] = useState<Record<number, string>>({})
+  // 편집 중 본문은 슬롯 키((문항, 기업))별로 페이지가 들고 있는다 — 옮겼다 돌아와도 남아 있어야 한다.
+  // 손대지 않은 슬롯은 서버에 저장된 답변을 그대로 보여준다.
+  const [edits, setEdits] = useState<Record<string, string>>({})
 
-  // 문항이 들고 있는 기업 목록을 그대로 뒤집어 회사 목록을 만든다(마감 임박순).
-  const byName = new Map(questions.flatMap((q) => q.companies).map((c) => [c.name, c]))
+  // 슬롯이 곧 기업 목록이다(마감 임박순). 공통 슬롯은 회사가 아니므로 뺀다.
+  const slots = questions.flatMap((q) => q.slots)
+  const byName = new Map(slots.filter((s) => s.company !== COMMON).map((s) => [s.company, s]))
   const companies = [...byName.values()].sort((a, b) => a.deadline.localeCompare(b.deadline))
   const company = view === 'company' ? (byName.get(pickedCompany) ?? companies[0]) : undefined
 
@@ -54,12 +56,12 @@ export default function EssaysPage() {
   const tag = tags.includes(pickedTag) ? pickedTag : ALL_TAGS
 
   const pool = company
-    ? questions.filter((q) => q.companies.some((c) => c.name === company.name))
+    ? questions.filter((q) => q.slots.some((s) => s.company === company.company))
     : questions
   const list = pool
     .filter((q) => company || tag === ALL_TAGS || q.tag === tag)
     .filter((q) => matches(q, search))
-  const done = questions.filter((q) => q.status === '초안 완료').length
+  const done = slots.filter((s) => s.status === '초안 완료').length
 
   // 필터가 바뀌어 목록이 짧아지면 페이지도 따라 접힌다(렌더 중 보정 — useEffect 불필요).
   const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
@@ -68,6 +70,10 @@ export default function EssaysPage() {
   // 고른 문항이 다른 페이지에 있어도 에디터는 그대로 둔다(작성 중 본문 보호).
   // 안 고른 기본 선택은 페이지 무관하게 목록 첫 문항으로 고정 — 페이지 넘겨도 에디터가 안 갈린다.
   const selected = list.find((q) => q.id === (pickedId ?? list[0]?.id)) ?? shown[0]
+  // 기업별은 그 회사 슬롯으로 고정, 문항별은 고른 기업(없으면 첫 슬롯).
+  const slot = company
+    ? selected?.slots.find((s) => s.company === company.company)
+    : (selected?.slots.find((s) => s.company === pickedSlot) ?? selected?.slots[0])
 
   return (
     <div className="stack">
@@ -112,7 +118,7 @@ export default function EssaysPage() {
           ))}
         </div>
         <p className="of-essay-progress">
-          진행: 전체 {questions.length}문항 중 {done} 완료
+          진행: 기업별 문항 {slots.length}개 중 {done} 완료
         </p>
       </div>
 
@@ -120,8 +126,8 @@ export default function EssaysPage() {
         <div className="row">
           <Dropdown
             label="기업 선택"
-            options={companies.map((c) => ({ value: c.name, label: c.name }))}
-            value={company.name}
+            options={companies.map((c) => ({ value: c.company, label: c.company }))}
+            value={company.company}
             onChange={(v) => {
               setPickedCompany(v)
               setPickedPage(1)
@@ -141,7 +147,7 @@ export default function EssaysPage() {
               <QuestionListItem
                 key={question.id}
                 question={question}
-                company={company?.name}
+                slot={company && question.slots.find((s) => s.company === company.company)}
                 selected={question.id === selected?.id}
                 onSelect={() => setPickedId(question.id)}
               />
@@ -155,12 +161,14 @@ export default function EssaysPage() {
           />
         </div>
 
-        {selected && (
+        {selected && slot && (
           <EssayEditor
             question={selected}
-            company={company?.name}
-            text={edits[selected.id] ?? selected.answer}
-            onChangeText={(id, text) => setEdits((prev) => ({ ...prev, [id]: text }))}
+            slot={slot}
+            companies={company ? undefined : selected.slots.map((s) => s.company)}
+            onPickCompany={company ? undefined : setPickedSlot}
+            text={edits[slotKey(selected.id, slot.company)] ?? slot.content}
+            onChangeText={(key, text) => setEdits((prev) => ({ ...prev, [key]: text }))}
           />
         )}
       </div>

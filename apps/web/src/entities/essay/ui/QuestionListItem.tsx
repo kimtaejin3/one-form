@@ -1,4 +1,4 @@
-import { fillCompany, type Question } from '../model'
+import { COMMON, type AnswerSlot, type Question } from '../model'
 
 const STATUS_MOD: Record<string, string> = {
   미작성: 'todo',
@@ -7,22 +7,31 @@ const STATUS_MOD: Record<string, string> = {
 }
 
 /**
- * 문항 목록의 한 줄. 답변은 문항에 붙어 재사용되므로 회사가 아니라 유형·상태를 앞세우고,
- * 이 문항을 쓰는 기업 수(없으면 공통)를 붙여 재사용 범위를 보여준다.
- * 기업 맥락(`company`)이 있으면 질문·미리보기를 그 회사명으로 치환해 읽힌다.
+ * 문항 목록의 한 줄. 기업별 뷰는 그 회사 슬롯 하나(`slot`)를 상태·미리보기로 보여주고,
+ * 문항별 뷰는 슬롯이 여럿이라 "몇 개 기업에서 썼는지"로 집계해 보여준다.
  */
 export default function QuestionListItem({
   question,
-  company,
+  slot,
   selected,
   onSelect,
 }: {
   question: Question
-  company?: string
+  slot?: AnswerSlot
   selected: boolean
   onSelect: () => void
 }) {
-  const used = question.companies.length
+  const common = question.slots[0]?.company === COMMON
+  const written = question.slots.filter((s) => s.status !== '미작성').length
+  const shown = slot ?? (common ? question.slots[0] : undefined)
+  const badge = shown ? shown.status : `${written}/${question.slots.length} 기업 작성`
+  const mod = shown
+    ? STATUS_MOD[shown.status]
+    : written === 0
+      ? 'todo'
+      : written === question.slots.length
+        ? 'done'
+        : 'doing'
 
   return (
     <button
@@ -33,16 +42,17 @@ export default function QuestionListItem({
     >
       <span className="of-essay-item__meta">
         <span className="of-essay-item__who">{question.tag}</span>
-        <span className={`of-status of-status--${STATUS_MOD[question.status] ?? 'todo'}`}>
-          {question.status}
+        <span className={`of-status of-status--${mod ?? 'todo'}`}>{badge}</span>
+      </span>
+      <span className="of-essay-item__q">{question.prompt}</span>
+      {/* 슬롯이 하나로 정해진 줄에서만 답변 미리보기가 뜻이 있다(문항별 다기업 행은 집계로 충분). */}
+      {shown && (
+        <span className="of-essay-item__preview">
+          {shown.content.split('\n')[0].trim() || '미작성'}
         </span>
-      </span>
-      <span className="of-essay-item__q">{fillCompany(question.prompt, company)}</span>
-      <span className="of-essay-item__preview">
-        {fillCompany(question.answer, company).split('\n')[0].trim() || '미작성'}
-      </span>
+      )}
       <span className="of-essay-item__meta of-mono">
-        {used ? `${used}개 기업 사용` : '공통'} · {question.char_limit}자
+        {common ? COMMON : `${question.slots.length}개 기업`} · {question.char_limit}자
       </span>
     </button>
   )

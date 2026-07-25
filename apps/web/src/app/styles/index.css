@@ -999,26 +999,6 @@
   color: var(--of-warn);
   font-weight: 600;
 }
-.of-essay-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  border: 1px dashed var(--of-border-strong);
-  border-radius: var(--of-radius-md);
-  background: var(--of-surface-alt);
-}
-.of-essay-preview__label {
-  font-size: 12px;
-  color: var(--of-faint);
-}
-.of-essay-preview__body {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--of-muted);
-  white-space: pre-wrap;
-}
 .of-essay-actions {
   justify-content: flex-end;
 }

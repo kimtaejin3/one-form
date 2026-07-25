@@ -1,12 +1,12 @@
 import type { components } from '@/shared/api'
 
 export type Question = components['schemas']['Question']
-export type QuestionCompany = components['schemas']['QuestionCompany']
+export type AnswerSlot = components['schemas']['AnswerSlot']
 
-/**
- * 질문·답변은 원본(`{회사}` 토큰 포함)으로 저장하고, 표시할 때만 지금 맥락의 회사명으로 바꾼다.
- * 기업 맥락이 없으면(문항별 뷰) `귀사`.
- */
-export function fillCompany(text: string, company?: string) {
-  return text.replaceAll('{회사}', company || '귀사')
+/** 어떤 기업도 쓰지 않는 문항의 슬롯 회사명(백엔드와 같은 문자열). */
+export const COMMON = '공통'
+
+/** 답변은 (기업 × 문항)마다 별개라 편집 중 본문도 이 키로 보관한다. */
+export function slotKey(questionId: number, company: string) {
+  return `${questionId}:${company}`
 }
