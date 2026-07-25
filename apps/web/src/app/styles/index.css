@@ -284,8 +284,157 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 6px;
   padding-top: 4px;
+}
+.page-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--of-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--of-ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+.page-btn:hover {
+  border-color: var(--of-primary);
+}
+.page-btn--active {
+  background: var(--of-primary);
+  border-color: var(--of-primary);
+  color: #fff;
+  font-weight: 600;
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  border-color: var(--of-border);
+}
+.empty-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 64px 16px;
+  text-align: center;
+  color: var(--of-body);
+}
+
+/* 기업 인텔리전스 브리프 */
+.brief-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 8px;
+  color: var(--of-body);
+}
+.brief-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.brief-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--of-radius-md);
+  background: var(--of-surface-alt);
+  font-weight: 700;
+  color: var(--of-body);
+  flex-shrink: 0;
+}
+.brief-name {
+  font-size: 19px;
+}
+.brief-summary {
+  margin: 4px 0 8px;
+  color: var(--of-body);
+}
+.brief-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.signal {
+  padding-left: 12px;
+  border-left: 3px solid var(--of-selection);
+}
+.signal__label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--of-radius-sm);
+  background: var(--of-accent-soft);
+  color: var(--of-primary-strong);
+  font-size: 12px;
+  font-weight: 600;
+}
+.signal p {
+  margin: 6px 0 2px;
+}
+.signal__source {
+  font-size: 12px;
+  color: var(--of-muted);
+}
+.strength {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--of-border);
+}
+.strength:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.strength__text p {
+  margin: 2px 0;
+}
+.fit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fit__track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--of-surface-alt);
+  overflow: hidden;
+}
+.fit__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--of-primary);
+}
+.fit__val {
+  min-width: 40px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--of-primary-strong);
+}
+.qa {
+  padding: 10px 0;
+  border-top: 1px solid var(--of-border);
+}
+.qa:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.qa__q {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+.qa__hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--of-body);
 }
 .job-grid {
   display: grid;
@@ -413,6 +562,14 @@
   background: var(--of-surface-alt);
   color: var(--of-body);
   font-weight: 500;
+}
+.job-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.job-source img {
+  border-radius: 3px;
 }
 
 /* shared bits */

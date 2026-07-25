@@ -237,6 +237,31 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** CompanyBrief */
+        CompanyBrief: {
+            /** Name */
+            name: string;
+            /** Domain */
+            domain: string;
+            /** Summary */
+            summary: string;
+            /** Stage */
+            stage: string;
+            /** Business Areas */
+            business_areas: string[];
+            /** Products */
+            products: string[];
+            /** Jd Skills */
+            jd_skills: string[];
+            /** Signals */
+            signals: components["schemas"]["Signal"][];
+            /** Strength Matching */
+            strength_matching: components["schemas"]["StrengthMatch"][];
+            /** Interview Points */
+            interview_points: components["schemas"]["InterviewPoint"][];
+            /** Apply Tips */
+            apply_tips: string[];
+        };
         /** Connection */
         Connection: {
             /** Company */
@@ -281,6 +306,13 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** InterviewPoint */
+        InterviewPoint: {
+            /** Question */
+            question: string;
+            /** Hint */
+            hint: string;
         };
         /** Job */
         Job: {
@@ -372,6 +404,8 @@ export interface components {
         };
         /** Profile */
         Profile: {
+            /** Registered */
+            registered: boolean;
             personal: components["schemas"]["Personal"];
             /** Links */
             links: components["schemas"]["Link"][];
@@ -417,6 +451,24 @@ export interface components {
             highlights: string[];
             /** Stack */
             stack: string[];
+        };
+        /** Signal */
+        Signal: {
+            /** Label */
+            label: string;
+            /** Detail */
+            detail: string;
+            /** Source */
+            source: string;
+        };
+        /** StrengthMatch */
+        StrengthMatch: {
+            /** Company Issue */
+            company_issue: string;
+            /** My Experience */
+            my_experience: string;
+            /** Fit */
+            fit: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -557,7 +609,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["CompanyBrief"];
                 };
             };
             /** @description Validation Error */

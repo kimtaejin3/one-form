@@ -1,13 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { post } from '@/shared/api'
+import { post, type components } from '@/shared/api'
 
-export type Brief = {
-  name: string
-  business_areas: string[]
-  products: string[]
-  jd_skills: string[]
-  strength_matching: { company_issue: string; my_experience: string; fit: number }[]
-}
+export type Brief = components['schemas']['CompanyBrief']
 
 export function useAnalyzeCompany() {
   return useMutation({
