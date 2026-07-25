@@ -9,13 +9,13 @@ def test_get_endpoints(client):
     assert client.get("/api/profile").json()["personal"]["name"]
     assert len(client.get("/api/activities").json()) == 20
     assert len(client.get("/api/notifications").json()) == 8
-    essays = client.get("/api/essays").json()
-    assert len(essays) == 12
-    assert all(e["company"] and e["tag"] for e in essays)
+    questions = client.get("/api/essays/questions").json()
+    assert len(questions) == 12
+    assert all(q["prompt"] and q["tag"] for q in questions)
 
 
 def test_post_endpoints(client):
-    assert client.post("/api/essays/draft", json={"essay_id": 1}).json()["essay_id"] == 1
+    assert client.post("/api/essays/draft", json={"question_id": 1}).json()["question_id"] == 1
     assert client.post("/api/companies/analyze", json={"name": "쿠팡"}).json()["name"] == "쿠팡"
     assert len(client.post("/api/forms/convert").json()["mappings"]) == 5
     assert client.post("/api/profile/resume").json()["parsed_fields"] == 12

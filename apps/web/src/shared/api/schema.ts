@@ -89,15 +89,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/essays": {
+    "/api/essays/questions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List Essays */
-        get: operations["list_essays_api_essays_get"];
+        /** List Questions */
+        get: operations["list_questions_api_essays_questions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -123,7 +123,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/essays/{essay_id}/answer": {
+    "/api/essays/questions/{question_id}/answer": {
         parameters: {
             query?: never;
             header?: never;
@@ -132,7 +132,7 @@ export interface paths {
         };
         get?: never;
         /** Save Answer */
-        put: operations["save_answer_api_essays__essay_id__answer_put"];
+        put: operations["save_answer_api_essays_questions__question_id__answer_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -298,13 +298,13 @@ export interface components {
         };
         /** DraftRequest */
         DraftRequest: {
-            /** Essay Id */
-            essay_id: number;
+            /** Question Id */
+            question_id: number;
         };
         /** DraftResponse */
         DraftResponse: {
-            /** Essay Id */
-            essay_id: number;
+            /** Question Id */
+            question_id: number;
             /** Draft */
             draft: string;
         };
@@ -320,31 +320,6 @@ export interface components {
             status: string;
             /** Gpa */
             gpa: string;
-        };
-        /** Essay */
-        Essay: {
-            /** Id */
-            id: number;
-            /** Company */
-            company: string;
-            /** Tag */
-            tag: string;
-            /** Question */
-            question: string;
-            /** Char Limit */
-            char_limit: number;
-            /** Deadline */
-            deadline: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "미작성" | "작성 중" | "초안 완료";
-            /**
-             * Answer
-             * @default
-             */
-            answer: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -495,6 +470,37 @@ export interface components {
             highlights: string[];
             /** Stack */
             stack: string[];
+        };
+        /** Question */
+        Question: {
+            /** Id */
+            id: number;
+            /** Tag */
+            tag: string;
+            /** Prompt */
+            prompt: string;
+            /** Char Limit */
+            char_limit: number;
+            /**
+             * Answer
+             * @default
+             */
+            answer: string;
+            /**
+             * Status
+             * @default 미작성
+             * @enum {string}
+             */
+            status: "미작성" | "작성 중" | "초안 완료";
+            /** Companies */
+            companies: components["schemas"]["QuestionCompany"][];
+        };
+        /** QuestionCompany */
+        QuestionCompany: {
+            /** Name */
+            name: string;
+            /** Deadline */
+            deadline: string;
         };
         /** Signal */
         Signal: {
@@ -667,7 +673,7 @@ export interface operations {
             };
         };
     };
-    list_essays_api_essays_get: {
+    list_questions_api_essays_questions_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -682,7 +688,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Essay"][];
+                    "application/json": components["schemas"]["Question"][];
                 };
             };
         };
@@ -720,12 +726,12 @@ export interface operations {
             };
         };
     };
-    save_answer_api_essays__essay_id__answer_put: {
+    save_answer_api_essays_questions__question_id__answer_put: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                essay_id: number;
+                question_id: number;
             };
             cookie?: never;
         };
@@ -741,7 +747,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Essay"];
+                    "application/json": components["schemas"]["Question"];
                 };
             };
             /** @description Validation Error */

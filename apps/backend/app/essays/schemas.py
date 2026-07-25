@@ -5,23 +5,27 @@ from pydantic import BaseModel
 EssayStatus = Literal["미작성", "작성 중", "초안 완료"]
 
 
-class Essay(BaseModel):
-    id: int
-    company: str
-    tag: str  # 문항 유형: 지원동기·경험·역량·성장과정·포부
-    question: str
-    char_limit: int
+class QuestionCompany(BaseModel):
+    name: str
     deadline: str
-    status: EssayStatus
+
+
+class Question(BaseModel):
+    id: int
+    tag: str  # 문항 유형: 지원동기·경험·역량·성장과정·포부·자기소개
+    prompt: str  # {회사} 토큰 포함 가능
+    char_limit: int
     answer: str = ""
+    status: EssayStatus = "미작성"
+    companies: list[QuestionCompany]  # 이 문항을 쓰는 기업들. 빈 리스트 = 공통 문항
 
 
 class DraftRequest(BaseModel):
-    essay_id: int
+    question_id: int
 
 
 class DraftResponse(BaseModel):
-    essay_id: int
+    question_id: int
     draft: str
 
 
