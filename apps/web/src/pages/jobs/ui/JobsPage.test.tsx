@@ -21,6 +21,7 @@ function jobFeed() {
         tags: ['Java'],
         dday: 'D-3',
         source: '자사 채용',
+        match_rate: 87,
         match_reason: '잘 맞아요',
       },
     ],

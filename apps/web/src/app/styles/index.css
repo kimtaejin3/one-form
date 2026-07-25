@@ -565,6 +565,13 @@
   margin-top: auto;
   font-size: 13px;
 }
+.job-rate {
+  padding: 4px 10px;
+  border-radius: var(--of-radius-sm);
+  background: var(--of-accent-soft);
+  color: var(--of-primary);
+  font-weight: 600;
+}
 .job-badge {
   padding: 4px 10px;
   border-radius: var(--of-radius-sm);

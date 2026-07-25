@@ -1,0 +1,24 @@
+import { render, screen } from '@testing-library/react'
+import { expect, test } from 'vitest'
+import type { Job } from '../model'
+import JobCard from './JobCard'
+
+const job: Job = {
+  id: 1,
+  company: '네이버',
+  domain: 'navercorp.com',
+  conditions: '신입 · 정규직 · 서울',
+  title: '[네이버] 백엔드 개발자',
+  tags: ['Java'],
+  dday: 'D-3',
+  source: '자사 채용',
+  match_rate: 87,
+  match_reason: '잘 맞아요',
+}
+
+test('매칭률과 매칭 근거를 함께 보여준다', () => {
+  render(<JobCard job={job} />)
+
+  expect(screen.getByText('87% 매칭')).toBeTruthy()
+  expect(screen.getByText('잘 맞아요')).toBeTruthy()
+})

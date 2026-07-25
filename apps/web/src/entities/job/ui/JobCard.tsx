@@ -27,6 +27,7 @@ export default function JobCard({ job }: { job: Job }) {
         {job.match_reason}
       </p>
       <div className="job-foot">
+        <span className="job-rate">{job.match_rate}% 매칭</span>
         <span className="job-badge">{job.dday}</span>
         <SourceBadge source={job.source} />
       </div>
