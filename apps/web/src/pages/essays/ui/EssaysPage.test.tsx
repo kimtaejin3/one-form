@@ -351,3 +351,110 @@ test('문항에 저장한 답변은 그 문항을 쓰는 모든 기업에서 재
   // 같은 원본 하나를 재사용한다 — 회사마다 다시 쓰지 않는다.
   expect(screen.getByLabelText('자소서 본문')).toHaveValue('{회사}에 기여하겠습니다')
 })
+
+async function pickTag(name: string) {
+  fireEvent.click(screen.getByRole('combobox', { name: '유형 필터' }))
+  fireEvent.click(await screen.findByRole('option', { name }))
+}
+
+// 페이지네이션·필터를 태우려면 한 페이지(8개)를 넘는 풀이 필요하다.
+function manyQuestions(n: number) {
+  return Array.from({ length: n }, (_, i) => ({
+    id: i + 1,
+    tag: i % 2 ? '경험' : '역량',
+    prompt: `${i + 1}번 문항은?`,
+    char_limit: 500,
+    answer: '',
+    status: '미작성',
+    companies: [{ name: '큰회사', deadline: '2026-08-01' }],
+  }))
+}
+
+test('유형 필터가 문항별 뷰에서만 목록을 좁히고 검색과 함께 걸린다', async () => {
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(4))
+
+  await pickTag('경험')
+  expect(items()).toHaveLength(1)
+  expect(item('문제를 해결한 경험')).toBeTruthy()
+
+  // 검색과 AND — '경험' 유형 안에서 '포부'를 찾으면 아무것도 없다
+  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '포부' } })
+  expect(screen.getByText('해당하는 문항이 없어요.')).toBeTruthy()
+
+  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '' } })
+  await pickTag('전체 유형')
+  expect(items()).toHaveLength(4)
+
+  // 기업별 뷰는 회사 선택이 주 필터라 유형 필터를 두지 않는다
+  toCompanyView()
+  expect(screen.queryByRole('combobox', { name: '유형 필터' })).toBeNull()
+})
+
+test('문항이 한 페이지 이하면 페이지네이션을 감춘다', async () => {
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(4))
+  expect(screen.queryByRole('navigation')).toBeNull()
+})
+
+test('페이지당 8개로 끊어 보여주고 이동한다', async () => {
+  store = manyQuestions(20) as unknown as typeof store
+  renderPage()
+
+  await waitFor(() => expect(items()).toHaveLength(8))
+  expect(item('1번 문항은?')).toBeTruthy()
+  expect(items().some((el) => el.textContent?.includes('9번 문항은?'))).toBe(false)
+  expect(screen.getByRole('button', { name: '1페이지' })).toHaveAttribute('aria-current', 'page')
+
+  fireEvent.click(screen.getByRole('button', { name: '다음 페이지' }))
+  expect(item('9번 문항은?')).toBeTruthy()
+  expect(screen.getByRole('button', { name: '2페이지' })).toHaveAttribute('aria-current', 'page')
+
+  fireEvent.click(screen.getByRole('button', { name: '3페이지' }))
+  expect(items()).toHaveLength(4) // 마지막 페이지는 남은 4개
+  expect(screen.getByRole('button', { name: '다음 페이지' })).toBeDisabled()
+
+  // 검색이 바뀌면 1페이지로 리셋 — 안 그러면 짧아진 목록에서 빈 화면을 본다
+  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '20번 문항' } })
+  expect(items()).toHaveLength(1)
+  expect(screen.queryByRole('navigation')).toBeNull()
+
+  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '' } })
+  expect(screen.getByRole('button', { name: '1페이지' })).toHaveAttribute('aria-current', 'page')
+  expect(item('1번 문항은?')).toBeTruthy()
+})
+
+test('유형·뷰를 바꿔도 1페이지로 리셋된다', async () => {
+  store = manyQuestions(20) as unknown as typeof store
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(8))
+
+  fireEvent.click(screen.getByRole('button', { name: '3페이지' }))
+  await pickTag('경험') // 유형 변경 → 1페이지
+  expect(screen.getByRole('button', { name: '1페이지' })).toHaveAttribute('aria-current', 'page')
+  expect(items()).toHaveLength(8)
+
+  fireEvent.click(screen.getByRole('button', { name: '2페이지' }))
+  toCompanyView() // 뷰 변경 → 1페이지 (기업별에도 페이지네이션은 그대로 붙는다)
+  expect(screen.getByRole('button', { name: '1페이지' })).toHaveAttribute('aria-current', 'page')
+  expect(items()).toHaveLength(8)
+})
+
+test('페이지가 많으면 첫·끝과 현재 주변만 남기고 말줄임한다', async () => {
+  store = manyQuestions(100) as unknown as typeof store
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(8))
+
+  // 13페이지 중 1 → 1 2 … 13
+  expect(screen.getAllByText('…')).toHaveLength(1)
+  expect(screen.queryByRole('button', { name: '5페이지' })).toBeNull()
+
+  for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole('button', { name: '다음 페이지' }))
+
+  // 13페이지 중 5 → 1 … 4 [5] 6 … 13
+  expect(screen.getAllByText('…')).toHaveLength(2)
+  expect(screen.getByRole('button', { name: '5페이지' })).toHaveAttribute('aria-current', 'page')
+  expect(screen.getByRole('button', { name: '13페이지' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: '8페이지' })).toBeNull()
+  expect(item('33번 문항은?')).toBeTruthy() // 5페이지 = 33~40
+})

@@ -259,3 +259,57 @@ a:hover {
   padding: 16px 20px;
   overflow-y: auto;
 }
+
+/* pagination — 첫·끝과 현재 주변만 남기고 접는 목록 이동 */
+.of-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: var(--of-font-sans);
+}
+.of-pagination__step,
+.of-pagination__page {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--of-border);
+  border-radius: var(--of-radius-md);
+  background: var(--of-surface);
+  color: var(--of-body);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.of-pagination__step:hover:not(:disabled),
+.of-pagination__page:hover {
+  border-color: var(--of-primary);
+  color: var(--of-primary);
+}
+.of-pagination__step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.of-pagination__page--on {
+  border-color: var(--of-primary);
+  background: var(--of-primary);
+  color: var(--of-surface);
+}
+.of-pagination__page--on:hover {
+  color: var(--of-surface);
+}
+.of-pagination__gap {
+  padding: 0 2px;
+  color: var(--of-faint);
+  font-size: 13px;
+}
+.of-pagination__step:focus-visible,
+.of-pagination__page:focus-visible {
+  outline: 2px solid var(--of-primary);
+  outline-offset: 2px;
+}
