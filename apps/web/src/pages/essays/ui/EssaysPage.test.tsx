@@ -125,3 +125,26 @@ test('status마다 다른 배지 클래스로 시각 구분된다', async () => 
   fireEvent.click(screen.getByRole('tab', { name: '토스' }))
   expect(screen.getByText('초안 완료').className).toContain('of-status--done')
 })
+
+// mutate 변수로 대상 문항을 넘기는 이유를 못박는다. 응답이 늦게 와도 "지금 보고 있는 문항"이
+// 아니라 "요청한 문항"에 들어가야 하며, 어긋나면 남의 본문을 덮어쓰는 조용한 손실이 된다.
+test('생성 중 다른 문항으로 옮겨도 초안은 요청한 문항에만 들어간다', async () => {
+  let release!: () => void
+  const pending = new Promise<void>((r) => (release = r))
+  globalThis.fetch = vi.fn(async (url) => {
+    if (!String(url).includes('/essays/draft')) return { ok: true, json: async () => ESSAYS }
+    await pending
+    return { ok: true, json: async () => ({ essay_id: 3, draft: 'AI가 쓴 초안' }) }
+  }) as unknown as typeof fetch
+
+  renderPage()
+  await screen.findByLabelText('자소서 본문')
+
+  fireEvent.click(screen.getByRole('button', { name: 'AI 초안 생성' })) // 이른 마감에 요청
+  fireEvent.click(screen.getByRole('button', { name: /늦은 마감/ })) // 응답 전에 이동
+  release()
+
+  await waitFor(() => expect(screen.getByLabelText('자소서 본문')).toHaveValue(''))
+  fireEvent.click(screen.getByRole('button', { name: /이른 마감/ }))
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('AI가 쓴 초안')
+})
