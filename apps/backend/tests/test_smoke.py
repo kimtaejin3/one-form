@@ -9,7 +9,9 @@ def test_get_endpoints(client):
     assert client.get("/api/profile").json()["personal"]["name"]
     assert len(client.get("/api/activities").json()) == 20
     assert len(client.get("/api/notifications").json()) == 8
-    assert len(client.get("/api/essays").json()) == 3
+    essays = client.get("/api/essays").json()
+    assert len(essays) == 12
+    assert all(e["company"] and e["tag"] for e in essays)
 
 
 def test_post_endpoints(client):

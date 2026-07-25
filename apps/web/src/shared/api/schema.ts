@@ -293,6 +293,8 @@ export interface components {
             id: number;
             /** Company */
             company: string;
+            /** Tag */
+            tag: string;
             /** Question */
             question: string;
             /** Char Limit */
