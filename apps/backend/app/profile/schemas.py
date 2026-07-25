@@ -72,6 +72,7 @@ class ProfileActivity(BaseModel):
 
 
 class Profile(BaseModel):
+    registered: bool  # 마스터 프로필 등록 여부 — 미등록이면 프론트가 채용공고를 숨긴다
     personal: Personal
     links: list[Link]
     educations: list[Education]

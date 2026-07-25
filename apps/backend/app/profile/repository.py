@@ -1,6 +1,7 @@
 from app.core.mock import mock
 
 _PROFILE = {
+    "registered": True,  # 목: 등록된 사용자 가정. False로 두면 프론트에서 공고 게이트 확인 가능.
     "personal": {
         "photo": "/id-photo.png",
         "name": "김지원",

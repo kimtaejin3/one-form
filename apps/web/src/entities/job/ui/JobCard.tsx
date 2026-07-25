@@ -1,6 +1,7 @@
 import { Icon } from '@/shared/ui'
 import type { Job } from '../model'
 import JobLogo from './JobLogo'
+import SourceBadge from './SourceBadge'
 
 export default function JobCard({ job }: { job: Job }) {
   return (
@@ -27,7 +28,7 @@ export default function JobCard({ job }: { job: Job }) {
       </p>
       <div className="job-foot">
         <span className="job-badge">{job.dday}</span>
-        <span className="job-badge">{job.source}</span>
+        <SourceBadge source={job.source} />
       </div>
     </article>
   )

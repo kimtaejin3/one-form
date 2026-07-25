@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { JobCard, jobsQuery } from '@/entities/job'
+import { profileQuery } from '@/entities/profile'
 import { FilterSelect, Loading } from '@/shared/ui'
 
 // 페이지네이션은 매 변경마다 전체를 suspend시키면 UX가 나빠, useSuspenseQuery 대신
@@ -14,11 +16,14 @@ type Filters = { role: string; experience: string; employment: string; location:
 const EMPTY_FILTERS: Filters = { role: '', experience: '', employment: '', location: '' }
 
 export default function JobsPage() {
+  const { data: profile } = useSuspenseQuery(profileQuery)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [page, setPage] = useState(1)
 
+  // 채용공고는 마스터 프로필과 대조해 추천하므로, 미등록이면 조회하지 않는다.
   const { data, isFetching } = useQuery({
     ...jobsQuery({ ...filters, page }),
+    enabled: profile.registered,
     placeholderData: keepPreviousData,
     throwOnError: true,
   })
@@ -27,6 +32,17 @@ export default function JobsPage() {
   function setFilter(key: keyof Filters, value: string) {
     setFilters((f) => ({ ...f, [key]: value }))
     setPage(1)
+  }
+
+  if (!profile.registered) {
+    return (
+      <div className="empty-gate">
+        <p>마스터 프로필을 등록하면 내 경험과 맞는 공고를 추천해드려요.</p>
+        <Link to="/profile" className="of-btn of-btn--sm">
+          마스터 프로필 등록하기
+        </Link>
+      </div>
+    )
   }
 
   if (!data) return <Loading />
@@ -57,18 +73,31 @@ export default function JobsPage() {
       )}
 
       <div className="pagination">
-        <button className="of-btn of-btn--sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-          이전
-        </button>
-        <span className="of-mono">
-          {data.page} / {totalPages}
-        </span>
         <button
-          className="of-btn of-btn--sm"
+          className="page-btn"
+          disabled={page <= 1}
+          aria-label="이전 페이지"
+          onClick={() => setPage(page - 1)}
+        >
+          ‹
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+          <button
+            key={n}
+            className={`page-btn${n === data.page ? ' page-btn--active' : ''}`}
+            aria-current={n === data.page ? 'page' : undefined}
+            onClick={() => setPage(n)}
+          >
+            {n}
+          </button>
+        ))}
+        <button
+          className="page-btn"
           disabled={page >= totalPages}
+          aria-label="다음 페이지"
           onClick={() => setPage(page + 1)}
         >
-          다음
+          ›
         </button>
       </div>
     </div>
