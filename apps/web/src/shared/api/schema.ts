@@ -218,8 +218,28 @@ export interface components {
             /** Connections */
             connections: components["schemas"]["Connection"][];
         };
+        /** AnswerSlot */
+        AnswerSlot: {
+            /** Company */
+            company: string;
+            /** Deadline */
+            deadline: string;
+            /**
+             * Content
+             * @default
+             */
+            content: string;
+            /**
+             * Status
+             * @default 미작성
+             * @enum {string}
+             */
+            status: "미작성" | "작성 중" | "초안 완료";
+        };
         /** AnswerUpdate */
         AnswerUpdate: {
+            /** Company */
+            company: string;
             /** Content */
             content: string;
             /**
@@ -481,26 +501,8 @@ export interface components {
             prompt: string;
             /** Char Limit */
             char_limit: number;
-            /**
-             * Answer
-             * @default
-             */
-            answer: string;
-            /**
-             * Status
-             * @default 미작성
-             * @enum {string}
-             */
-            status: "미작성" | "작성 중" | "초안 완료";
-            /** Companies */
-            companies: components["schemas"]["QuestionCompany"][];
-        };
-        /** QuestionCompany */
-        QuestionCompany: {
-            /** Name */
-            name: string;
-            /** Deadline */
-            deadline: string;
+            /** Slots */
+            slots: components["schemas"]["AnswerSlot"][];
         };
         /** Signal */
         Signal: {

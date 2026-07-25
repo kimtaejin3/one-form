@@ -19,6 +19,6 @@ async def generate_draft(req: DraftRequest):
 @router.put("/questions/{question_id}/answer", response_model=Question)
 async def save_answer(question_id: int, body: AnswerUpdate):
     try:
-        return await repository.save_answer(question_id, body.content, body.status)
+        return await repository.save_answer(question_id, body.company, body.content, body.status)
     except KeyError:
-        raise HTTPException(status_code=404, detail="문항을 찾을 수 없습니다.") from None
+        raise HTTPException(status_code=404, detail="해당 기업의 문항을 찾을 수 없습니다.") from None

@@ -11,7 +11,7 @@ def test_get_endpoints(client):
     assert len(client.get("/api/notifications").json()) == 8
     questions = client.get("/api/essays/questions").json()
     assert len(questions) == 12
-    assert all(q["prompt"] and q["tag"] for q in questions)
+    assert all(q["prompt"] and q["tag"] and q["slots"] for q in questions)
 
 
 def test_post_endpoints(client):
