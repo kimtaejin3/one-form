@@ -1,1 +1,1 @@
-export { default as EssayCard } from './ui/EssayCard'
+export { default as EssayEditor } from './ui/EssayEditor'
