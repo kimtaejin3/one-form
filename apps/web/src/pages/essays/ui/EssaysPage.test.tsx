@@ -444,3 +444,49 @@ test('페이지가 많으면 첫·끝과 현재 주변만 남기고 말줄임한
   expect(screen.queryByRole('button', { name: '8페이지' })).toBeNull()
   expect(item('33번 문항은?')).toBeTruthy() // 5페이지 = 33~40
 })
+
+// 슬롯 모델의 특수 케이스 두 개가 문항별 뷰에서 안 눌려 있었다: 어떤 기업도 안 쓰는 문항의
+// '공통' 슬롯 저장, 그리고 고른 기업이 다음 문항에 없을 때의 폴백(잘못되면 slot이 undefined라
+// 에디터가 통째로 사라진다).
+test('문항별 뷰에서 공통 문항은 공통 슬롯으로 저장하고, 고른 기업은 문항을 옮겨도 남는다', async () => {
+  renderPage()
+  await screen.findByLabelText('자소서 본문')
+
+  await pick('작성할 기업', '토스') // 문항 1을 토스로
+
+  // 공통 문항(4번)엔 토스 슬롯이 없다 → 공통으로 폴백, 에디터는 살아 있어야 한다
+  fireEvent.click(item('한 문장으로 소개'))
+  expect(screen.getByRole('combobox', { name: '작성할 기업' }).textContent).toContain('공통')
+
+  fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '저는 기록하는 개발자입니다' } })
+  fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+  await waitFor(() => expect(savedBodies()).toHaveLength(1))
+  expect(savedBodies()[0]).toEqual({
+    url: '/api/essays/questions/4/answer',
+    company: '공통',
+    content: '저는 기록하는 개발자입니다',
+    status: '작성 중',
+  })
+  await waitFor(() => expect(preview('한 문장으로 소개')).toBe('저는 기록하는 개발자입니다'))
+
+  // 문항 1로 돌아오면 아까 고른 토스가 그대로 — 공통으로 갈리지 않는다
+  fireEvent.click(item('지원한 이유'))
+  expect(screen.getByRole('combobox', { name: '작성할 기업' }).textContent).toContain('토스')
+})
+
+// 059220d가 고친 회귀에 못이 없었다: 목록을 클릭하지 않은 기본 선택 상태로 본문을 쓰다
+// 페이지를 넘기면 에디터가 그 페이지 첫 문항으로 갈려 초안이 사라진 것처럼 보였다.
+test('페이지를 넘겨도 기본 선택 문항과 쓰던 본문이 그대로다', async () => {
+  store = manyQuestions(20) as unknown as typeof store
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(8))
+
+  const prompt = () => document.querySelector('.of-essay-panel__q')?.textContent
+  expect(prompt()).toBe('1번 문항은?')
+  fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '작성 중 본문' } })
+
+  fireEvent.click(screen.getByRole('button', { name: '다음 페이지' }))
+  expect(prompt()).toBe('1번 문항은?')
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('작성 중 본문')
+})
