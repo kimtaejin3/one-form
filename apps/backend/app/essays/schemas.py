@@ -1,4 +1,8 @@
+from typing import Literal
+
 from pydantic import BaseModel
+
+EssayStatus = Literal["미작성", "작성 중", "초안 완료"]
 
 
 class Essay(BaseModel):
@@ -8,8 +12,19 @@ class Essay(BaseModel):
     question: str
     char_limit: int
     deadline: str
-    status: str
+    status: EssayStatus
+    answer: str = ""
 
 
 class DraftRequest(BaseModel):
     essay_id: int
+
+
+class DraftResponse(BaseModel):
+    essay_id: int
+    draft: str
+
+
+class AnswerUpdate(BaseModel):
+    content: str
+    status: EssayStatus

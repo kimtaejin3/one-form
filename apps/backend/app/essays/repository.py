@@ -16,8 +16,24 @@ _ESSAYS = [
 ]
 
 
+# ponytail: in-memory 저장 — 서버 재시작 시 소실. DB 도입 시 이 모듈만 교체(router/schemas 불변).
+_ANSWERS: dict[int, dict] = {}
+
+
+def _merged(essay: dict) -> dict:
+    return {**essay, **_ANSWERS.get(essay["id"], {})}
+
+
 async def list_essays():
-    return await mock(_ESSAYS)
+    return await mock([_merged(e) for e in _ESSAYS])
+
+
+async def save_answer(essay_id: int, content: str, status: str):
+    essay = next((e for e in _ESSAYS if e["id"] == essay_id), None)
+    if essay is None:
+        raise KeyError(essay_id)
+    _ANSWERS[essay_id] = {"answer": content, "status": status}
+    return await mock(_merged(essay))
 
 
 async def generate_draft(essay_id: int):

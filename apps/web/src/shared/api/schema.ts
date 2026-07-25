@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/essays/{essay_id}/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Answer */
+        put: operations["save_answer_api_essays__essay_id__answer_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/activities": {
         parameters: {
             query?: never;
@@ -201,6 +218,16 @@ export interface components {
             /** Connections */
             connections: components["schemas"]["Connection"][];
         };
+        /** AnswerUpdate */
+        AnswerUpdate: {
+            /** Content */
+            content: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "미작성" | "작성 중" | "초안 완료";
+        };
         /** Award */
         Award: {
             /** Title */
@@ -274,6 +301,13 @@ export interface components {
             /** Essay Id */
             essay_id: number;
         };
+        /** DraftResponse */
+        DraftResponse: {
+            /** Essay Id */
+            essay_id: number;
+            /** Draft */
+            draft: string;
+        };
         /** Education */
         Education: {
             /** School */
@@ -301,8 +335,16 @@ export interface components {
             char_limit: number;
             /** Deadline */
             deadline: string;
-            /** Status */
-            status: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "미작성" | "작성 중" | "초안 완료";
+            /**
+             * Answer
+             * @default
+             */
+            answer: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -664,7 +706,42 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DraftResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_answer_api_essays__essay_id__answer_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                essay_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Essay"];
                 };
             };
             /** @description Validation Error */
