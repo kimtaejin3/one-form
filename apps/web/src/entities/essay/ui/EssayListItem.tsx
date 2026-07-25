@@ -36,7 +36,7 @@ export default function EssayListItem({
       </span>
       <span className="of-essay-item__q">{essay.question}</span>
       <span className="of-essay-item__preview">
-        {essay.answer.split('\n')[0] || '미작성'}
+        {essay.answer.split('\n')[0].trim() || '미작성'}
       </span>
       <span className="of-essay-item__meta of-mono">
         ~{essay.deadline} · {essay.char_limit}자
