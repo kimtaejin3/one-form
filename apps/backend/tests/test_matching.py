@@ -16,15 +16,24 @@ KEYS = [
 ]
 
 
-def _no_keys(monkeypatch):
-    """env·settings 양쪽에서 키를 비운다(설정은 프로세스 시작 시 로드되므로)."""
+def _set_keys(monkeypatch, only: str | None = None):
+    """env·settings 양쪽을 갈아끼운다(설정은 프로세스 시작 시 로드되므로).
+
+    only가 None이면 전부 비우고, 키 이름을 주면 그 키 하나만 채운다.
+    """
     from app.core import config
 
     for key in KEYS:
         monkeypatch.delenv(key, raising=False)
+    if only:
+        monkeypatch.setenv(only, "test-key")
     monkeypatch.setattr(config, "settings", config.Settings(_env_file=None))
     for module in (embedder_module, llm_module, saramin, jobkorea, wanted):
         monkeypatch.setattr(module, "settings", config.settings)
+
+
+def _no_keys(monkeypatch):
+    _set_keys(monkeypatch)
 
 
 # --- (a) 파이프라인 흐름 (목 어댑터) ---
@@ -41,6 +50,25 @@ def test_page_two_has_lower_or_equal_rates(client):
     # LLM 보정은 1페이지만 — 2페이지는 임베딩 점수 + 소스 근거 그대로.
     assert [j["id"] for j in page1] != [j["id"] for j in page2]
     assert min(j["match_rate"] for j in page1) >= max(j["match_rate"] for j in page2) - 5
+
+
+def test_pipeline_ranks_profile_relevant_jobs_on_top(client, monkeypatch):
+    """§6의 목적("관련 공고를 위로 올리는가")을 실제 파이프라인으로 확인.
+
+    scripts/eval_matching.py는 자기 픽스처 문자열만 임베딩해 랭킹을 재므로 service의 텍스트
+    빌더(_profile_text·_job_text)·소스·정렬을 전혀 지나지 않는다 — 그쪽이 신호를 잃어도
+    recall은 1.00로 남는다. 여기선 프로필 repository→피드 응답까지 전 구간을 태운다.
+    """
+    ios_profile = {
+        **profile_repository._PROFILE,
+        "careers": [
+            {"role": "iOS 개발자", "highlights": ["Swift 앱 출시"], "stack": ["Swift", "SwiftUI"]}
+        ],
+        "projects": [],
+    }
+    monkeypatch.setattr(profile_repository, "_PROFILE", ios_profile)
+    jobs = client.get("/api/jobs?page=1&size=5").json()["jobs"]
+    assert all("iOS" in j["title"] for j in jobs), [j["title"] for j in jobs]
 
 
 # --- (b) 키 게이팅: 키 없으면 목, 실 전송 import 없이 통과 ---
@@ -62,6 +90,24 @@ def test_mock_path_runs_without_real_transport(monkeypatch):
     assert "anthropic" not in sys.modules and "voyageai" not in sys.modules
     for module in (embedder_module, llm_module, saramin, jobkorea, wanted):
         assert not re.search(r"^import httpx", inspect.getsource(module), re.M)
+
+
+def test_each_key_activates_only_its_own_adapter(monkeypatch):
+    """§3의 핵심 약속: 키를 넣는 순간 그 어댑터만 실작동.
+
+    팩토리가 자기 키를 안 보거나(항상 목) 남의 키를 보면 여기서 깨진다 — 키 없는 테스트만으론
+    둘 다 통과해버린다. 생성만 하고 fetch/embed는 부르지 않으므로 네트워크는 타지 않는다.
+    """
+    _set_keys(monkeypatch, "VOYAGE_API_KEY")
+    assert isinstance(embedder_module.get_embedder(), embedder_module.VoyageEmbedder)
+    assert isinstance(llm_module.get_llm(), llm_module.MockLlm)  # 남의 키엔 반응 안 함
+
+    _set_keys(monkeypatch, "ANTHROPIC_API_KEY")
+    assert isinstance(llm_module.get_llm(), llm_module.AnthropicLlm)
+    assert isinstance(embedder_module.get_embedder(), embedder_module.MockEmbedder)
+
+    _set_keys(monkeypatch, "WANTED_API_KEY")
+    assert [type(s).__name__ for s in active_sources()] == ["WantedSource"]  # 목 대체
 
 
 def test_mock_embedder_is_deterministic():
