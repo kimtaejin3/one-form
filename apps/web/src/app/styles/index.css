@@ -847,7 +847,13 @@
   color: var(--of-ink);
   background: var(--of-surface);
 }
-/* 자소서 허브 — 회사 선택 / 문항 목록 / 작성 패널 */
+/* 자소서 허브 — 진행 요약 / 회사 필터 / 문항 목록 / 작성 패널 */
+.of-essay-progress {
+  margin: 0;
+  font-family: var(--of-font-mono);
+  font-size: 13px;
+  color: var(--of-muted);
+}
 .of-essay-split {
   display: grid;
   grid-template-columns: minmax(240px, 320px) 1fr;
@@ -906,6 +912,19 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+.of-essay-item__who {
+  margin-right: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--of-muted);
+}
+.of-essay-item__preview {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--of-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .of-status {
   padding: 3px 9px;
   border-radius: 999px;
@@ -962,6 +981,17 @@
 .of-essay-count--over {
   color: var(--of-warn);
   font-weight: 600;
+}
+.of-essay-actions {
+  justify-content: flex-end;
+}
+.of-essay-done {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--of-muted);
+  cursor: pointer;
 }
 .of-essay-warn {
   font-size: 13px;

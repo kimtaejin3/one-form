@@ -1,7 +1,10 @@
 import type { KeyboardEvent } from 'react'
 
+/** 전체 문항을 보는 기본 필터. 회사 목록 앞에 끼워 넣어 같은 탭 목록으로 다룬다. */
+export const ALL_COMPANIES = '전체'
+
 /**
- * 회사 선택 탭. WAI-ARIA tabs 패턴 — 선택된 탭만 tabIndex 0(roving tabindex)이라
+ * 회사 필터 탭. WAI-ARIA tabs 패턴 — 선택된 탭만 tabIndex 0(roving tabindex)이라
  * Tab 한 번으로 들어와 ←/→로 회사를 옮긴다.
  */
 export default function CompanyTabs({
@@ -23,7 +26,7 @@ export default function CompanyTabs({
   }
 
   return (
-    <div className="job-filters" role="tablist" aria-label="회사 선택" onKeyDown={move}>
+    <div className="job-filters" role="tablist" aria-label="회사 필터" onKeyDown={move}>
       {companies.map((c) => (
         <button
           key={c}
