@@ -458,3 +458,34 @@ test('페이지가 많으면 첫·끝과 현재 주변만 남기고 말줄임한
   expect(screen.queryByRole('button', { name: '8페이지' })).toBeNull()
   expect(item('33번 문항은?')).toBeTruthy() // 5페이지 = 33~40
 })
+
+// 1페이지 리셋 네 경로(검색·유형·뷰·회사) 중 회사 변경만 못이 안 박혀 있었다.
+// 회사를 바꿨는데 페이지가 남아 있으면 문항 수가 다른 회사에서 빈 목록을 본다.
+test('회사를 바꾸면 1페이지로 리셋된다', async () => {
+  store = Array.from({ length: 24 }, (_, i) => ({
+    id: i + 1,
+    tag: '경험',
+    prompt: `${i + 1}번 문항은?`,
+    char_limit: 500,
+    answer: '',
+    status: '미작성',
+    companies: [
+      i < 12
+        ? { name: '먼저회사', deadline: '2026-07-30' }
+        : { name: '나중회사', deadline: '2026-08-01' },
+    ],
+  })) as unknown as typeof store
+  renderPage()
+  await waitFor(() => expect(items()).toHaveLength(8))
+
+  toCompanyView() // 마감 임박순 첫 회사(먼저회사) — 12문항 = 2페이지
+  fireEvent.click(screen.getByRole('button', { name: '2페이지' }))
+  expect(items()).toHaveLength(4)
+  expect(screen.getByRole('button', { name: '다음 페이지' })).toBeDisabled()
+
+  await pickCompany('나중회사')
+  expect(screen.getByRole('button', { name: '1페이지' })).toHaveAttribute('aria-current', 'page')
+  expect(screen.getByRole('button', { name: '이전 페이지' })).toBeDisabled()
+  expect(item('13번 문항은?')).toBeTruthy() // 나중회사 첫 문항
+  expect(items()).toHaveLength(8)
+})
