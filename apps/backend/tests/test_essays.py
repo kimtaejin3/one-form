@@ -1,17 +1,5 @@
 """답변 저장 — 저장→GET 반영, 없는 id 404, draft 응답 shape."""
 
-import pytest
-
-from app.essays import repository
-
-
-@pytest.fixture(autouse=True)
-def _clean_answers():
-    # 모듈-레벨 in-memory 저장소라 테스트 간 격리 필요.
-    repository._ANSWERS.clear()
-    yield
-    repository._ANSWERS.clear()
-
 
 def test_save_answer_reflected_in_list(client):
     saved = client.put(
