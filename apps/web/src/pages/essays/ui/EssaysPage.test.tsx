@@ -19,6 +19,10 @@ beforeEach(() => {
   }) as unknown as typeof fetch
 })
 
+function fetchUrls() {
+  return (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.map((c) => String(c[0]))
+}
+
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -57,6 +61,56 @@ test('AI 초안이 textarea에 들어가고 글자 수 초과를 경고한다', 
   fireEvent.click(screen.getByRole('button', { name: /늦은 마감/ }))
   fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '열두글자를넘기는본문입니다' } })
   expect(screen.getByText(/자 초과/)).toBeTruthy()
+})
+
+test('회사 탭은 ←/→로 이동하고 양끝에서 순환한다', async () => {
+  renderPage()
+  await screen.findByLabelText('자소서 본문')
+  const tablist = screen.getByRole('tablist')
+
+  fireEvent.keyDown(tablist, { key: 'ArrowRight' })
+  expect(screen.getByRole('tab', { name: '토스' })).toHaveAttribute('aria-selected', 'true')
+  expect(screen.getByRole('tab', { name: '토스' })).toHaveFocus()
+
+  // 마지막 탭에서 오른쪽 → 첫 탭으로 순환
+  fireEvent.keyDown(tablist, { key: 'ArrowRight' })
+  expect(screen.getByRole('tab', { name: '네이버' })).toHaveAttribute('aria-selected', 'true')
+  fireEvent.keyDown(tablist, { key: 'ArrowLeft' })
+  expect(screen.getByRole('tab', { name: '토스' })).toHaveAttribute('aria-selected', 'true')
+})
+
+// 재구조가 만든 데이터 소실 회귀(문항 전환 = 본문 초기화)를 못박는다.
+test('문항을 옮겼다 돌아와도 작성 중이던 본문이 유지된다', async () => {
+  renderPage()
+  fireEvent.change(await screen.findByLabelText('자소서 본문'), {
+    target: { value: '내가 쓴 소중한 본문' },
+  })
+
+  fireEvent.click(screen.getByRole('button', { name: /늦은 마감/ }))
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('') // 다른 문항은 자기 본문(빈 값)
+
+  fireEvent.click(screen.getByRole('button', { name: /이른 마감/ }))
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('내가 쓴 소중한 본문')
+})
+
+// jsdom은 confirm을 구현하지 않아 스텁 없이는 이 분기를 못 태운다 — 두 경로 모두 검증.
+test('작성 중 본문이 있으면 초안 생성 전에 덮어쓰기를 확인한다', async () => {
+  const confirmed = vi.spyOn(window, 'confirm').mockReturnValue(false)
+  renderPage()
+  fireEvent.change(await screen.findByLabelText('자소서 본문'), {
+    target: { value: '내가 쓴 소중한 본문' },
+  })
+
+  // 취소하면 요청도 안 나가고 본문도 그대로
+  fireEvent.click(screen.getByRole('button', { name: 'AI 초안 다시 생성' }))
+  expect(confirmed).toHaveBeenCalled()
+  expect(fetchUrls().some((u) => u.includes('/essays/draft'))).toBe(false)
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('내가 쓴 소중한 본문')
+
+  confirmed.mockReturnValue(true)
+  fireEvent.click(screen.getByRole('button', { name: 'AI 초안 다시 생성' }))
+  await waitFor(() => expect(screen.getByLabelText('자소서 본문')).toHaveValue('AI가 쓴 초안'))
+  confirmed.mockRestore()
 })
 
 // status → 클래스 매핑은 미지의 값을 조용히 'todo'로 흘려보낸다. 백엔드가 문구를 바꾸면

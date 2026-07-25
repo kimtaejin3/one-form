@@ -1,3 +1,12 @@
+/* 상태·경고색 — design-system tokens.css(브랜드 색)에 없는 web 전용 토큰 */
+:root {
+  --of-warn: #b91c1c;
+  --of-status-doing-bg: #fef3c7;
+  --of-status-doing-ink: #92400e;
+  --of-status-done-bg: #dcfce7;
+  --of-status-done-ink: #166534;
+}
+
 /* layout */
 .chrome {
   position: sticky;
@@ -908,12 +917,12 @@
   color: var(--of-muted);
 }
 .of-status--doing {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--of-status-doing-bg);
+  color: var(--of-status-doing-ink);
 }
 .of-status--done {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--of-status-done-bg);
+  color: var(--of-status-done-ink);
 }
 .of-essay-panel {
   display: flex;
@@ -951,11 +960,11 @@
   color: var(--of-faint);
 }
 .of-essay-count--over {
-  color: #b91c1c;
+  color: var(--of-warn);
   font-weight: 600;
 }
 .of-essay-warn {
   font-size: 13px;
   font-weight: 600;
-  color: #b91c1c;
+  color: var(--of-warn);
 }
