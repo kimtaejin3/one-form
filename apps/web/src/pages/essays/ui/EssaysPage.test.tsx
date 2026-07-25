@@ -58,3 +58,16 @@ test('AI 초안이 textarea에 들어가고 글자 수 초과를 경고한다', 
   fireEvent.change(screen.getByLabelText('자소서 본문'), { target: { value: '열두글자를넘기는본문입니다' } })
   expect(screen.getByText(/자 초과/)).toBeTruthy()
 })
+
+// status → 클래스 매핑은 미지의 값을 조용히 'todo'로 흘려보낸다. 백엔드가 문구를 바꾸면
+// 화면상 구분만 사라지고 아무것도 깨지지 않으므로 세 값 모두 못박아 둔다.
+test('status마다 다른 배지 클래스로 시각 구분된다', async () => {
+  renderPage()
+  await screen.findByLabelText('자소서 본문')
+
+  expect(screen.getByText('작성 중').className).toContain('of-status--doing')
+  expect(screen.getByText('미작성').className).toContain('of-status--todo')
+
+  fireEvent.click(screen.getByRole('tab', { name: '토스' }))
+  expect(screen.getByText('초안 완료').className).toContain('of-status--done')
+})
