@@ -2,11 +2,13 @@
 
 # ponytail: 인메모리 코사인(DB/pgvector 없음) — 요청마다 fetch한 N개만 임베딩해 비교한다.
 #   코퍼스가 커지면 pgvector로.
-# ponytail: LLM 보정은 1페이지(상위 size개)만 — page 2+는 임베딩 점수 + 소스 근거 그대로.
+# ponytail: 실 LLM은 비용 때문에 1페이지만 보정 — page 2+ 근거는 소스 그대로(§8, 키 준비 시).
+#   목 LLM은 공짜라 전 페이지를 보정해 근거가 실제 공고와 맞게 한다.
 # ponytail: 다중 소스는 concat만(중복 공고 병합 없음) — sources/selector.py 참고.
 """
 from app.ai.embedder import cosine, get_embedder
 from app.ai.llm import get_llm
+from app.core.config import settings
 from app.jobs.schemas import JobFeed
 from app.jobs.sources.selector import active_sources
 from app.profile.repository import get_profile
@@ -57,10 +59,12 @@ async def get_job_feed(
 
     start = (page - 1) * size
     llm = get_llm()
+    # 목 LLM은 공짜라 전 페이지 근거를 만든다. 실 LLM은 비용 때문에 1페이지만.
+    refine_all = settings.ANTHROPIC_API_KEY is None
     jobs = []
     for rate, j in scored[start:start + size]:
         reason = j["match_reason"]
-        if page == 1:  # 상위 K(=size)개만 LLM 보정·근거
+        if page == 1 or refine_all:
             rate, reason = await llm.refine(profile_text, _job_text(j), rate)
         jobs.append({
             "id": j["id"],
