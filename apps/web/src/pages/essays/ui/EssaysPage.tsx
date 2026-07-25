@@ -66,7 +66,8 @@ export default function EssaysPage() {
   const page = Math.min(pickedPage, totalPages)
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   // 고른 문항이 다른 페이지에 있어도 에디터는 그대로 둔다(작성 중 본문 보호).
-  const selected = list.find((q) => q.id === pickedId) ?? shown[0]
+  // 안 고른 기본 선택은 페이지 무관하게 목록 첫 문항으로 고정 — 페이지 넘겨도 에디터가 안 갈린다.
+  const selected = list.find((q) => q.id === (pickedId ?? list[0]?.id)) ?? shown[0]
 
   return (
     <div className="stack">
