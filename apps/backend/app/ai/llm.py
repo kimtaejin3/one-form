@@ -2,6 +2,7 @@
 
 목은 실 전송(httpx)을 모듈 로드 시 건드리지 않는다 — 키·네트워크 없이 CI 통과.
 """
+import json
 import re
 from typing import Protocol
 
@@ -99,7 +100,7 @@ class GeminiLlm:
     """
 
     URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-    MODEL = "gemini-2.0-flash"
+    MODEL = "gemini-flash-latest"  # -latest alias: 특정 버전 하드코딩이 폐기돼 404 나는 걸 피한다
 
     def __init__(self, api_key: str):
         self._api_key = api_key
@@ -122,16 +123,33 @@ class GeminiLlm:
                     params={"key": self._api_key},
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {"maxOutputTokens": 256},
+                        # 구조화 출력(JSON 스키마)으로 rate·reason을 강제 — 텍스트 형식 파싱은 취약해
+                        # 마크다운·형식 지시문 에코가 섞였다. 3.x flash는 thinking이 기본 on이라
+                        # 예산(사고+본문)을 넉넉히 줘야 JSON이 안 잘린다(thinkingBudget:0은 400).
+                        "generationConfig": {
+                            "maxOutputTokens": 2048,
+                            "responseMimeType": "application/json",
+                            "responseSchema": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "rate": {"type": "INTEGER"},
+                                    "reason": {"type": "STRING"},
+                                },
+                                "required": ["rate", "reason"],
+                            },
+                        },
                     },
                 )
                 res.raise_for_status()
                 text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception:  # 인증·네트워크·응답 형태 실패 — 근거 하나 때문에 피드가 죽으면 안 된다
-            text = ""
-        if not text.strip():
+                obj = json.loads(text)
+                rate = max(0, min(100, int(obj["rate"])))
+                reason = str(obj["reason"]).strip()
+                if not reason:
+                    raise ValueError("빈 근거")
+                return rate, reason
+        except Exception:  # 인증·네트워크·응답 형태·파싱 실패 — 근거 하나 때문에 피드가 죽으면 안 된다
             return await MockLlm().refine(profile_text, job_text, base_rate, matched)
-        return _parse(text, base_rate)
 
 
 def get_llm() -> Llm:
