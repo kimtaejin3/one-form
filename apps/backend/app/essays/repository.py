@@ -47,9 +47,14 @@ async def _load_ref() -> tuple[list[dict], list[dict]]:
         return _QUESTIONS, _COMPANIES
     async with sm() as s:
         qs = (await s.execute(select(EssayQuestion).order_by(EssayQuestion.id))).scalars().all()
-        cs = (await s.execute(select(EssayCompany).order_by(EssayCompany.name))).scalars().all()
+        cs = (await s.execute(select(EssayCompany))).scalars().all()
+        if not qs and not cs:  # DB 떠 있지만 미시드 → 목 폴백(다른 도메인과 동일 불변식)
+            return _QUESTIONS, _COMPANIES
         questions = [{"id": q.id, "tag": q.tag, "prompt": q.prompt, "char_limit": q.char_limit} for q in qs]
         companies = [{"name": c.name, "deadline": c.deadline, "question_ids": c.question_ids} for c in cs]
+        # 목 _COMPANIES 큐레이션 순서로 정렬 — DB엔 순서 정보가 없어 목 리스트 순서로 파리티 맞춤.
+        _order = {c["name"]: i for i, c in enumerate(_COMPANIES)}
+        companies.sort(key=lambda c: _order.get(c["name"], len(_order)))
         return questions, companies
 
 
