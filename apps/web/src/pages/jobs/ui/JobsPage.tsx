@@ -1,16 +1,23 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { Dropdown, Pagination } from '@one-form/design-system'
 import { JobCard, jobsQuery } from '@/entities/job'
 import { profileQuery } from '@/entities/profile'
-import { FilterSelect, Loading } from '@/shared/ui'
+import { Loading } from '@/shared/ui'
 
 // 페이지네이션은 매 변경마다 전체를 suspend시키면 UX가 나빠, useSuspenseQuery 대신
 // useQuery + keepPreviousData로 이전 목록을 유지한 채 갱신한다.
-const ROLE = ['백엔드', '프론트엔드', '풀스택', '데브옵스', '안드로이드', 'iOS', '데이터', 'ML']
-const EXPERIENCE = ['신입', '경력무관', '1년 이상', '3년 이상', '5년 이상']
-const EMPLOYMENT = ['정규직', '계약직', '인턴', '전환형인턴']
-const LOCATION = ['서울', '경기 판교', '부산', '제주', '원격']
+
+// 빈 값(= 전체)을 첫 옵션으로 둔 Dropdown 옵션 목록
+const opts = (label: string, values: string[]) => [
+  { value: '', label: `${label} 전체` },
+  ...values.map((v) => ({ value: v, label: v })),
+]
+const ROLE = opts('직무', ['백엔드', '프론트엔드', '풀스택', '데브옵스', '안드로이드', 'iOS', '데이터', 'ML'])
+const EXPERIENCE = opts('경력', ['신입', '경력무관', '1년 이상', '3년 이상', '5년 이상'])
+const EMPLOYMENT = opts('고용형태', ['정규직', '계약직', '인턴', '전환형인턴'])
+const LOCATION = opts('지역', ['서울', '경기 판교', '부산', '제주', '원격'])
 
 type Filters = { role: string; experience: string; employment: string; location: string }
 const EMPTY_FILTERS: Filters = { role: '', experience: '', employment: '', location: '' }
@@ -56,10 +63,10 @@ export default function JobsPage() {
       </span>
 
       <div className="job-filters">
-        <FilterSelect label="직무" value={filters.role} options={ROLE} onChange={(v) => setFilter('role', v)} />
-        <FilterSelect label="경력" value={filters.experience} options={EXPERIENCE} onChange={(v) => setFilter('experience', v)} />
-        <FilterSelect label="고용형태" value={filters.employment} options={EMPLOYMENT} onChange={(v) => setFilter('employment', v)} />
-        <FilterSelect label="지역" value={filters.location} options={LOCATION} onChange={(v) => setFilter('location', v)} />
+        <Dropdown label="직무" value={filters.role} options={ROLE} onChange={(v) => setFilter('role', v)} />
+        <Dropdown label="경력" value={filters.experience} options={EXPERIENCE} onChange={(v) => setFilter('experience', v)} />
+        <Dropdown label="고용형태" value={filters.employment} options={EMPLOYMENT} onChange={(v) => setFilter('employment', v)} />
+        <Dropdown label="지역" value={filters.location} options={LOCATION} onChange={(v) => setFilter('location', v)} />
       </div>
 
       {data.jobs.length === 0 ? (
@@ -72,34 +79,7 @@ export default function JobsPage() {
         </div>
       )}
 
-      <div className="pagination">
-        <button
-          className="page-btn"
-          disabled={page <= 1}
-          aria-label="이전 페이지"
-          onClick={() => setPage(page - 1)}
-        >
-          ‹
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-          <button
-            key={n}
-            className={`page-btn${n === data.page ? ' page-btn--active' : ''}`}
-            aria-current={n === data.page ? 'page' : undefined}
-            onClick={() => setPage(n)}
-          >
-            {n}
-          </button>
-        ))}
-        <button
-          className="page-btn"
-          disabled={page >= totalPages}
-          aria-label="다음 페이지"
-          onClick={() => setPage(page + 1)}
-        >
-          ›
-        </button>
-      </div>
+      <Pagination label="공고 목록 페이지" page={data.page} totalPages={totalPages} onChange={setPage} />
     </div>
   )
 }
