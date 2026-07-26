@@ -36,6 +36,15 @@ def _clean_answers():
     essays_repository._ANSWERS.clear()
 
 
+@pytest.fixture(autouse=True)
+def _clean_cache():
+    # refine 캐시 _MEM은 모듈-레벨 — 테스트 간 격리.
+    from app.jobs import cache
+    cache._MEM.clear()
+    yield
+    cache._MEM.clear()
+
+
 @pytest.fixture
 def client():
     return TestClient(app)
