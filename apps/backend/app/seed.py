@@ -6,6 +6,8 @@ import asyncio
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from app.activities.models import Activity
+from app.activities.repository import _ACTIVITIES
 from app.core.db import get_sessionmaker
 from app.essays import repository as essays_repo
 from app.essays.models import EssayCompany, EssayQuestion
@@ -56,6 +58,18 @@ async def seed_jobs(session) -> None:
         )
 
 
+async def seed_activities(session) -> None:
+    for a in _ACTIVITIES:
+        await session.execute(
+            pg_insert(Activity).values(
+                id=a["id"], name=a["name"], category=a["category"], organizer=a["organizer"],
+                period=a["period"], dday=a["dday"], fit=a["fit"],
+                expected_experience=a["expected_experience"],
+                fills_gap=a["fills_gap"], connections=a["connections"],
+            ).on_conflict_do_nothing(index_elements=["id"])
+        )
+
+
 async def main() -> None:
     sm = get_sessionmaker()
     if sm is None:
@@ -64,6 +78,7 @@ async def main() -> None:
         await seed_essays(session)
         await seed_profile(session)
         await seed_jobs(session)
+        await seed_activities(session)
         await session.commit()
     print("seed 완료")
 

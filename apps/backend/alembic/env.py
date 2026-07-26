@@ -11,6 +11,7 @@ import app.jobs.cache  # noqa: F401 — MatchCache를 Base.metadata에 등록
 import app.essays.models  # noqa: F401 — 모델을 Base.metadata에 등록
 import app.profile.models  # noqa: F401 — 모델을 Base.metadata에 등록
 import app.jobs.models  # noqa: F401 — 모델을 Base.metadata에 등록
+import app.activities.models  # noqa: F401 — 모델을 Base.metadata에 등록
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

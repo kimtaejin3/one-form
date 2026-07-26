@@ -1,4 +1,7 @@
-from app.core.mock import mock
+from sqlalchemy import select
+
+from app.activities.models import Activity
+from app.core.db import get_sessionmaker
 
 # ponytail: 목 — 실제 크롤링 대신 현실적인 활동 20건을 큐레이션.
 _ACTIVITIES = [
@@ -30,4 +33,17 @@ _ACTIVITIES = [
 
 
 async def list_activities():
-    return await mock(_ACTIVITIES)
+    sm = get_sessionmaker()
+    if sm is None:
+        return _ACTIVITIES
+    async with sm() as s:
+        rows = (await s.execute(select(Activity).order_by(Activity.id))).scalars().all()
+        if not rows:
+            return _ACTIVITIES
+        return [
+            {"id": r.id, "name": r.name, "category": r.category, "organizer": r.organizer,
+             "period": r.period, "dday": r.dday, "fit": r.fit,
+             "expected_experience": r.expected_experience,
+             "fills_gap": r.fills_gap, "connections": r.connections}
+            for r in rows
+        ]
