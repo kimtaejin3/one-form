@@ -25,6 +25,7 @@ def _no_live_keys(monkeypatch):
     for key in _API_KEYS:
         monkeypatch.setattr(settings, key, None)
     monkeypatch.setattr(settings, "EMBEDDING_PROVIDER", None)  # 임베더도 자동→목으로
+    monkeypatch.setattr(settings, "DATABASE_URL", None)  # 캐시도 인메모리 폴백으로
 
 
 @pytest.fixture(autouse=True)

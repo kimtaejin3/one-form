@@ -15,5 +15,8 @@ class Settings(BaseSettings):
     # 임베더 명시 선택: "voyage" | "gemini" | "mock". 미지정(None)이면 키 있는 것 자동.
     EMBEDDING_PROVIDER: str | None = None
 
+    # DB 연결 문자열. 있으면 Postgres 캐시, 없으면 인메모리 폴백.
+    DATABASE_URL: str | None = None
+
 
 settings = Settings()
