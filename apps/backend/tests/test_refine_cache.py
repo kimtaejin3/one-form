@@ -23,3 +23,12 @@ def test_get_set_roundtrip_in_memory():
     assert asyncio.run(cache.get("k")) is None
     asyncio.run(cache.set("k", 77, "이유"))
     assert asyncio.run(cache.get("k")) == (77, "이유")
+
+
+def test_bad_driver_url_degrades_to_miss(monkeypatch):
+    from app.core.config import settings
+
+    # 동기 드라이버 URL → create_async_engine이 즉시 예외를 던지는 케이스
+    monkeypatch.setattr(settings, "DATABASE_URL", "postgresql://u@localhost/x")
+    assert asyncio.run(cache.get("k")) is None   # 예외 대신 미스
+    asyncio.run(cache.set("k", 1, "r"))          # 예외 없이 노옵

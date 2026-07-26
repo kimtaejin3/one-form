@@ -38,10 +38,10 @@ def cache_key(model_id: str, profile_text: str, job_text: str) -> str:
 
 
 async def get(key: str) -> tuple[int, str] | None:
-    sm = get_sessionmaker()
-    if sm is None:
-        return _MEM.get(key)
     try:
+        sm = get_sessionmaker()
+        if sm is None:
+            return _MEM.get(key)
         async with sm() as session:
             row = await session.get(MatchCache, key)
             return (row.rate, row.reason) if row else None
@@ -50,11 +50,11 @@ async def get(key: str) -> tuple[int, str] | None:
 
 
 async def set(key: str, rate: int, reason: str) -> None:
-    sm = get_sessionmaker()
-    if sm is None:
-        _MEM[key] = (rate, reason)
-        return
     try:
+        sm = get_sessionmaker()
+        if sm is None:
+            _MEM[key] = (rate, reason)
+            return
         async with sm() as session:
             stmt = (
                 pg_insert(MatchCache)
