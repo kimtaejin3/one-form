@@ -1,10 +1,10 @@
 /* 상태·경고색 — design-system tokens.css(브랜드 색)에 없는 web 전용 토큰 */
 :root {
-  --of-warn: #b91c1c;
-  --of-status-doing-bg: #fef3c7;
-  --of-status-doing-ink: #92400e;
-  --of-status-done-bg: #dcfce7;
-  --of-status-done-ink: #166534;
+  --of-warn: light-dark(#b91c1c, #f87171);
+  --of-status-doing-bg: light-dark(#fef3c7, #3b2f0f);
+  --of-status-doing-ink: light-dark(#92400e, #fcd34d);
+  --of-status-done-bg: light-dark(#dcfce7, #10331f);
+  --of-status-done-ink: light-dark(#166534, #86efac);
 }
 
 /* layout */
@@ -12,7 +12,7 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(251, 252, 254, 0.85);
+  background: color-mix(in srgb, var(--of-bg) 85%, transparent);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--of-border);
 }
@@ -196,7 +196,14 @@
   font-weight: 800;
   font-size: 16px;
   letter-spacing: 0.02em;
-  background: linear-gradient(90deg, #294689, #3d5aa8, #6c7ce7, #3d5aa8, #294689);
+  background: linear-gradient(
+    90deg,
+    light-dark(#294689, #6c7ce7),
+    light-dark(#3d5aa8, #98a4f2),
+    light-dark(#6c7ce7, #d7dcfb),
+    light-dark(#3d5aa8, #98a4f2),
+    light-dark(#294689, #6c7ce7)
+  );
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;

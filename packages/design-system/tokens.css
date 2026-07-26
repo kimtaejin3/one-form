@@ -1,19 +1,22 @@
 /* one-form design tokens — 랜딩(apps/landing/index.html) 디자인에서 추출 */
+/* 색은 light-dark(라이트, 다크). 기본은 OS 설정, [data-theme]으로 강제 override */
 :root {
+  color-scheme: light dark;
+
   /* color */
-  --of-bg: #fbfcfe;
-  --of-surface: #ffffff;
-  --of-surface-alt: #f4f7fc;
-  --of-accent-soft: #ececfb;
-  --of-ink: #0f1e34;
-  --of-body: #5b6b82;
-  --of-muted: #8593a8;
-  --of-faint: #9aa8bf;
-  --of-primary: #6c7ce7;
-  --of-primary-strong: #5866db;
-  --of-selection: #dcdef7;
-  --of-border: #e6edf8;
-  --of-border-strong: #dbe4f0;
+  --of-bg: light-dark(#fbfcfe, #0b111e);
+  --of-surface: light-dark(#ffffff, #131a2a);
+  --of-surface-alt: light-dark(#f4f7fc, #1b2334);
+  --of-accent-soft: light-dark(#ececfb, #262c4d);
+  --of-ink: light-dark(#0f1e34, #eaf0fa);
+  --of-body: light-dark(#5b6b82, #a7b4c8);
+  --of-muted: light-dark(#8593a8, #8290a5);
+  --of-faint: light-dark(#9aa8bf, #6f7d94);
+  --of-primary: light-dark(#6c7ce7, #8a97ee);
+  --of-primary-strong: light-dark(#5866db, #a3aef4);
+  --of-selection: light-dark(#dcdef7, #333a68);
+  --of-border: light-dark(#e6edf8, #232c3f);
+  --of-border-strong: light-dark(#dbe4f0, #303a52);
 
   /* typography */
   --of-font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -24,4 +27,11 @@
   --of-radius-md: 8px;
   --of-radius-lg: 12px;
   --of-radius-xl: 16px;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }

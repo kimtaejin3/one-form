@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { Icon } from '@/shared/ui'
+import { Icon, ThemeToggle } from '@/shared/ui'
 import TabBar from './TabBar'
 import NotificationBell from './NotificationBell'
 
@@ -15,6 +15,7 @@ export default function Header() {
           <input type="search" placeholder="기업·공고 검색" aria-label="기업·공고 검색" />
         </div>
         <div className="topbar-right">
+          <ThemeToggle />
           <NotificationBell />
           <NavLink to="/settings" className="icon-btn" title="설정">
             <Icon name="settings" />

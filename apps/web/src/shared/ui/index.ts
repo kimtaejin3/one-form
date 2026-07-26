@@ -1,4 +1,5 @@
 export { Icon, type IconName } from './Icon'
+export { ThemeToggle } from './ThemeToggle'
 export { default as Loading } from './Loading'
 export { default as AsyncBoundary } from './AsyncBoundary'
 export { default as Dropzone } from './Dropzone'
