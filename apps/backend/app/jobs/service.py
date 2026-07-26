@@ -10,7 +10,7 @@ import asyncio
 
 from app.ai.embedder import cosine, get_embedder
 from app.ai.llm import MockLlm, get_llm
-from app.jobs import repository
+from app.jobs import cache, repository
 from app.jobs.schemas import JobDetail, JobFeed, MatchAnalysis
 from app.jobs.seed import ROLES
 from app.jobs.sources.selector import active_sources
@@ -139,12 +139,26 @@ async def get_job_feed(
     # 목 LLM은 공짜라 전 페이지 근거를 만든다. 실 LLM(Gemini·Anthropic)은 비용 때문에 1페이지만.
     refine_all = isinstance(llm, MockLlm)
 
+    mid = cache.model_id(llm)
+
     async def _resolve(rate: int, j: dict) -> dict:
         reason = j["match_reason"]
         if page == 1 or refine_all:
-            rate, reason = await llm.refine(
-                profile_text, _job_text(j), rate, _matched_skills(profile, j)
-            )
+            if refine_all:  # 목 LLM — 공짜·결정적, 캐시 안 씀
+                rate, reason = await llm.refine(
+                    profile_text, _job_text(j), rate, _matched_skills(profile, j)
+                )
+            else:  # 실 LLM — 캐시-어사이드
+                job_text = _job_text(j)
+                key = cache.cache_key(mid, profile_text, job_text)
+                hit = await cache.get(key)
+                if hit is not None:
+                    rate, reason = hit
+                else:
+                    rate, reason = await llm.refine(
+                        profile_text, job_text, rate, _matched_skills(profile, j)
+                    )
+                    await cache.set(key, rate, reason)
         return {
             "id": j["id"],
             "company": j["company"],
