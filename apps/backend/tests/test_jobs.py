@@ -1,5 +1,6 @@
 """jobs 도메인 — 유일하게 로직(필터·페이지네이션·상세)이 있어 통합 테스트의 핵심."""
 from app.jobs import repository
+from app.profile.repository import _PROFILE
 
 JOB_FIELDS = {
     "id", "company", "domain", "conditions", "title", "tags", "dday", "source",
@@ -116,3 +117,38 @@ def test_match_analysis_splits_detail_skills(client):
     assert len({tuple(d["requirements"]) for d in details}) == len(details)
     assert len({tuple(d["match_analysis"]["missing_skills"]) for d in details}) == len(details)
     assert set().union(*(set(d["requirements"]) for d in details)) & PROFILE_LACKS
+
+
+# 프로필에 없는 게 확실한 스킬 — 있으면 이 테스트의 전제가 무너지므로 아래서 먼저 검사한다.
+PROFILE_NEVER_HAS = {
+    "Swift", "SwiftUI", "Kotlin", "Android SDK", "Java", "Spring Boot",
+    "SSR(Next.js)", "웹 접근성(a11y)", "웹뷰(WebView) 연동",
+}
+
+
+def test_matched_missing_follow_profile_stack(client):
+    """전 40건 불변식 — 프로필이 가진 스킬은 충족, 없는 스킬은 부족.
+
+    위 프론트엔드 테스트는 리터럴 5건만 본다. 표기가 한쪽에서만 바뀌면
+    (프로필 "상태관리(TanStack Query)" ↔ 요구 "상태관리(React Query)") 충족이 부족으로
+    통째로 쓸려 나가는데, 공고별 assert는 교집합이 비어도 조용히 통과한다 —
+    그래서 "겹치는 공고 수"까지 같이 못박는다.
+    """
+    stack = {s for c in _PROFILE["careers"] for s in c["stack"]}
+    stack |= {s for p in _PROFILE["projects"] for s in p["stack"]}
+    assert not (PROFILE_NEVER_HAS & stack)  # 전제: 목 프로필은 이것들을 안 가졌다
+
+    overlapping = 0
+    for job in repository.all_jobs():
+        analysis = client.get(f"/api/jobs/{job['id']}").json()["match_analysis"]
+        matched, missing = set(analysis["matched_skills"]), set(analysis["missing_skills"])
+        required = set(job["requirements"])
+        assert stack & required <= matched, job["id"]  # 보유 → 충족
+        assert PROFILE_NEVER_HAS & required <= missing, job["id"]  # 미보유 → 부족
+        assert matched | missing == required and not (matched & missing), job["id"]
+        assert missing, job["id"]  # 전부 충족인 공고는 없다 — 있으면 세부화가 무의미
+        overlapping += bool(matched)
+
+    # 모바일 10건(Swift·Kotlin — 프로필과 접점 0)을 뺀 30건은 반드시 겹친다.
+    # 표기가 어긋나면 여기가 0에 수렴한다.
+    assert overlapping == 30
