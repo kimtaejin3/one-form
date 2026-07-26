@@ -1,9 +1,13 @@
-"""jobs 도메인 — 유일하게 로직(필터·페이지네이션)이 있어 통합 테스트의 핵심."""
+"""jobs 도메인 — 유일하게 로직(필터·페이지네이션·상세)이 있어 통합 테스트의 핵심."""
 from app.jobs import repository
 
 JOB_FIELDS = {
     "id", "company", "domain", "conditions", "title", "tags", "dday", "source",
     "match_rate", "match_reason",
+}
+DETAIL_FIELDS = JOB_FIELDS | {
+    "description", "responsibilities", "requirements", "preferred", "company_info",
+    "match_analysis",
 }
 
 
@@ -45,3 +49,33 @@ def test_combined_filters_reduce_further(client):
         "/api/jobs", params={"role": "백엔드", "employment": "정규직"}
     ).json()["total"]
     assert combined <= role_only
+
+
+# --- 상세 (GET /api/jobs/{id}) ---
+
+def test_job_detail_shape(client):
+    body = client.get("/api/jobs/1").json()
+    assert DETAIL_FIELDS <= body.keys()
+    assert body["id"] == 1
+    assert body["description"] and body["company_info"]
+    assert body["responsibilities"] and body["requirements"] and body["preferred"]
+    assert body["match_reason"] and 0 <= body["match_rate"] <= 100
+
+
+def test_job_detail_unknown_id_404(client):
+    assert client.get("/api/jobs/9999").status_code == 404
+
+
+def test_job_detail_match_analysis_splits_requirements(client):
+    """매칭 분석 = 요구 스킬을 프로필 스택 기준으로 충족/부족으로 가른다(프론트엔드 공고 기준)."""
+    job_id = client.get("/api/jobs", params={"role": "프론트엔드"}).json()["jobs"][0]["id"]
+    body = client.get(f"/api/jobs/{job_id}").json()
+    analysis = body["match_analysis"]
+    assert analysis.keys() == {"matched_skills", "missing_skills"}
+    # 목 프로필은 React·TypeScript 보유, HTML/CSS는 스택에 없다.
+    assert {"React", "TypeScript"} <= set(analysis["matched_skills"])
+    assert "HTML/CSS" in analysis["missing_skills"]
+    # 충족 + 부족 = 요구 스킬 전체(누락·중복 없음).
+    assert sorted(analysis["matched_skills"] + analysis["missing_skills"]) == sorted(
+        body["requirements"]
+    )

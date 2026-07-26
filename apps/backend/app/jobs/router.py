@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.jobs import service
-from app.jobs.schemas import JobFeed
+from app.jobs.schemas import JobDetail, JobFeed
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
@@ -16,3 +16,11 @@ async def list_jobs(
     location: str = "",
 ):
     return await service.get_job_feed(page, size, role, experience, employment, location)
+
+
+@router.get("/{job_id}", response_model=JobDetail)
+async def get_job(job_id: int):
+    detail = await service.get_job_detail(job_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="공고를 찾을 수 없습니다")
+    return detail

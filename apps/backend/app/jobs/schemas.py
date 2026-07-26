@@ -14,6 +14,20 @@ class Job(BaseModel):
     match_reason: str
 
 
+class MatchAnalysis(BaseModel):
+    matched_skills: list[str]  # 요구 스킬 ∩ 프로필 스택
+    missing_skills: list[str]  # 요구 스킬 − 프로필 스택
+
+
+class JobDetail(Job):
+    description: str
+    responsibilities: list[str]
+    requirements: list[str]
+    preferred: list[str]
+    company_info: str
+    match_analysis: MatchAnalysis
+
+
 class JobFeed(BaseModel):
     role: str
     total: int

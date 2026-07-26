@@ -9,7 +9,8 @@
 from app.ai.embedder import cosine, get_embedder
 from app.ai.llm import get_llm
 from app.core.config import settings
-from app.jobs.schemas import JobFeed
+from app.jobs import repository
+from app.jobs.schemas import JobDetail, JobFeed, MatchAnalysis
 from app.jobs.sources.selector import active_sources
 from app.profile.repository import get_profile
 
@@ -26,8 +27,60 @@ def _profile_text(profile: dict) -> str:
 
 
 def _job_text(job: dict) -> str:
-    return " ".join(
-        [job["title"], job["role_category"], *job["tags"], job["experience"], job["employment"]]
+    # 상세(주요 업무·요건·소개)까지 넣어야 공고별 임베딩이 구분된다 — 태그만으론 같은 직무가 동점.
+    return " ".join([
+        job["title"], job["role_category"], *job["tags"], job["experience"], job["employment"],
+        job.get("description", ""), *job.get("responsibilities", []),
+        *job.get("requirements", []), *job.get("preferred", []),
+    ])
+
+
+def _profile_stack(profile: dict) -> list[str]:
+    stacks = [s for c in profile["careers"] for s in c["stack"]]
+    stacks += [s for p in profile["projects"] for s in p["stack"]]
+    return stacks
+
+
+def _match_analysis(profile: dict, requirements: list[str]) -> MatchAnalysis:
+    # ponytail: 부분 문자열 매칭 — "RDBMS(MySQL/PostgreSQL)"에 프로필의 PostgreSQL이 걸리게.
+    #   스킬 동의어(사전)까지는 안 간다.
+    stack = [s.lower() for s in _profile_stack(profile)]
+    matched = [r for r in requirements if any(s in r.lower() for s in stack)]
+    return MatchAnalysis(
+        matched_skills=matched,
+        missing_skills=[r for r in requirements if r not in matched],
+    )
+
+
+async def get_job_detail(job_id: int) -> JobDetail | None:
+    """공고 상세 + 프로필 대비 매칭 분석. 없는 id·프로필 미등록이면 None(라우터가 404)."""
+    profile = await get_profile()
+    job = next((j for j in repository.all_jobs() if j["id"] == job_id), None)
+    if job is None or not profile["registered"]:
+        return None  # 프로필 미등록이면 피드와 동일하게 미노출
+
+    profile_text = _profile_text(profile)
+    job_text = _job_text(job)
+    vectors = await get_embedder().embed([profile_text, job_text])
+    rate = round(max(0.0, min(1.0, cosine(vectors[0], vectors[1]))) * 100)
+    rate, reason = await get_llm().refine(profile_text, job_text, rate)
+    return JobDetail(
+        id=job["id"],
+        company=job["company"],
+        domain=job["domain"],
+        conditions=f"{job['experience']} · {job['employment']} · {job['location']}",
+        title=job["title"],
+        tags=job["tags"],
+        dday=job["dday"],
+        source=job["source"],
+        match_rate=rate,
+        match_reason=reason,
+        description=job["description"],
+        responsibilities=job["responsibilities"],
+        requirements=job["requirements"],
+        preferred=job["preferred"],
+        company_info=job["company_info"],
+        match_analysis=_match_analysis(profile, job["requirements"]),
     )
 
 

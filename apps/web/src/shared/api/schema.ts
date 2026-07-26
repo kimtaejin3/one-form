@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Job */
+        get: operations["get_job_api_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile": {
         parameters: {
             query?: never;
@@ -376,6 +393,40 @@ export interface components {
             /** Match Reason */
             match_reason: string;
         };
+        /** JobDetail */
+        JobDetail: {
+            /** Id */
+            id: number;
+            /** Company */
+            company: string;
+            /** Domain */
+            domain: string;
+            /** Conditions */
+            conditions: string;
+            /** Title */
+            title: string;
+            /** Tags */
+            tags: string[];
+            /** Dday */
+            dday: string;
+            /** Source */
+            source: string;
+            /** Match Rate */
+            match_rate: number;
+            /** Match Reason */
+            match_reason: string;
+            /** Description */
+            description: string;
+            /** Responsibilities */
+            responsibilities: string[];
+            /** Requirements */
+            requirements: string[];
+            /** Preferred */
+            preferred: string[];
+            /** Company Info */
+            company_info: string;
+            match_analysis: components["schemas"]["MatchAnalysis"];
+        };
         /** JobFeed */
         JobFeed: {
             /** Role */
@@ -406,6 +457,13 @@ export interface components {
             label: string;
             /** Url */
             url: string;
+        };
+        /** MatchAnalysis */
+        MatchAnalysis: {
+            /** Matched Skills */
+            matched_skills: string[];
+            /** Missing Skills */
+            missing_skills: string[];
         };
         /** Notification */
         Notification: {
@@ -591,6 +649,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobFeed"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_job_api_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobDetail"];
                 };
             };
             /** @description Validation Error */

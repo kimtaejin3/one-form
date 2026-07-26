@@ -132,3 +132,4 @@ def test_unregistered_profile_returns_empty_feed(client, monkeypatch):
     monkeypatch.setattr(profile_repository, "_PROFILE", profile)
     body = client.get("/api/jobs").json()
     assert body["total"] == 0 and body["jobs"] == []
+    assert client.get("/api/jobs/1").status_code == 404  # 상세도 같은 게이트
