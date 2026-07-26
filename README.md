@@ -40,18 +40,17 @@
 
 <table>
 <tr>
-<td width="50%"><b>마스터 프로필</b><br><img src="docs/screenshots/03-profile.png" alt="마스터 프로필"></td>
-<td width="50%"><b>기업 인텔리전스</b><br><img src="docs/screenshots/04-companies.png" alt="기업 인텔리전스"></td>
+<td width="50%"><b>마스터 프로필</b><br><img src="docs/screenshots/03-profile.png" width="100%" alt="마스터 프로필"></td>
+<td width="50%"><b>기업 인텔리전스</b><br><img src="docs/screenshots/04-companies.png" width="100%" alt="기업 인텔리전스"></td>
 </tr>
 <tr>
-<td><b>자소서 허브</b><br><img src="docs/screenshots/05-essays.png" alt="자소서 허브"></td>
-<td><b>양식 변환</b><br><img src="docs/screenshots/06-forms.png" alt="양식 변환"></td>
-</tr>
-<tr>
-<td><b>활동 추천</b><br><img src="docs/screenshots/07-activities.png" alt="활동 추천"></td>
-<td></td>
+<td width="50%"><b>자소서 허브</b><br><img src="docs/screenshots/05-essays.png" width="100%" alt="자소서 허브"></td>
+<td width="50%"><b>활동 추천</b><br><img src="docs/screenshots/07-activities.png" width="100%" alt="활동 추천"></td>
 </tr>
 </table>
+
+**양식 변환**
+![양식 변환](docs/screenshots/06-forms.png)
 
 > 스크린샷은 목(mock) 데이터 기준. 채용공고 매칭은 키를 넣으면 실 임베딩·LLM으로 동작한다(아래 [AI 구현](#ai-구현-임베딩--llm) 참고).
 
