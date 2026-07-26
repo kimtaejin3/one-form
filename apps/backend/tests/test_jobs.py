@@ -1,4 +1,5 @@
 """jobs 도메인 — 유일하게 로직(필터·페이지네이션)이 있어 통합 테스트의 핵심."""
+from app.jobs import repository
 
 JOB_FIELDS = {
     "id", "company", "domain", "conditions", "title", "tags", "dday", "source",
@@ -11,9 +12,18 @@ def test_feed_shape_and_size(client):
     assert r.status_code == 200
     body = r.json()
     assert {"role", "total", "page", "size", "jobs"} <= body.keys()
-    assert body["total"] == 100  # 필터 없으면 전체 100건
+    assert body["total"] == 40  # 필터 없으면 전체 40건 (회사 20 × 직무 2)
     assert len(body["jobs"]) == 3
     assert JOB_FIELDS <= body["jobs"][0].keys()  # 프론트 계약 필드 보존
+
+
+def test_mock_jobs_are_unique_and_in_seoul():
+    """§2 목 재정비 — (회사×직무) 중복 없음, 전부 서울, 8직무가 모두 등장."""
+    jobs = repository.all_jobs()
+    pairs = [(j["company"], j["role_category"]) for j in jobs]
+    assert len(pairs) == len(set(pairs)) == 40
+    assert {j["location"] for j in jobs} == {"서울"}
+    assert len({j["role_category"] for j in jobs}) == 8
 
 
 def test_second_page_differs(client):

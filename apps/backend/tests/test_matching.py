@@ -67,8 +67,9 @@ def test_pipeline_ranks_profile_relevant_jobs_on_top(client, monkeypatch):
         "projects": [],
     }
     monkeypatch.setattr(profile_repository, "_PROFILE", ios_profile)
-    jobs = client.get("/api/jobs?page=1&size=5").json()["jobs"]
-    assert all("iOS" in j["title"] for j in jobs), [j["title"] for j in jobs]
+    titles = [j["title"] for j in client.get("/api/jobs?page=1&size=7").json()["jobs"]]
+    # 목 공고 40건 중 iOS는 5건 — 전부 상위 7위 안에 들어와야 한다.
+    assert sum("iOS 개발자" in t for t in titles) == 5, titles
 
 
 # --- (b) 키 게이팅: 키 없으면 목, 실 전송 import 없이 통과 ---

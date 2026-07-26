@@ -1,5 +1,7 @@
-# ponytail: 목 — 실제 크롤링(§4.4/§4.5) 대신 현실적인 공고 100개를 생성.
+# ponytail: 목 — 실제 크롤링(§4.4/§4.5) 대신 (회사 × 직무) 조합으로 유니크 공고를 생성.
 # 실제 구현 시 all_jobs()를 pgvector 검색 쿼리로 교체.
+from app.jobs.seed import COMPANIES, ROLES
+
 _COMPANIES = [
     ("네이버", "navercorp.com"), ("카카오", "kakaocorp.com"), ("토스", "toss.im"),
     ("쿠팡", "coupang.com"), ("라인", "line.me"), ("당근", "daangn.com"),
@@ -19,9 +21,9 @@ _ROLES = [
     ("데이터", "데이터 엔지니어", ["Spark", "Airflow", "Python"]),
     ("ML", "ML 엔지니어", ["PyTorch", "MLOps", "Python"]),
 ]
+_ROLES_PER_COMPANY = 2  # 회사당 2직무 로테이션 → 20 × 2 = 40건, 8직무가 각 5회 등장
 _EXPERIENCE = ["신입", "경력무관", "1년 이상", "3년 이상", "5년 이상"]
 _EMPLOYMENT = ["정규직", "계약직", "인턴", "전환형인턴"]
-_LOCATION = ["서울", "경기 판교", "부산", "제주", "원격"]
 _SOURCE = ["자사 채용", "원티드", "사람인", "잡코리아", "링크드인"]
 _MATCH = [
     "실시간 동기화로 쌓은 대용량 처리 경험이 이 직무와 잘 맞아요",
@@ -33,29 +35,39 @@ _MATCH = [
 
 
 def _build_jobs():
+    """유니크 (회사 × 직무), 전부 서울. 요구 스킬 = 직무 템플릿 + 회사 강조 스킬(조합마다 다름)."""
     jobs = []
-    for i in range(100):
-        company, domain = _COMPANIES[i % len(_COMPANIES)]
-        role_cat, role_title, tags = _ROLES[i % len(_ROLES)]
-        experience = _EXPERIENCE[i % len(_EXPERIENCE)]
-        employment = _EMPLOYMENT[(i // 2) % len(_EMPLOYMENT)]
-        location = _LOCATION[(i // 3) % len(_LOCATION)]
-        source = _SOURCE[i % len(_SOURCE)]
-        dday = "상시" if i % 4 == 0 else f"D-{(i % 25) + 1}"
-        jobs.append({
-            "id": i + 1,
-            "company": company,
-            "domain": domain,
-            "role_category": role_cat,
-            "title": f"[{company}] {role_title}" + (" (신입)" if experience == "신입" else ""),
-            "tags": tags,
-            "experience": experience,
-            "employment": employment,
-            "location": location,
-            "dday": dday,
-            "source": source,
-            "match_reason": _MATCH[i % len(_MATCH)],
-        })
+    for company_index, (company, domain) in enumerate(_COMPANIES):
+        emphasis_skills = COMPANIES[company]["skills"]
+        for slot in range(_ROLES_PER_COMPANY):
+            i = company_index * _ROLES_PER_COMPANY + slot
+            role_cat, role_title, tags = _ROLES[i % len(_ROLES)]
+            role = ROLES[role_cat]
+            # 회사 강조 스킬 2개를 직무별로 어긋나게 집어 (회사, 직무)마다 요구/우대가 달라진다.
+            required_skill = emphasis_skills[i % len(emphasis_skills)]
+            preferred_skill = emphasis_skills[(i + 1) % len(emphasis_skills)]
+            jobs.append({
+                "id": i + 1,
+                "company": company,
+                "domain": domain,
+                "role_category": role_cat,
+                "title": f"[{company}] {role_title} — {required_skill}",
+                "tags": tags + [required_skill],
+                "experience": _EXPERIENCE[i % len(_EXPERIENCE)],
+                "employment": _EMPLOYMENT[(i // 2) % len(_EMPLOYMENT)],
+                "location": "서울",
+                "dday": "상시" if i % 4 == 0 else f"D-{(i % 25) + 1}",
+                "source": _SOURCE[i % len(_SOURCE)],
+                "match_reason": _MATCH[i % len(_MATCH)],
+                "description": (
+                    f"{company}에서 {required_skill} 영역을 맡을 {role_title}를 찾습니다. "
+                    f"{COMPANIES[company]['info']}"
+                ),
+                "responsibilities": role["responsibilities"] + [f"{required_skill} 관련 과제 설계·개선"],
+                "requirements": role["requirements"] + [f"{required_skill} 경험"],
+                "preferred": role["preferred"] + [f"{preferred_skill} 경험"],
+                "company_info": COMPANIES[company]["info"],
+            })
     return jobs
 
 
