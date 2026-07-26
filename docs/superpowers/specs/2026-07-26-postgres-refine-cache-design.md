@@ -27,8 +27,10 @@ app/core/config.py    # + DATABASE_URL: str | None = None
 app/jobs/cache.py     # refine 캐시 리포지토리: get(key) / set(key, rate, reason)
 app/jobs/service.py   # refine 루프에서 캐시 조회·저장 (수정)
 alembic/, alembic.ini # 마이그레이션 (match_cache 생성)
-docker-compose.yml    # (선택) 로컬 postgres:16 — 로컬 pg 있으면 불필요
 ```
+
+DB 프로세스는 **로컬 네이티브 pg**로 간다(파일 안 만듦). 나중에 컨테이너/pod로 옮기려면
+`DATABASE_URL`만 바꾸면 되고 코드는 동일 — 이 스펙 밖.
 
 캐시는 jobs 도메인이 소비하므로 `app/jobs/cache.py`. DB 엔진·세션은 후속 도메인도 공유하도록
 `app/core/db.py`에 둔다.
@@ -81,9 +83,8 @@ docker-compose.yml    # (선택) 로컬 postgres:16 — 로컬 pg 있으면 불�
 
 ## 로컬 구동
 
-- 로컬 pg 있음: `.env`에 `DATABASE_URL=postgresql+asyncpg://<user>@localhost/oneform`,
-  `createdb oneform`, `alembic upgrade head`.
-- 또는 docker-compose(postgres:16) 올려 같은 URL로 연결. 둘 중 택1, 코드는 동일.
+- 로컬 네이티브 pg 사용: `createdb oneform` → `.env`에
+  `DATABASE_URL=postgresql+asyncpg://<user>@localhost/oneform` → `alembic upgrade head`.
 - `.env.example`에 `DATABASE_URL=` 주석과 함께 추가.
 
 ## 테스트
