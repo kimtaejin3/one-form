@@ -66,6 +66,18 @@ def test_job_detail_unknown_id_404(client):
     assert client.get("/api/jobs/9999").status_code == 404
 
 
+def test_detail_match_rate_agrees_with_feed(client):
+    """카드에 뜬 매칭률·근거가 상세에서 그대로여야 한다 — 두 경로가 같은 텍스트로 계산하는지.
+
+    피드는 소스(_job_text)로, 상세는 repository로 각각 계산한다. 한쪽만 상세를 텍스트에
+    넣거나 LLM 보정을 건너뛰면 같은 공고가 목록 77% / 상세 62%로 갈린다.
+    """
+    for job in client.get("/api/jobs?page=1&size=5").json()["jobs"]:
+        detail = client.get(f"/api/jobs/{job['id']}").json()
+        assert detail["match_rate"] == job["match_rate"], job["id"]
+        assert detail["match_reason"] == job["match_reason"], job["id"]
+
+
 def test_job_detail_match_analysis_splits_requirements(client):
     """매칭 분석 = 요구 스킬을 프로필 스택 기준으로 충족/부족으로 가른다(프론트엔드 공고 기준)."""
     job_id = client.get("/api/jobs", params={"role": "프론트엔드"}).json()["jobs"][0]["id"]
