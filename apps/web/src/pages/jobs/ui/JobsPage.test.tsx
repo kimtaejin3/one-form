@@ -61,7 +61,8 @@ test('직무 필터를 바꾸면 role 파라미터가 인코딩되어 page=1로 
   renderPage()
   await screen.findByText('[네이버] 백엔드 개발자')
 
-  fireEvent.change(screen.getByLabelText('직무'), { target: { value: '백엔드' } })
+  fireEvent.click(screen.getByRole('combobox', { name: '직무' }))
+  fireEvent.click(screen.getByRole('option', { name: '백엔드' }))
 
   await waitFor(() => {
     // 필터 변경 후 요청: role이 URL 인코딩(%EB..)되고 page는 1로 리셋

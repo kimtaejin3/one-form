@@ -118,6 +118,8 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
   CSS를 자동 로드하지 않는다 — 클래스만 붙인다). 토큰 `--of-`, 클래스 `.of-` 프리픽스,
   랜딩의 디자인 값이 원본. 새 컴포넌트는 `src/<이름>.tsx` 추가 + `src/index.ts`에서 export,
   스타일 클래스는 `index.css`에 추가.
+  → **design-system에 컴포넌트를 추가하면 같은 역할의 기존 앱 로컬 UI도 그때 함께 교체한다.**
+  (예: jobs 필터의 `FilterSelect`·수제 페이지네이션 → `Dropdown`·`Pagination`으로 교체·삭제)
 - `apps/landing/index.html`은 Claude 디자인(`지원서 통합 플랫폼 랜딩.dc.html`)을
   정적으로 펼친 결과물. 원본 dc.html은 `support.js` 런타임 의존이라 그대로 못 쓰고,
   `<sc-for>` 루프를 데이터로 전개해 변환했다. 랜딩은 빌드 파이프라인 없는 단일 HTML 유지.
