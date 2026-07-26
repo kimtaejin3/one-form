@@ -30,6 +30,31 @@
 | **활동 추천**       | 역량 갭을 메울 활동을 예상 경험·직무와 연결해 추천               |
 | **크롬 익스텐션**   | 외부 채용 사이트의 웹 폼을 프로필로 자동 채우는 오토필 위젯      |
 
+## 화면
+
+**채용공고 — 매칭률·근거 (임베딩+LLM)**
+![채용공고 피드](docs/screenshots/01-jobs.png)
+
+**채용공고 상세 — 매칭 분석 (요구 스킬 충족/부족)**
+![채용공고 상세](docs/screenshots/02-job-detail.png)
+
+<table>
+<tr>
+<td width="50%"><b>마스터 프로필</b><br><img src="docs/screenshots/03-profile.png" alt="마스터 프로필"></td>
+<td width="50%"><b>기업 인텔리전스</b><br><img src="docs/screenshots/04-companies.png" alt="기업 인텔리전스"></td>
+</tr>
+<tr>
+<td><b>자소서 허브</b><br><img src="docs/screenshots/05-essays.png" alt="자소서 허브"></td>
+<td><b>양식 변환</b><br><img src="docs/screenshots/06-forms.png" alt="양식 변환"></td>
+</tr>
+<tr>
+<td><b>활동 추천</b><br><img src="docs/screenshots/07-activities.png" alt="활동 추천"></td>
+<td></td>
+</tr>
+</table>
+
+> 스크린샷은 목(mock) 데이터 기준. 채용공고 매칭은 키를 넣으면 실 임베딩·LLM으로 동작한다(아래 [AI 구현](#ai-구현-임베딩--llm) 참고).
+
 ## 구조
 
 ```
