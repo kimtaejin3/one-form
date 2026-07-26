@@ -162,6 +162,39 @@ def test_gemini_key_wins_over_anthropic(monkeypatch):
     assert isinstance(llm_module.get_llm(), llm_module.GeminiLlm)
 
 
+def test_real_llm_refines_first_page_only(client, monkeypatch):
+    """실 LLM은 1페이지만 보정 — 게이트가 키 이름이 아니라 어댑터 타입 기준이어야 한다.
+
+    이전 게이트는 `ANTHROPIC_API_KEY is None`이었다. Gemini 키만 넣으면 "목이구나"로 오인해
+    전 페이지를 실 API로 보정한다 — 페이지를 넘길 때마다 size번씩 과금된다.
+    `isinstance(llm, MockLlm)` 기준을 못박아 그 회귀를 막는다.
+    """
+    _set_keys(monkeypatch, "GEMINI_API_KEY")
+    assert isinstance(llm_module.get_llm(), llm_module.GeminiLlm)  # 전제
+
+    calls = []
+
+    async def fake_refine(self, profile_text, job_text, base_rate, matched):
+        calls.append(base_rate)  # 실 네트워크는 타지 않는다 — 호출 여부만 센다
+        return base_rate, "REAL"
+
+    monkeypatch.setattr(llm_module.GeminiLlm, "refine", fake_refine)
+
+    page1 = client.get("/api/jobs?page=1&size=5").json()["jobs"]
+    assert len(calls) == 5 and all(j["match_reason"] == "REAL" for j in page1)
+
+    calls.clear()
+    page2 = [j["match_reason"] for j in client.get("/api/jobs?page=2&size=5").json()["jobs"]]
+    assert calls == []  # 2페이지는 실 API를 부르지 않는다
+    assert "REAL" not in page2  # 근거는 소스 원본 그대로
+
+    # 목은 공짜라 반대로 2페이지도 보정한다 — 게이트가 통째로 뒤집히지 않았는지.
+    _no_keys(monkeypatch)
+    assert [
+        j["match_reason"] for j in client.get("/api/jobs?page=2&size=5").json()["jobs"]
+    ] != page2
+
+
 def test_mock_embedder_is_deterministic():
     once = asyncio.run(embedder_module.MockEmbedder().embed(["FastAPI 결제 정산"]))
     twice = asyncio.run(embedder_module.MockEmbedder().embed(["FastAPI 결제 정산"]))
