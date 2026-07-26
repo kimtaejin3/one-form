@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Icon } from '@/shared/ui'
 import type { Job } from '../model'
 import JobLogo from './JobLogo'
@@ -16,7 +17,12 @@ export default function JobCard({ job }: { job: Job }) {
           <Icon name="bookmark" size={20} />
         </button>
       </div>
-      <h3 className="job-title">{job.title}</h3>
+      {/* 링크는 제목에만 걸고 ::after로 카드 전체를 덮는다(카드 전체 클릭 + 북마크 버튼은 그 위) */}
+      <h3 className="job-title">
+        <Link to={`/jobs/${job.id}`} className="job-link">
+          {job.title}
+        </Link>
+      </h3>
       <div className="job-tags">
         {job.tags.map((t) => (
           <span key={t}>#{t}</span>

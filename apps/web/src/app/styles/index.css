@@ -452,6 +452,7 @@
   transition: opacity 0.15s ease;
 }
 .job-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -513,6 +514,8 @@
   color: var(--of-primary);
 }
 .job-bookmark {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   border: 0;
   padding: 0;
@@ -532,6 +535,17 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* 카드 전체를 덮는 상세 링크(::after). 북마크 버튼은 z-index로 그 위에 둔다. */
+.job-link {
+  color: inherit;
+  text-decoration: none;
+}
+.job-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 .job-tags {
   display: flex;
