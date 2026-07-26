@@ -13,6 +13,8 @@ from app.essays import repository as essays_repo
 from app.essays.models import EssayCompany, EssayQuestion
 from app.jobs.models import Job
 from app.jobs.repository import _build_jobs
+from app.notifications.models import Notification
+from app.notifications.repository import _NOTIFICATIONS
 from app.profile import repository as profile_repo
 from app.profile.models import Profile
 
@@ -70,6 +72,13 @@ async def seed_activities(session) -> None:
         )
 
 
+async def seed_notifications(session) -> None:
+    for n in _NOTIFICATIONS:
+        await session.execute(
+            pg_insert(Notification).values(**n).on_conflict_do_nothing(index_elements=["id"])
+        )
+
+
 async def main() -> None:
     sm = get_sessionmaker()
     if sm is None:
@@ -79,6 +88,7 @@ async def main() -> None:
         await seed_profile(session)
         await seed_jobs(session)
         await seed_activities(session)
+        await seed_notifications(session)
         await session.commit()
     print("seed 완료")
 

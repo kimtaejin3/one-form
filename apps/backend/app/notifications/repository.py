@@ -1,4 +1,7 @@
-from app.core.mock import mock
+from sqlalchemy import select
+
+from app.core.db import get_sessionmaker
+from app.notifications.models import Notification
 
 _NOTIFICATIONS = [
     {"id": 1, "type": "마감", "title": "자소서 마감 임박", "message": "토스 지원 자소서가 D-2입니다. 초안을 마무리해 주세요.", "time": "방금 전", "unread": True},
@@ -13,4 +16,15 @@ _NOTIFICATIONS = [
 
 
 async def list_notifications():
-    return await mock(_NOTIFICATIONS)
+    sm = get_sessionmaker()
+    if sm is None:
+        return _NOTIFICATIONS
+    async with sm() as s:
+        rows = (await s.execute(select(Notification).order_by(Notification.id))).scalars().all()
+        if not rows:
+            return _NOTIFICATIONS
+        return [
+            {"id": r.id, "type": r.type, "title": r.title, "message": r.message,
+             "time": r.time, "unread": r.unread}
+            for r in rows
+        ]
