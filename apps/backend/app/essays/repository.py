@@ -46,8 +46,8 @@ async def _load_ref() -> tuple[list[dict], list[dict]]:
     if sm is None:
         return _QUESTIONS, _COMPANIES
     async with sm() as s:
-        qs = (await s.execute(select(EssayQuestion))).scalars().all()
-        cs = (await s.execute(select(EssayCompany))).scalars().all()
+        qs = (await s.execute(select(EssayQuestion).order_by(EssayQuestion.id))).scalars().all()
+        cs = (await s.execute(select(EssayCompany).order_by(EssayCompany.name))).scalars().all()
         questions = [{"id": q.id, "tag": q.tag, "prompt": q.prompt, "char_limit": q.char_limit} for q in qs]
         companies = [{"name": c.name, "deadline": c.deadline, "question_ids": c.question_ids} for c in cs]
         return questions, companies
