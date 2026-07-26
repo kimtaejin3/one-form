@@ -1,4 +1,6 @@
 """jobs 도메인 — 유일하게 로직(필터·페이지네이션·상세)이 있어 통합 테스트의 핵심."""
+import asyncio
+
 from app.jobs import repository
 from app.profile.repository import _PROFILE
 
@@ -24,7 +26,7 @@ def test_feed_shape_and_size(client):
 
 def test_mock_jobs_are_unique_and_in_seoul():
     """§2 목 재정비 — (회사×직무) 중복 없음, 전부 서울, 8직무가 모두 등장."""
-    jobs = repository.all_jobs()
+    jobs = asyncio.run(repository.all_jobs())
     pairs = [(j["company"], j["role_category"]) for j in jobs]
     assert len(pairs) == len(set(pairs)) == 40
     assert {j["location"] for j in jobs} == {"서울"}
@@ -139,7 +141,7 @@ def test_matched_missing_follow_profile_stack(client):
     assert not (PROFILE_NEVER_HAS & stack)  # 전제: 목 프로필은 이것들을 안 가졌다
 
     overlapping = 0
-    for job in repository.all_jobs():
+    for job in asyncio.run(repository.all_jobs()):
         analysis = client.get(f"/api/jobs/{job['id']}").json()["match_analysis"]
         matched, missing = set(analysis["matched_skills"]), set(analysis["missing_skills"])
         required = set(job["requirements"])

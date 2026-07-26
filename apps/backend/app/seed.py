@@ -9,6 +9,8 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.core.db import get_sessionmaker
 from app.essays import repository as essays_repo
 from app.essays.models import EssayCompany, EssayQuestion
+from app.jobs.models import Job
+from app.jobs.repository import _build_jobs
 from app.profile import repository as profile_repo
 from app.profile.models import Profile
 
@@ -39,6 +41,21 @@ async def seed_profile(session) -> None:
     )
 
 
+async def seed_jobs(session) -> None:
+    for j in _build_jobs():
+        await session.execute(
+            pg_insert(Job).values(
+                id=j["id"], company=j["company"], domain=j["domain"],
+                role_category=j["role_category"], experience=j["experience"],
+                employment=j["employment"], location=j["location"], title=j["title"],
+                dday=j["dday"], source=j["source"], description=j["description"],
+                company_info=j["company_info"], match_reason=j["match_reason"],
+                tags=j["tags"], responsibilities=j["responsibilities"],
+                requirements=j["requirements"], preferred=j["preferred"],
+            ).on_conflict_do_nothing(index_elements=["id"])
+        )
+
+
 async def main() -> None:
     sm = get_sessionmaker()
     if sm is None:
@@ -46,6 +63,7 @@ async def main() -> None:
     async with sm() as session:
         await seed_essays(session)
         await seed_profile(session)
+        await seed_jobs(session)
         await session.commit()
     print("seed 완료")
 

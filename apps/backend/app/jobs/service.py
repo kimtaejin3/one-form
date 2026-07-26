@@ -77,7 +77,7 @@ def _matched_skills(profile: dict, job: dict) -> list[str]:
 async def get_job_detail(job_id: int) -> JobDetail | None:
     """공고 상세 + 프로필 대비 매칭 분석. 없는 id·프로필 미등록이면 None(라우터가 404)."""
     profile = await get_profile()
-    job = next((j for j in repository.all_jobs() if j["id"] == job_id), None)
+    job = next((j for j in await repository.all_jobs() if j["id"] == job_id), None)
     if job is None or not profile["registered"]:
         return None  # 프로필 미등록이면 피드와 동일하게 미노출
 

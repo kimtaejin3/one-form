@@ -1,5 +1,9 @@
 # ponytail: 목 — 실제 크롤링(§4.4/§4.5) 대신 (회사 × 직무) 조합으로 유니크 공고를 생성.
 # 실제 구현 시 all_jobs()를 pgvector 검색 쿼리로 교체.
+from sqlalchemy import select
+
+from app.core.db import get_sessionmaker
+from app.jobs.models import Job
 from app.jobs.seed import COMPANIES, ROLES
 
 _COMPANIES = [
@@ -81,5 +85,23 @@ def _build_jobs():
 _ALL_JOBS = _build_jobs()
 
 
-def all_jobs() -> list[dict]:
-    return _ALL_JOBS
+async def all_jobs() -> list[dict]:
+    sm = get_sessionmaker()
+    if sm is None:
+        return _ALL_JOBS
+    async with sm() as s:
+        rows = (await s.execute(select(Job).order_by(Job.id))).scalars().all()
+        if not rows:
+            return _ALL_JOBS  # 시드 전이면 목
+        return [
+            {
+                "id": r.id, "company": r.company, "domain": r.domain,
+                "role_category": r.role_category, "experience": r.experience,
+                "employment": r.employment, "location": r.location, "title": r.title,
+                "dday": r.dday, "source": r.source, "description": r.description,
+                "company_info": r.company_info, "match_reason": r.match_reason,
+                "tags": r.tags, "responsibilities": r.responsibilities,
+                "requirements": r.requirements, "preferred": r.preferred,
+            }
+            for r in rows
+        ]

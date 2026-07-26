@@ -6,7 +6,7 @@ from app.jobs.sources.base import matches
 
 class MockJobSource:
     async def fetch(self, query: dict) -> list[dict]:
-        jobs = [j for j in repository.all_jobs() if matches(j, query)]
+        jobs = [j for j in await repository.all_jobs() if matches(j, query)]
         return await mock(jobs)  # 목 단계의 1초 지연 유지(테스트에선 0)
 
 
