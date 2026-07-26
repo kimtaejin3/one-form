@@ -1,4 +1,6 @@
+from app.core.db import get_sessionmaker
 from app.core.mock import mock
+from app.profile.models import Profile
 
 # careers/projects의 stack이 매칭 분석(jobs.service._match_analysis)의 '보유 스킬'이다 —
 # 공고 요구 스킬(jobs/seed.py)과 문자열이 맞아야 충족으로 잡히니 표기를 함께 관리할 것.
@@ -113,7 +115,19 @@ _PROFILE = {
 
 
 async def get_profile():
-    return await mock(_PROFILE)
+    sm = get_sessionmaker()
+    if sm is None:
+        return _PROFILE
+    async with sm() as s:
+        row = await s.get(Profile, 1)
+        if row is None:
+            return _PROFILE  # 시드 전이면 목으로(빈 화면 방지)
+        return {
+            "registered": row.registered,
+            "personal": row.personal, "links": row.links, "educations": row.educations,
+            "awards": row.awards, "languages": row.languages, "certificates": row.certificates,
+            "careers": row.careers, "projects": row.projects, "activities": row.activities,
+        }
 
 
 async def upload_resume():
