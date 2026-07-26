@@ -7,42 +7,34 @@ from typing import Protocol
 
 from app.core.config import settings
 
-_TOKEN = re.compile(r"[0-9a-zA-Z가-힣+#.]{2,}")
 _PROMPT = (
     "지원자 프로필과 채용공고를 비교해 매칭률(0~100)과 한 문장 근거를 한국어로 답하라.\n"
+    "근거에는 아래 '겹치는 스킬' 중 이 공고에 특징적인 것을 구체적으로 언급하라"
+    "(직무 공통 스킬만 나열하지 말 것).\n"
     "형식: 첫 줄 숫자만, 둘째 줄 근거 한 문장.\n"
-    "임베딩 기반 기초 매칭률: {base_rate}\n\n[프로필]\n{profile_text}\n\n[공고]\n{job_text}"
+    "임베딩 기반 기초 매칭률: {base_rate}\n"
+    "겹치는 스킬(프로필 ∩ 자격요건·우대): {matched}\n\n"
+    "[프로필]\n{profile_text}\n\n[공고]\n{job_text}"
 )
 
 
 class Llm(Protocol):
     async def refine(
-        self, profile_text: str, job_text: str, base_rate: int
+        self, profile_text: str, job_text: str, base_rate: int, matched: list[str]
     ) -> tuple[int, str]: ...
-
-
-def _shared_keywords(profile_text: str, job_text: str) -> list[str]:
-    job_tokens = _TOKEN.findall(job_text.lower())
-    profile_tokens = set(_TOKEN.findall(profile_text.lower()))
-    seen, shared = set(), []
-    for token in job_tokens:  # 공고 등장 순서 유지 = 결정적
-        if token in profile_tokens and token not in seen:
-            seen.add(token)
-            shared.append(token)
-    return shared
 
 
 class MockLlm:
     async def refine(
-        self, profile_text: str, job_text: str, base_rate: int
+        self, profile_text: str, job_text: str, base_rate: int, matched: list[str]
     ) -> tuple[int, str]:
-        shared = _shared_keywords(profile_text, job_text)
-        # 겹치는 키워드 수만큼 소폭 보정(최대 +5) — 결정적, 0~100 유지.
-        rate = max(0, min(100, base_rate + min(len(shared), 5)))
-        if shared:
-            reason = f"프로필의 {' · '.join(shared[:3])} 경험이 이 공고의 요구와 겹칩니다"
+        # 겹치는 스킬 수만큼 소폭 보정(최대 +5) — 결정적, 0~100 유지.
+        rate = max(0, min(100, base_rate + min(len(matched), 5)))
+        if matched:
+            # matched는 세부 스킬이 앞(service._matched_skills) — 공고마다 다른 근거가 나온다.
+            reason = f"프로필의 {' · '.join(matched[:3])} 역량이 이 공고의 요구와 맞습니다"
         else:
-            reason = "직무 설명과 프로필의 직접적인 공통 키워드는 적지만 도메인 경험이 인접합니다"
+            reason = "요구 스킬과 직접 겹치는 경험은 적지만 도메인 경험이 인접합니다"
         return rate, reason
 
 
@@ -56,12 +48,15 @@ class AnthropicLlm:
         self._api_key = api_key
 
     async def refine(
-        self, profile_text: str, job_text: str, base_rate: int
+        self, profile_text: str, job_text: str, base_rate: int, matched: list[str]
     ) -> tuple[int, str]:
         import httpx  # lazy — 목 경로에선 로드되지 않는다
 
         prompt = _PROMPT.format(
-            base_rate=base_rate, profile_text=profile_text, job_text=job_text
+            base_rate=base_rate,
+            matched=" · ".join(matched) or "없음",
+            profile_text=profile_text,
+            job_text=job_text,
         )
         async with httpx.AsyncClient(timeout=30) as client:
             res = await client.post(

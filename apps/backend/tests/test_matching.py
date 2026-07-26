@@ -72,6 +72,28 @@ def test_pipeline_ranks_profile_relevant_jobs_on_top(client, monkeypatch):
     assert sum("iOS 개발자" in t for t in titles) == 5, titles
 
 
+def test_match_reason_cites_job_specific_skills(client):
+    """근거가 공고마다 달라야 한다 — 직무 공통 스킬만 인용하면 전 공고가 같은 문장이 된다.
+
+    근거를 겹치는 '토큰'(react·typescript…)으로 만들면 프론트 5건이 전부
+    "프로필의 프론트엔드 · react · typescript 경험이…"로 나온다. 그래서 근거가 그 공고의
+    세부 매칭 스킬(디자인 시스템·상태관리…)을 실제로 인용하는지까지 본다.
+    """
+    ids = [j["id"] for j in client.get("/api/jobs", params={"role": "프론트엔드"}).json()["jobs"]]
+    details = [client.get(f"/api/jobs/{i}").json() for i in ids]
+    reasons = [d["match_reason"] for d in details]
+    assert len(set(reasons)) == len(reasons), reasons  # 5건 모두 다른 근거
+
+    for detail, reason in zip(details, reasons):
+        # core(React·TypeScript)는 모든 프론트 공고 공통 — 근거를 구별하는 건 나머지 세부다.
+        specific = [
+            s for s in detail["match_analysis"]["matched_skills"]
+            if s not in ("React", "TypeScript")
+        ]
+        assert specific, detail["id"]  # 전제: 세부 충족 스킬이 있는 공고들
+        assert any(s in reason for s in specific), (detail["id"], reason, specific)
+
+
 # --- (b) 키 게이팅: 키 없으면 목, 실 전송 import 없이 통과 ---
 
 def test_factories_pick_mocks_without_keys(monkeypatch):
@@ -85,7 +107,9 @@ def test_factories_pick_mocks_without_keys(monkeypatch):
 def test_mock_path_runs_without_real_transport(monkeypatch):
     _no_keys(monkeypatch)
     vectors = asyncio.run(embedder_module.get_embedder().embed(["백엔드 FastAPI", "iOS Swift"]))
-    rate, reason = asyncio.run(llm_module.get_llm().refine("백엔드 FastAPI", "백엔드 FastAPI", 70))
+    rate, reason = asyncio.run(
+        llm_module.get_llm().refine("백엔드 FastAPI", "백엔드 FastAPI", 70, ["FastAPI"])
+    )
     assert len(vectors) == 2 and 0 <= rate <= 100 and reason
     # 공식 SDK는 아예 쓰지 않고, httpx는 실 어댑터 메서드 안에서만 lazy import.
     assert "anthropic" not in sys.modules and "voyageai" not in sys.modules

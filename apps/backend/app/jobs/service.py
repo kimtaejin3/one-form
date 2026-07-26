@@ -11,6 +11,7 @@ from app.ai.llm import get_llm
 from app.core.config import settings
 from app.jobs import repository
 from app.jobs.schemas import JobDetail, JobFeed, MatchAnalysis
+from app.jobs.seed import ROLES
 from app.jobs.sources.selector import active_sources
 from app.profile.repository import get_profile
 
@@ -41,15 +42,35 @@ def _profile_stack(profile: dict) -> list[str]:
     return stacks
 
 
-def _match_analysis(profile: dict, requirements: list[str]) -> MatchAnalysis:
+def _held(profile: dict, skills: list[str]) -> list[str]:
+    """프로필이 보유한 스킬만 남긴다.
+
     # ponytail: 부분 문자열 매칭 — "RDBMS(MySQL/PostgreSQL)"에 프로필의 PostgreSQL이 걸리게.
     #   스킬 동의어(사전)까지는 안 간다.
+    """
     stack = [s.lower() for s in _profile_stack(profile)]
-    matched = [r for r in requirements if any(s in r.lower() for s in stack)]
+    return [s for s in skills if any(t in s.lower() for t in stack)]
+
+
+def _match_analysis(profile: dict, requirements: list[str]) -> MatchAnalysis:
+    matched = _held(profile, requirements)
     return MatchAnalysis(
         matched_skills=matched,
         missing_skills=[r for r in requirements if r not in matched],
     )
+
+
+def _matched_skills(profile: dict, job: dict) -> list[str]:
+    """근거·보정에 쓰는 구체 매칭 스킬 = 프로필 ∩ (자격요건 ∪ 우대).
+
+    세부 → 우대 → core 순. LLM이 앞쪽 2~3개를 근거로 쓰므로, 직무 공통 core(React·TypeScript)
+    대신 공고마다 갈리는 세부(디자인 시스템·상태관리…)가 먼저 인용돼 근거가 획일해지지 않는다.
+    core만 겹치면 자연히 core로 폴백한다. 실 API 소스(requirements 없음)면 빈 리스트.
+    """
+    core = ROLES.get(job.get("role_category", ""), {}).get("core", [])
+    detail = [s for s in _held(profile, job.get("requirements", [])) if s not in core]
+    detail += [s for s in _held(profile, job.get("preferred", [])) if s not in core]
+    return list(dict.fromkeys(detail + _held(profile, core)))
 
 
 async def get_job_detail(job_id: int) -> JobDetail | None:
@@ -63,7 +84,9 @@ async def get_job_detail(job_id: int) -> JobDetail | None:
     job_text = _job_text(job)
     vectors = await get_embedder().embed([profile_text, job_text])
     rate = round(max(0.0, min(1.0, cosine(vectors[0], vectors[1]))) * 100)
-    rate, reason = await get_llm().refine(profile_text, job_text, rate)
+    rate, reason = await get_llm().refine(
+        profile_text, job_text, rate, _matched_skills(profile, job)
+    )
     return JobDetail(
         id=job["id"],
         company=job["company"],
@@ -118,7 +141,9 @@ async def get_job_feed(
     for rate, j in scored[start:start + size]:
         reason = j["match_reason"]
         if page == 1 or refine_all:
-            rate, reason = await llm.refine(profile_text, _job_text(j), rate)
+            rate, reason = await llm.refine(
+                profile_text, _job_text(j), rate, _matched_skills(profile, j)
+            )
         jobs.append({
             "id": j["id"],
             "company": j["company"],
