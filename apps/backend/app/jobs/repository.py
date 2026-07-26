@@ -52,7 +52,7 @@ def _build_jobs():
                 "domain": domain,
                 "role_category": role_cat,
                 "title": f"[{company}] {role_title} — {required_skill}",
-                "tags": tags + [required_skill],
+                "tags": list(dict.fromkeys(tags + [required_skill])),  # 회사 강조 스킬이 직무 태그와 겹치면 중복 제거
                 "experience": _EXPERIENCE[i % len(_EXPERIENCE)],
                 "employment": _EMPLOYMENT[(i // 2) % len(_EMPLOYMENT)],
                 "location": "서울",
