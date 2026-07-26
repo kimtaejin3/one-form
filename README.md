@@ -103,7 +103,7 @@ pnpm dev                     # 세 앱 동시 실행
 
 | 요소 | 목 (키 없음) | 실 (키 있음) |
 | --- | --- | --- |
-| 임베딩 `app/ai/embedder.py` | 해시 bag-of-words 코사인(결정적) | Voyage `voyage-3` — `VOYAGE_API_KEY` |
+| 임베딩 `app/ai/embedder.py` | 해시 bag-of-words 코사인(결정적) | Voyage `voyage-3`(`VOYAGE_API_KEY`) 또는 Gemini `gemini-embedding-001`(`GEMINI_API_KEY`) — `EMBEDDING_PROVIDER`로 전환 |
 | LLM `app/ai/llm.py` | 템플릿 근거(결정적) | Gemini `gemini-flash-latest`(`GEMINI_API_KEY`) 또는 Claude(`ANTHROPIC_API_KEY`) |
 | 채용 소스 `app/jobs/sources/` | 목 공고 40건 | 사람인·잡코리아·원티드 — 각 API 키 |
 
