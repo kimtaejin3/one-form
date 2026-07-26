@@ -6,6 +6,8 @@
 #   목 LLM은 공짜라 전 페이지를 보정해 근거가 실제 공고와 맞게 한다.
 # ponytail: 다중 소스는 concat만(중복 공고 병합 없음) — sources/selector.py 참고.
 """
+import asyncio
+
 from app.ai.embedder import cosine, get_embedder
 from app.ai.llm import MockLlm, get_llm
 from app.jobs import repository
@@ -136,14 +138,14 @@ async def get_job_feed(
     llm = get_llm()
     # 목 LLM은 공짜라 전 페이지 근거를 만든다. 실 LLM(Gemini·Anthropic)은 비용 때문에 1페이지만.
     refine_all = isinstance(llm, MockLlm)
-    jobs = []
-    for rate, j in scored[start:start + size]:
+
+    async def _resolve(rate: int, j: dict) -> dict:
         reason = j["match_reason"]
         if page == 1 or refine_all:
             rate, reason = await llm.refine(
                 profile_text, _job_text(j), rate, _matched_skills(profile, j)
             )
-        jobs.append({
+        return {
             "id": j["id"],
             "company": j["company"],
             "domain": j["domain"],
@@ -154,7 +156,11 @@ async def get_job_feed(
             "source": j["source"],
             "match_rate": rate,
             "match_reason": reason,
-        })
+        }
+
+    # 한 페이지 refine을 동시에 — 순차면 12건 × 수 초 = ~1분. 실패 건은 각자 목으로 폴백.
+    # ponytail: 무제한 동시성. Gemini RPM에 걸리면 asyncio.Semaphore로 상한을.
+    jobs = list(await asyncio.gather(*(_resolve(rate, j) for rate, j in scored[start:start + size])))
 
     jobs.sort(key=lambda j: (-j["match_rate"], j["id"]))  # LLM 보정 후 다시 매칭률순
     return JobFeed(role=ROLE_LABEL, total=len(scored), page=page, size=size, jobs=jobs)
