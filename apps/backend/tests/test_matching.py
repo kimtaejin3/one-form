@@ -131,9 +131,10 @@ def test_each_key_activates_only_its_own_adapter(monkeypatch):
     assert isinstance(llm_module.get_llm(), llm_module.AnthropicLlm)
     assert isinstance(embedder_module.get_embedder(), embedder_module.MockEmbedder)
 
+    # GEMINI 키는 LLM·임베더 둘 다 활성화한다(같은 키 공유).
     _set_keys(monkeypatch, "GEMINI_API_KEY")
     assert isinstance(llm_module.get_llm(), llm_module.GeminiLlm)
-    assert isinstance(embedder_module.get_embedder(), embedder_module.MockEmbedder)
+    assert isinstance(embedder_module.get_embedder(), embedder_module.GeminiEmbedder)
 
     _set_keys(monkeypatch, "WANTED_API_KEY")
     assert [type(s).__name__ for s in active_sources()] == ["WantedSource"]  # 목 대체
@@ -217,3 +218,39 @@ def test_unregistered_profile_returns_empty_feed(client, monkeypatch):
     body = client.get("/api/jobs").json()
     assert body["total"] == 0 and body["jobs"] == []
     assert client.get("/api/jobs/1").status_code == 404  # 상세도 같은 게이트
+
+
+# --- 임베더 선택: Voyage 유지 + Gemini 추가 + EMBEDDING_PROVIDER로 전환 ---
+
+def _env(monkeypatch, **kv):
+    """지정 env만 세팅하고 config.settings 재빌드(.env 무시) — 임베더 선택 검증용."""
+    from app.core import config
+
+    for key in KEYS + ["EMBEDDING_PROVIDER"]:
+        monkeypatch.delenv(key, raising=False)
+    for k, v in kv.items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.setattr(config, "settings", config.Settings(_env_file=None))
+    for module in (embedder_module, llm_module, saramin, jobkorea, wanted):
+        monkeypatch.setattr(module, "settings", config.settings)
+
+
+def test_embedder_gemini_when_only_gemini_key(monkeypatch):
+    # Voyage 키 없이 Gemini 키만 있으면 Gemini 임베딩(같은 키)으로 자동 선택.
+    _env(monkeypatch, GEMINI_API_KEY="test-key")
+    assert isinstance(embedder_module.get_embedder(), embedder_module.GeminiEmbedder)
+
+
+def test_embedder_voyage_priority_when_both_keys(monkeypatch):
+    # 자동: 둘 다 있으면 Voyage 우선(전문 임베더).
+    _env(monkeypatch, VOYAGE_API_KEY="test-key", GEMINI_API_KEY="test-key")
+    assert isinstance(embedder_module.get_embedder(), embedder_module.VoyageEmbedder)
+
+
+def test_embedding_provider_overrides_auto(monkeypatch):
+    # EMBEDDING_PROVIDER로 자동을 덮어쓴다 — Voyage 키가 있어도 gemini 강제.
+    _env(monkeypatch, VOYAGE_API_KEY="test-key", GEMINI_API_KEY="test-key", EMBEDDING_PROVIDER="gemini")
+    assert isinstance(embedder_module.get_embedder(), embedder_module.GeminiEmbedder)
+    # mock 강제(키가 있어도).
+    _env(monkeypatch, GEMINI_API_KEY="test-key", EMBEDDING_PROVIDER="mock")
+    assert isinstance(embedder_module.get_embedder(), embedder_module.MockEmbedder)

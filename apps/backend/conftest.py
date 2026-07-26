@@ -24,6 +24,7 @@ def _no_live_keys(monkeypatch):
     # 게이팅 테스트는 각자 필요한 키를 이 뒤에 monkeypatch로 다시 설정한다.
     for key in _API_KEYS:
         monkeypatch.setattr(settings, key, None)
+    monkeypatch.setattr(settings, "EMBEDDING_PROVIDER", None)  # 임베더도 자동→목으로
 
 
 @pytest.fixture(autouse=True)

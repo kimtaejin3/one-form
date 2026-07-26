@@ -12,5 +12,8 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str | None = None
     GEMINI_API_KEY: str | None = None
 
+    # 임베더 명시 선택: "voyage" | "gemini" | "mock". 미지정(None)이면 키 있는 것 자동.
+    EMBEDDING_PROVIDER: str | None = None
+
 
 settings = Settings()
