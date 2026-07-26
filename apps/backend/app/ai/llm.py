@@ -1,4 +1,4 @@
-"""Llm 포트 + Anthropic(실)/목 어댑터. ANTHROPIC_API_KEY가 있으면 실, 없으면 목.
+"""Llm 포트 + Gemini·Anthropic(실)/목 어댑터. 키 우선순위: GEMINI > ANTHROPIC > 목.
 
 목은 실 전송(httpx)을 모듈 로드 시 건드리지 않는다 — 키·네트워크 없이 CI 통과.
 """
@@ -22,6 +22,14 @@ class Llm(Protocol):
     async def refine(
         self, profile_text: str, job_text: str, base_rate: int, matched: list[str]
     ) -> tuple[int, str]: ...
+
+
+def _parse(text: str, base_rate: int) -> tuple[int, str]:
+    """응답 파싱 — 첫 줄 숫자가 매칭률, 둘째 줄이 근거. 형식이 어긋나면 base_rate 유지."""
+    head, _, tail = text.strip().partition("\n")
+    digits = re.sub(r"\D", "", head)
+    rate = max(0, min(100, int(digits))) if digits else base_rate
+    return rate, (tail.strip() or head.strip())
 
 
 class MockLlm:
@@ -78,14 +86,57 @@ class AnthropicLlm:
         if body.get("stop_reason") == "refusal":
             return base_rate, "매칭 근거를 생성하지 못했습니다"
         # content[0]은 thinking 블록일 수 있다 — text 블록만 고른다.
-        text = next(
-            (b["text"] for b in body["content"] if b["type"] == "text"), ""
-        ).strip()
-        head, _, tail = text.partition("\n")
-        digits = re.sub(r"\D", "", head)
-        rate = max(0, min(100, int(digits))) if digits else base_rate
-        return rate, (tail.strip() or head.strip())
+        text = next((b["text"] for b in body["content"] if b["type"] == "text"), "")
+        return _parse(text, base_rate)
+
+
+class GeminiLlm:
+    """Google Generative Language API(generateContent). 공식 SDK 대신 httpx 직접 호출.
+
+    # ponytail: 키는 표준 방식대로 query param(?key=)으로 보낸다. 발급받은 키가 AIza… 형식이
+    #   아니면(OAuth·Vertex 액세스 토큰 등) 401/403이 난다 — 그땐 params={"key": …}를 빼고
+    #   headers={"Authorization": f"Bearer {self._api_key}"}로 바꾸면 된다.
+    """
+
+    URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    MODEL = "gemini-2.0-flash"
+
+    def __init__(self, api_key: str):
+        self._api_key = api_key
+
+    async def refine(
+        self, profile_text: str, job_text: str, base_rate: int, matched: list[str]
+    ) -> tuple[int, str]:
+        import httpx  # lazy — 목 경로에선 로드되지 않는다
+
+        prompt = _PROMPT.format(
+            base_rate=base_rate,
+            matched=" · ".join(matched) or "없음",
+            profile_text=profile_text,
+            job_text=job_text,
+        )
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                res = await client.post(
+                    self.URL.format(model=self.MODEL),
+                    params={"key": self._api_key},
+                    json={
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {"maxOutputTokens": 256},
+                    },
+                )
+                res.raise_for_status()
+                text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception:  # 인증·네트워크·응답 형태 실패 — 근거 하나 때문에 피드가 죽으면 안 된다
+            text = ""
+        if not text.strip():
+            return await MockLlm().refine(profile_text, job_text, base_rate, matched)
+        return _parse(text, base_rate)
 
 
 def get_llm() -> Llm:
-    return AnthropicLlm(settings.ANTHROPIC_API_KEY) if settings.ANTHROPIC_API_KEY else MockLlm()
+    if settings.GEMINI_API_KEY:
+        return GeminiLlm(settings.GEMINI_API_KEY)
+    if settings.ANTHROPIC_API_KEY:
+        return AnthropicLlm(settings.ANTHROPIC_API_KEY)
+    return MockLlm()

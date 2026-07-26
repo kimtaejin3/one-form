@@ -7,8 +7,7 @@
 # ponytail: 다중 소스는 concat만(중복 공고 병합 없음) — sources/selector.py 참고.
 """
 from app.ai.embedder import cosine, get_embedder
-from app.ai.llm import get_llm
-from app.core.config import settings
+from app.ai.llm import MockLlm, get_llm
 from app.jobs import repository
 from app.jobs.schemas import JobDetail, JobFeed, MatchAnalysis
 from app.jobs.seed import ROLES
@@ -135,8 +134,8 @@ async def get_job_feed(
 
     start = (page - 1) * size
     llm = get_llm()
-    # 목 LLM은 공짜라 전 페이지 근거를 만든다. 실 LLM은 비용 때문에 1페이지만.
-    refine_all = settings.ANTHROPIC_API_KEY is None
+    # 목 LLM은 공짜라 전 페이지 근거를 만든다. 실 LLM(Gemini·Anthropic)은 비용 때문에 1페이지만.
+    refine_all = isinstance(llm, MockLlm)
     jobs = []
     for rate, j in scored[start:start + size]:
         reason = j["match_reason"]

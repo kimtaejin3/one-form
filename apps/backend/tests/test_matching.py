@@ -12,7 +12,7 @@ from app.profile import repository as profile_repository
 
 KEYS = [
     "SARAMIN_API_KEY", "JOBKOREA_API_KEY", "WANTED_API_KEY",
-    "VOYAGE_API_KEY", "ANTHROPIC_API_KEY",
+    "VOYAGE_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY",
 ]
 
 
@@ -131,8 +131,35 @@ def test_each_key_activates_only_its_own_adapter(monkeypatch):
     assert isinstance(llm_module.get_llm(), llm_module.AnthropicLlm)
     assert isinstance(embedder_module.get_embedder(), embedder_module.MockEmbedder)
 
+    _set_keys(monkeypatch, "GEMINI_API_KEY")
+    assert isinstance(llm_module.get_llm(), llm_module.GeminiLlm)
+    assert isinstance(embedder_module.get_embedder(), embedder_module.MockEmbedder)
+
     _set_keys(monkeypatch, "WANTED_API_KEY")
     assert [type(s).__name__ for s in active_sources()] == ["WantedSource"]  # 목 대체
+
+
+def test_gemini_failure_falls_back_to_mock_reason(monkeypatch):
+    """실 호출이 깨져도(인증 실패·네트워크) 피드는 살아야 한다 — 근거만 목으로 폴백.
+
+    연결 거부되는 주소로 호출해 네트워크 없이 실패 경로만 태운다.
+    """
+    monkeypatch.setattr(llm_module.GeminiLlm, "URL", "http://127.0.0.1:1/{model}")
+    rate, reason = asyncio.run(
+        llm_module.GeminiLlm("test-key").refine("프로필", "공고", 70, ["Redis 캐싱"])
+    )
+    assert rate == 71 and "Redis 캐싱" in reason  # 목 근거(base_rate + 겹친 스킬 수)
+
+
+def test_gemini_key_wins_over_anthropic(monkeypatch):
+    """LLM 키가 둘 다 있으면 Gemini — 우선순위가 뒤집히면 의도치 않은 쪽에 과금된다."""
+    from app.core import config
+
+    _set_keys(monkeypatch, "GEMINI_API_KEY")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setattr(config, "settings", config.Settings(_env_file=None))
+    monkeypatch.setattr(llm_module, "settings", config.settings)
+    assert isinstance(llm_module.get_llm(), llm_module.GeminiLlm)
 
 
 def test_mock_embedder_is_deterministic():

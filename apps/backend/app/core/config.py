@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     WANTED_API_KEY: str | None = None
     VOYAGE_API_KEY: str | None = None
     ANTHROPIC_API_KEY: str | None = None
+    GEMINI_API_KEY: str | None = None
 
 
 settings = Settings()
