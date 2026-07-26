@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { api } from '@/shared/api'
-import type { JobFeed } from './model'
+import type { JobDetail, JobFeed } from './model'
 
 export type JobFilters = {
   role: string
@@ -19,5 +19,12 @@ export function jobsQuery(f: JobFilters) {
   return queryOptions({
     queryKey: ['jobs', f],
     queryFn: () => api<JobFeed>(`/jobs?${params.toString()}`),
+  })
+}
+
+export function jobDetailQuery(id: string) {
+  return queryOptions({
+    queryKey: ['jobs', id],
+    queryFn: () => api<JobDetail>(`/jobs/${id}`),
   })
 }

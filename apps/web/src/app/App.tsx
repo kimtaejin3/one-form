@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import { Header } from '@/widgets/header'
 import { AsyncBoundary } from '@/shared/ui'
 import { JobsPage } from '@/pages/jobs'
+import { JobDetailPage } from '@/pages/job-detail'
 import { ProfilePage } from '@/pages/profile'
 import { CompaniesPage } from '@/pages/companies'
 import { EssaysPage } from '@/pages/essays'
@@ -14,6 +15,7 @@ import { NotificationsPage } from '@/pages/notifications'
 
 const ROUTES: { path: string; element: ReactElement }[] = [
   { path: '/', element: <JobsPage /> },
+  { path: '/jobs/:id', element: <JobDetailPage /> },
   { path: '/profile', element: <ProfilePage /> },
   { path: '/companies', element: <CompaniesPage /> },
   { path: '/essays', element: <EssaysPage /> },

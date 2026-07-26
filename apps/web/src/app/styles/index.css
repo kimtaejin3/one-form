@@ -588,6 +588,46 @@
   border-radius: 3px;
 }
 
+/* 공고 상세 */
+.job-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.job-detail__back {
+  align-self: flex-start;
+  color: var(--of-muted);
+  text-decoration: none;
+}
+.job-detail__back:hover {
+  color: var(--of-primary);
+}
+.job-detail__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.skill {
+  padding: 4px 10px;
+  border: 1px solid var(--of-border);
+  border-radius: 999px;
+  background: var(--of-surface-alt);
+  color: var(--of-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.skill--matched {
+  border-color: var(--of-primary);
+  background: var(--of-accent-soft);
+  color: var(--of-primary-strong);
+}
+
 /* shared bits */
 .stack {
   display: flex;

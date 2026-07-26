@@ -1,4 +1,6 @@
-export { jobsQuery } from './api'
+export { jobsQuery, jobDetailQuery } from './api'
 export type { JobFilters } from './api'
-export type { Job, JobFeed } from './model'
+export type { Job, JobFeed, JobDetail, MatchAnalysis } from './model'
 export { default as JobCard } from './ui/JobCard'
+export { default as JobLogo } from './ui/JobLogo'
+export { default as SourceBadge } from './ui/SourceBadge'
