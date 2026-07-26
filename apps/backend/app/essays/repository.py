@@ -1,4 +1,9 @@
+from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+from app.core.db import get_sessionmaker
 from app.core.mock import mock
+from app.essays.models import EssayAnswer, EssayCompany, EssayQuestion
 
 # 유니크 문항 풀. prompt는 제네릭(회사명 없는 표현) — 답변에 회사명을 리터럴로 쓴다.
 _QUESTIONS = [
@@ -35,35 +40,69 @@ _COMPANIES = [
 _ANSWERS: dict[tuple[str, int], dict] = {}
 
 
-def _slots(question_id: int) -> list[dict]:
-    """이 문항을 쓰는 기업마다 슬롯 1개. 쓰는 기업이 없으면 공통 슬롯 1개."""
-    used_by = [c for c in _COMPANIES if question_id in c["question_ids"]]
+async def _load_ref() -> tuple[list[dict], list[dict]]:
+    """문항·기업 참조 — DB 있으면 DB, 없으면 목."""
+    sm = get_sessionmaker()
+    if sm is None:
+        return _QUESTIONS, _COMPANIES
+    async with sm() as s:
+        qs = (await s.execute(select(EssayQuestion))).scalars().all()
+        cs = (await s.execute(select(EssayCompany))).scalars().all()
+        questions = [{"id": q.id, "tag": q.tag, "prompt": q.prompt, "char_limit": q.char_limit} for q in qs]
+        companies = [{"name": c.name, "deadline": c.deadline, "question_ids": c.question_ids} for c in cs]
+        return questions, companies
+
+
+async def _load_answers() -> dict:
+    sm = get_sessionmaker()
+    if sm is None:
+        return _ANSWERS
+    async with sm() as s:
+        rows = (await s.execute(select(EssayAnswer))).scalars().all()
+        return {(r.company, r.question_id): {"content": r.content, "status": r.status} for r in rows}
+
+
+def _slots(question_id: int, companies: list[dict], answers: dict) -> list[dict]:
+    used_by = [c for c in companies if question_id in c["question_ids"]]
     if not used_by:
         used_by = [{"name": "공통", "deadline": ""}]
     return [
         {
             "company": c["name"],
             "deadline": c["deadline"],
-            **_ANSWERS.get((c["name"], question_id), {"content": "", "status": "미작성"}),
+            **answers.get((c["name"], question_id), {"content": "", "status": "미작성"}),
         }
         for c in used_by
     ]
 
 
-def _merged(question: dict) -> dict:
-    return {**question, "slots": _slots(question["id"])}
-
-
 async def list_questions():
-    return await mock([_merged(q) for q in _QUESTIONS])
+    questions, companies = await _load_ref()
+    answers = await _load_answers()
+    return [{**q, "slots": _slots(q["id"], companies, answers)} for q in questions]
 
 
 async def save_answer(question_id: int, company: str, content: str, status: str):
-    question = next((q for q in _QUESTIONS if q["id"] == question_id), None)
-    if question is None or company not in {s["company"] for s in _slots(question_id)}:
+    questions, companies = await _load_ref()
+    answers = await _load_answers()
+    question = next((q for q in questions if q["id"] == question_id), None)
+    if question is None or company not in {s["company"] for s in _slots(question_id, companies, answers)}:
         raise KeyError((company, question_id))
-    _ANSWERS[(company, question_id)] = {"content": content, "status": status}
-    return await mock(_merged(question))
+    sm = get_sessionmaker()
+    if sm is None:
+        _ANSWERS[(company, question_id)] = {"content": content, "status": status}
+    else:
+        async with sm() as s:
+            stmt = pg_insert(EssayAnswer).values(
+                company=company, question_id=question_id, content=content, status=status
+            ).on_conflict_do_update(
+                index_elements=["company", "question_id"],
+                set_={"content": content, "status": status, "updated_at": func.now()},
+            )
+            await s.execute(stmt)
+            await s.commit()
+    answers = await _load_answers()
+    return {**question, "slots": _slots(question_id, companies, answers)}
 
 
 async def generate_draft(question_id: int):
