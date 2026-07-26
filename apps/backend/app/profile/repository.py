@@ -1,5 +1,8 @@
 from app.core.mock import mock
 
+# careers/projects의 stack이 매칭 분석(jobs.service._match_analysis)의 '보유 스킬'이다 —
+# 공고 요구 스킬(jobs/seed.py)과 문자열이 맞아야 충족으로 잡히니 표기를 함께 관리할 것.
+# 의도적으로 일부만 보유한다(SSR·웹뷰·접근성·테스팅·Java 계열 없음) — 다 가지면 부족 스킬이 안 생긴다.
 _PROFILE = {
     "registered": True,  # 목: 등록된 사용자 가정. False로 두면 프론트에서 공고 게이트 확인 가능.
     "personal": {
@@ -46,7 +49,10 @@ _PROFILE = {
                 "일 200만 건 결제 트랜잭션의 멱등성 처리 로직 리팩터링으로 중복 결제 클레임 90% 감소",
                 "정산 배치 API 신규 개발 및 운영 이관",
             ],
-            "stack": ["Python", "FastAPI", "PostgreSQL", "Redis"],
+            "stack": [
+                "Python", "FastAPI", "PostgreSQL", "Redis", "결제/정산", "로그 파이프라인",
+                "멱등성 처리", "대용량 트래픽",
+            ],
         },
         {
             "company": "OO소프트",
@@ -56,7 +62,7 @@ _PROFILE = {
                 "React 기반 사내 대시보드 신규 구축, 주요 지표 로딩 4.1s → 1.2s 단축",
                 "디자인 시스템 컴포넌트 30여 개 구현 및 스토리북 문서화",
             ],
-            "stack": ["React", "TypeScript", "Vite"],
+            "stack": ["React", "TypeScript", "Vite", "HTML/CSS", "디자인 시스템", "웹 성능 최적화"],
         },
     ],
     "projects": [
@@ -70,7 +76,10 @@ _PROFILE = {
                 "React 19 + TanStack Query + Suspense, FSD 6레이어 + import 경계 lint 강제",
                 "경험↔공고 임베딩 시맨틱 매칭 및 인용 기반 기업 브리핑 RAG 파이프라인 구현",
             ],
-            "stack": ["React", "TypeScript", "FastAPI", "pgvector", "Claude API"],
+            "stack": [
+                "React", "TypeScript", "FastAPI", "pgvector", "Claude API",
+                "상태관리(TanStack Query)", "모노레포", "임베딩/벡터검색", "LLM/RAG",
+            ],
         },
         {
             "name": "실시간 협업 노트 서비스",
@@ -92,7 +101,7 @@ _PROFILE = {
                 "플러그인 아키텍처 설계로 서드파티 확장 지원",
                 "GitHub Actions CI 구축, 테스트 커버리지 85% 유지",
             ],
-            "stack": ["Node.js", "TypeScript", "oclif"],
+            "stack": ["Node.js", "TypeScript", "oclif", "CI/CD"],
         },
     ],
     "activities": [

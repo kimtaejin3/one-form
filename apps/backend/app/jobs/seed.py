@@ -3,6 +3,9 @@
 md는 사람용 정본, 이 모듈이 런타임 정본이다(마크다운 파싱 금지 — 형식이 바뀌면 조용히 깨진다).
 공개 정보 기반으로 **생성**한 데이터. 실 채용공고 verbatim 아님.
 repository._build_jobs()가 (회사 × 직무)로 조합해 공고 상세를 만든다.
+
+직무 요구 스킬은 md의 목록보다 세분화돼 있다(core + 세부 역량 풀). 매칭 분석의 충족/부족이
+'React·TypeScript' 수준에서 멈추지 않고 SSR·웹뷰·접근성 같은 세부에서 갈리게 하기 위한 것.
 """
 
 # 회사 키 = repository._COMPANIES의 한글명. info = 사업 요약 + 문화, skills = 강조 스킬(조합 재료).
@@ -111,6 +114,9 @@ COMPANIES = {
 }
 
 # 직무 키 = repository._ROLES의 카테고리.
+# core = 모든 공고에 들어가는 필수 스킬, skills = 세부 역량 풀(공고마다 다른 부분집합이 뽑힌다).
+# 표기 주의: 프로필 스택(app/profile/repository.py)과 문자열이 맞아야 매칭 분석에서 충족으로 잡힌다
+# (부분 문자열 매칭 — 프로필 쪽이 짧은 표기: "모노레포" ⊂ "모노레포 개발환경").
 ROLES = {
     "백엔드": {
         "responsibilities": [
@@ -118,8 +124,13 @@ ROLES = {
             "MSA 환경에서 도메인 서비스 분리·통신 설계",
             "데이터 정합성·장애 대응을 고려한 안정적 시스템 운영",
         ],
-        "requirements": ["Java", "Spring Boot", "JPA", "RDBMS(MySQL/PostgreSQL)", "REST API", "MSA"],
-        "preferred": ["Kafka 등 메시지 큐 경험", "대용량 트래픽 처리 경험", "Kubernetes"],
+        "core": ["Java", "Spring Boot"],
+        "skills": [
+            "REST API", "RDBMS(MySQL/PostgreSQL)", "JPA/ORM", "MSA 설계", "Redis 캐싱",
+            "메시지 큐(Kafka)", "대용량 트래픽 처리", "결제/정산 도메인", "로그 파이프라인 운영",
+            "멱등성 처리",
+        ],
+        "preferred": ["대규모 서비스 운영 경험", "장애 대응·온콜 경험", "Kubernetes 배포 경험"],
     },
     "프론트엔드": {
         "responsibilities": [
@@ -127,8 +138,13 @@ ROLES = {
             "렌더링 성능·로딩 속도 최적화",
             "디자인 시스템·상태관리 구조 설계와 유지보수",
         ],
-        "requirements": ["React", "TypeScript", "HTML/CSS", "상태관리(React Query/Redux)", "웹 성능 최적화"],
-        "preferred": ["Next.js SSR", "웹 접근성(a11y)", "프론트엔드 테스트(Jest/Playwright)"],
+        "core": ["React", "TypeScript"],
+        "skills": [
+            "HTML/CSS", "상태관리(TanStack Query)", "웹 성능 최적화", "SSR(Next.js)",
+            "웹뷰(WebView) 연동", "웹 접근성(a11y)", "디자인 시스템",
+            "프론트엔드 테스팅(Playwright)", "모노레포 개발환경",
+        ],
+        "preferred": ["대규모 트래픽 서비스 프론트 경험", "Core Web Vitals 개선 경험", "오픈소스 기여"],
     },
     "풀스택": {
         "responsibilities": [
@@ -136,8 +152,12 @@ ROLES = {
             "API 설계부터 화면 구현까지 제품 단위 오너십",
             "AWS 위에서 배포·운영 환경 구성",
         ],
-        "requirements": ["Node.js", "TypeScript", "React", "REST/GraphQL API", "RDBMS/NoSQL", "AWS"],
-        "preferred": ["서버리스(Lambda) 경험", "CI/CD 구성", "스타트업 0→1 경험"],
+        "core": ["Node.js", "TypeScript", "React"],
+        "skills": [
+            "REST/GraphQL API", "RDBMS/NoSQL", "AWS", "서버리스(Lambda)", "CI/CD 파이프라인",
+            "모노레포 개발환경", "0→1 제품 개발", "SSR(Next.js)",
+        ],
+        "preferred": ["제품 오너십 경험", "테스트 자동화 경험", "스타트업 근무 경험"],
     },
     "데브옵스": {
         "responsibilities": [
@@ -145,8 +165,12 @@ ROLES = {
             "IaC(Terraform)로 클라우드 리소스 관리",
             "모니터링·로깅 체계 구축과 장애 대응(SRE)",
         ],
-        "requirements": ["Kubernetes", "Docker", "Terraform", "AWS/GCP", "CI/CD(GitHub Actions/ArgoCD)", "Linux"],
-        "preferred": ["모니터링(Prometheus/Grafana)", "대규모 트래픽 인프라 운영", "보안/네트워크"],
+        "core": ["Kubernetes", "Docker"],
+        "skills": [
+            "Terraform", "AWS/GCP", "CI/CD 파이프라인", "Linux 운영",
+            "모니터링(Prometheus/Grafana)", "무중단 배포", "보안/네트워크", "로그 파이프라인 운영",
+        ],
+        "preferred": ["대규모 인프라 운영 경험", "SRE 온콜 경험", "클라우드 비용 최적화 경험"],
     },
     "안드로이드": {
         "responsibilities": [
@@ -154,8 +178,13 @@ ROLES = {
             "Jetpack Compose로 UI 구현 및 성능 개선",
             "앱 아키텍처(MVVM/MVI) 설계와 유지보수",
         ],
-        "requirements": ["Kotlin", "Android SDK", "Jetpack Compose", "Coroutine/Flow", "MVVM", "REST 연동"],
-        "preferred": ["멀티모듈 아키텍처", "앱 성능/크래시 최적화", "KMP(Kotlin Multiplatform)"],
+        "core": ["Kotlin", "Android SDK"],
+        "skills": [
+            "Jetpack Compose", "Coroutine/Flow", "MVVM 아키텍처", "REST API 연동",
+            "멀티모듈 아키텍처", "앱 성능/크래시 최적화", "웹뷰(WebView) 연동",
+            "KMP(Kotlin Multiplatform)",
+        ],
+        "preferred": ["Play Store 앱 출시 경험", "크로스플랫폼 개발 경험", "접근성 대응 경험"],
     },
     "iOS": {
         "responsibilities": [
@@ -163,8 +192,12 @@ ROLES = {
             "SwiftUI/UIKit로 화면 구현 및 반응형 UI 설계",
             "앱 아키텍처(MVVM/TCA)·비동기 처리 설계",
         ],
-        "requirements": ["Swift", "SwiftUI", "UIKit", "Combine/async-await", "MVVM", "REST 연동"],
-        "preferred": ["TCA(The Composable Architecture)", "앱 성능 최적화", "접근성 대응"],
+        "core": ["Swift", "SwiftUI"],
+        "skills": [
+            "UIKit", "Combine/async-await", "MVVM 아키텍처", "REST API 연동", "앱 성능 최적화",
+            "웹뷰(WebView) 연동", "접근성 대응", "TCA(The Composable Architecture)",
+        ],
+        "preferred": ["App Store 앱 출시 경험", "위젯·확장 앱 개발 경험", "크로스플랫폼 개발 경험"],
     },
     "데이터": {
         "responsibilities": [
@@ -172,8 +205,12 @@ ROLES = {
             "Airflow 기반 배치 스케줄링과 데이터 품질 관리",
             "데이터 웨어하우스/레이크 모델링과 분석 지원",
         ],
-        "requirements": ["Python", "SQL", "Spark", "Airflow", "데이터 웨어하우스(BigQuery/Redshift)", "ETL 설계"],
-        "preferred": ["스트리밍 처리(Kafka/Flink)", "dbt", "대규모 로그 처리 경험"],
+        "core": ["Python", "SQL"],
+        "skills": [
+            "Spark", "Airflow", "ETL 설계", "데이터 웨어하우스(BigQuery/Redshift)",
+            "스트리밍 처리(Kafka/Flink)", "데이터 품질 관리", "대용량 로그 처리", "dbt",
+        ],
+        "preferred": ["실시간 파이프라인 운영 경험", "데이터 거버넌스 경험", "BI 대시보드 구축 경험"],
     },
     "ML": {
         "responsibilities": [
@@ -181,7 +218,11 @@ ROLES = {
             "모델 서빙 및 MLOps 파이프라인 구축",
             "A/B 테스트로 모델 성능 검증과 개선",
         ],
-        "requirements": ["Python", "PyTorch/TensorFlow", "머신러닝/딥러닝", "MLOps", "모델 서빙", "SQL"],
-        "preferred": ["추천시스템/NLP/CV 도메인 경험", "대규모 분산 학습", "LLM/RAG 경험"],
+        "core": ["Python", "PyTorch/TensorFlow"],
+        "skills": [
+            "머신러닝/딥러닝", "MLOps", "모델 서빙", "추천시스템", "임베딩/벡터검색",
+            "LLM/RAG 파이프라인", "A/B 테스트", "대규모 분산 학습",
+        ],
+        "preferred": ["대규모 추천 서비스 운영 경험", "논문 구현·재현 경험", "LLM 서비스 적용 경험"],
     },
 }

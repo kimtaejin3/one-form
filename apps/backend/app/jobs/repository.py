@@ -64,8 +64,15 @@ def _build_jobs():
                     f"{COMPANIES[company]['info']}"
                 ),
                 "responsibilities": role["responsibilities"] + [f"{required_skill} 관련 과제 설계·개선"],
-                "requirements": role["requirements"] + [f"{required_skill} 경험"],
-                "preferred": role["preferred"] + [f"{preferred_skill} 경험"],
+                # 세부 역량 풀에서 공고마다 다른 3개 — 같은 직무라도 요구/부족 스킬이 갈린다.
+                "requirements": (
+                    role["core"]
+                    + [role["skills"][(i + 2 * k) % len(role["skills"])] for k in range(3)]
+                    + [f"{required_skill} 경험"]
+                ),
+                "preferred": role["preferred"] + [
+                    role["skills"][(i + 1) % len(role["skills"])], f"{preferred_skill} 경험"
+                ],
                 "company_info": COMPANIES[company]["info"],
             })
     return jobs

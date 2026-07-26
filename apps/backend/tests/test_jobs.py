@@ -84,10 +84,35 @@ def test_job_detail_match_analysis_splits_requirements(client):
     body = client.get(f"/api/jobs/{job_id}").json()
     analysis = body["match_analysis"]
     assert analysis.keys() == {"matched_skills", "missing_skills"}
-    # 목 프로필은 React·TypeScript 보유, HTML/CSS는 스택에 없다.
-    assert {"React", "TypeScript"} <= set(analysis["matched_skills"])
-    assert "HTML/CSS" in analysis["missing_skills"]
+    assert {"React", "TypeScript"} <= set(analysis["matched_skills"])  # 목 프로필 보유
     # 충족 + 부족 = 요구 스킬 전체(누락·중복 없음).
     assert sorted(analysis["matched_skills"] + analysis["missing_skills"]) == sorted(
         body["requirements"]
     )
+
+
+# 프론트엔드 세부 역량 — 목 프로필이 '일부만' 보유한다(전부 보유면 부족이 안 생겨 세부 매칭이 안 보인다).
+PROFILE_HAS = {"HTML/CSS", "상태관리(TanStack Query)", "웹 성능 최적화", "디자인 시스템", "모노레포 개발환경"}
+PROFILE_LACKS = {
+    "SSR(Next.js)", "웹뷰(WebView) 연동", "웹 접근성(a11y)", "프론트엔드 테스팅(Playwright)",
+}
+
+
+def test_match_analysis_splits_detail_skills(client):
+    """세부 역량 단위로 갈리는가 — 프로필 표기와 공고 요구 스킬 문자열이 어긋나면 여기서 깨진다.
+
+    'React·TypeScript는 충족'까지만 맞고 세부(SSR·웹뷰·접근성)가 전부 부족/전부 충족으로 쏠리면
+    상세페이지의 충족/부족 리스트가 무의미해진다.
+    """
+    ids = [j["id"] for j in client.get("/api/jobs", params={"role": "프론트엔드"}).json()["jobs"]]
+    details = [client.get(f"/api/jobs/{i}").json() for i in ids]
+    for d in details:
+        required, analysis = set(d["requirements"]), d["match_analysis"]
+        assert PROFILE_HAS & required <= set(analysis["matched_skills"]), d["id"]
+        assert PROFILE_LACKS & required <= set(analysis["missing_skills"]), d["id"]
+        assert analysis["missing_skills"], d["id"]  # 프로필이 전부는 못 갖춘다
+
+    # 같은 직무라도 공고마다 요구 세부가 달라 충족/부족 조합이 구분된다.
+    assert len({tuple(d["requirements"]) for d in details}) == len(details)
+    assert len({tuple(d["match_analysis"]["missing_skills"]) for d in details}) == len(details)
+    assert set().union(*(set(d["requirements"]) for d in details)) & PROFILE_LACKS
