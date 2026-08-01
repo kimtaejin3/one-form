@@ -82,3 +82,9 @@ class Profile(BaseModel):
     careers: list[Career]
     projects: list[Project]
     activities: list[ProfileActivity]
+
+
+class ResumeUploadResponse(BaseModel):
+    profile: Profile
+    parsed_fields: int
+    message: str

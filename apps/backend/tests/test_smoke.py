@@ -19,4 +19,5 @@ def test_post_endpoints(client):
     assert client.post("/api/essays/draft", json={"question_id": 1}).json()["question_id"] == 1
     assert client.post("/api/companies/analyze", json={"name": "쿠팡"}).json()["name"] == "쿠팡"
     assert len(client.post("/api/forms/convert").json()["mappings"]) == 5
-    assert client.post("/api/profile/resume").json()["parsed_fields"] == 12
+    response = client.post("/api/profile/resume")
+    assert response.status_code == 422  # 파일 없는 multipart 업로드는 거절

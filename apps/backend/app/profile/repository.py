@@ -130,9 +130,23 @@ async def get_profile():
         }
 
 
-async def upload_resume():
-    return await mock({
-        "parsed_fields": 12,
-        "new_experiences": 3,
-        "message": "이력서에서 12개 필드를 추출해 마스터 프로필에 반영했습니다.",
-    })
+async def save_profile(profile: dict) -> dict:
+    """프로필을 단일 JSONB 행으로 저장하고, DB가 없으면 개발용 메모리에 보관한다."""
+    global _PROFILE
+    sm = get_sessionmaker()
+    if sm is None:
+        _PROFILE = profile
+        return _PROFILE
+
+    async with sm() as s:
+        row = await s.get(Profile, 1)
+        fields = {key: value for key, value in profile.items() if key != "registered"}
+        if row is None:
+            row = Profile(id=1, registered=profile["registered"], **fields)
+            s.add(row)
+        else:
+            row.registered = profile["registered"]
+            for key, value in fields.items():
+                setattr(row, key, value)
+        await s.commit()
+    return profile

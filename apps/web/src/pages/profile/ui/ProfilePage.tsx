@@ -1,14 +1,24 @@
+import { useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Card } from '@one-form/design-system'
+import { Button, Card } from '@one-form/design-system'
 import { profileQuery } from '@/entities/profile'
+import { ProfileEditor } from '@/features/edit-profile'
 import { UploadResume } from '@/features/upload-resume'
 
 export default function ProfilePage() {
   const { data: profile } = useSuspenseQuery(profileQuery)
+  const [isEditing, setIsEditing] = useState(false)
 
   return (
     <div className="stack">
-      <UploadResume />
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <UploadResume onUploaded={() => setIsEditing(true)} />
+        {!isEditing && <Button variant="ghost" onClick={() => setIsEditing(true)}>프로필 편집</Button>}
+      </div>
+
+      {isEditing ? (
+        <ProfileEditor profile={profile} onCancel={() => setIsEditing(false)} onSaved={() => setIsEditing(false)} />
+      ) : (
 
       <Card>
         <div className="resume">
@@ -193,6 +203,7 @@ export default function ProfilePage() {
           </section>
         </div>
       </Card>
+      )}
     </div>
   )
 }

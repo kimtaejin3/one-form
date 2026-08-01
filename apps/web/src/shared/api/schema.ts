@@ -64,7 +64,8 @@ export interface paths {
         };
         /** Get Profile */
         get: operations["get_profile_api_profile_get"];
-        put?: never;
+        /** Update Profile */
+        put: operations["update_profile_api_profile_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -273,6 +274,11 @@ export interface components {
             org: string;
             /** Date */
             date: string;
+        };
+        /** Body_upload_resume_api_profile_resume_post */
+        Body_upload_resume_api_profile_resume_post: {
+            /** File */
+            file: string;
         };
         /** Career */
         Career: {
@@ -564,6 +570,14 @@ export interface components {
             /** Slots */
             slots: components["schemas"]["AnswerSlot"][];
         };
+        /** ResumeUploadResponse */
+        ResumeUploadResponse: {
+            profile: components["schemas"]["Profile"];
+            /** Parsed Fields */
+            parsed_fields: number;
+            /** Message */
+            message: string;
+        };
         /** Signal */
         Signal: {
             /** Label */
@@ -713,14 +727,18 @@ export interface operations {
             };
         };
     };
-    upload_resume_api_profile_resume_post: {
+    update_profile_api_profile_put: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Profile"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -728,7 +746,49 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_resume_api_profile_resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_resume_api_profile_resume_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
