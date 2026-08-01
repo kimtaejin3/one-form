@@ -63,6 +63,34 @@ apps/
 └── backend/   # 백엔드 (FastAPI + uv, port 8000)
 ```
 
+```mermaid
+flowchart LR
+  User[사용자 브라우저]
+  Landing[landing\nVite 정적 랜딩\n:3000]
+  Web[web\nReact + TypeScript + Vite\nTanStack Query · FSD\n:3001]
+  DS[design-system\n공용 UI · 디자인 토큰]
+  API[backend\nFastAPI\n:8000]
+  Domains[도메인 API\n프로필 · 채용공고 · 자소서\n활동 · 알림 · 기업 · 양식]
+  DB[(PostgreSQL\nSQLAlchemy async · Alembic)]
+  Mock[목 데이터 / 인메모리 폴백]
+  Jobs[채용 소스\nWanted · JobKorea · Saramin]
+  AI[AI 어댑터\n임베딩 · LLM\nVoyage · Gemini · Claude]
+
+  User --> Landing
+  User --> Web
+  DS -. 공용 컴포넌트 .-> Web
+  Web -->|/api 프록시| API
+  API --> Domains
+  Domains -->|DATABASE_URL 설정 시| DB
+  Domains -->|미설정 시| Mock
+  Domains --> Jobs
+  Domains --> AI
+```
+
+- `web`은 화면과 서버 상태를 담당하고, `backend`는 도메인별 API와 매칭 로직을 담당합니다.
+- PostgreSQL은 `DATABASE_URL`을 설정하면 사용하며, 개발·CI 환경에서는 목 데이터와 인메모리 캐시로 대체됩니다.
+- AI·외부 채용 소스는 API 키가 있을 때 실제 어댑터를 사용하고, 없으면 결정적인 mock 구현으로 동작합니다.
+
 ## 요구 사항
 
 - Node 22 (`nvm use` — `.nvmrc` 참고)
