@@ -10,10 +10,6 @@ export default function Header() {
         <Link to="/" className="logo" aria-label="홈으로">
           ONEFORM<span className="logo-dot">.</span>
         </Link>
-        <div className="search">
-          <Icon name="search" size={18} />
-          <input type="search" placeholder="기업·공고 검색" aria-label="기업·공고 검색" />
-        </div>
         <div className="topbar-right">
           <ThemeToggle />
           <NotificationBell />

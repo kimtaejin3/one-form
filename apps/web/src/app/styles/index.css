@@ -24,31 +24,6 @@
   align-items: center;
   justify-content: space-between;
 }
-.search {
-  flex: 1;
-  max-width: 420px;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  background: var(--of-surface-alt);
-  border-radius: var(--of-radius-md);
-  color: var(--of-faint);
-}
-.search input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  outline: none;
-  background: none;
-  font-family: var(--of-font-sans);
-  font-size: 14px;
-  color: var(--of-ink);
-}
-.search input::placeholder {
-  color: var(--of-faint);
-}
 .topbar-right {
   display: flex;
   align-items: center;
