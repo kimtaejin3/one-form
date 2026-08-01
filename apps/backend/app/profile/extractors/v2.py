@@ -12,20 +12,42 @@ _SKILLS = [
     "JavaScript", "TypeScript", "PostgreSQL", "React Native", "Node.js", "FastAPI", "Docker",
     "Kubernetes", "MySQL", "Supabase", "NestJS", "Express", "WebSocket", "TanStack Query",
     "Python", "React", "Java", "C++", "Swift", "Git", "Vite", "Jest", "MariaDB", "C#", "WPF",
+    "mysql2", "Joi", "Ajv", "Kysely", "Harbor", "GitLab", "nginx", "TLS", "mTLS", "OCPP",
+    "JSON", "SSE", "Jenkins", "ARKit", "RCTEventEmitter", "SwiftUI", "HTML", "CSS",
 ]
 
 
 def _skills(text: str) -> list[str]:
-    return [skill for skill in _SKILLS if re.search(re.escape(skill), text, re.IGNORECASE)]
+    found: list[str] = []
+    for skill in _SKILLS:
+        # React Native를 찾았으면 그 안의 React를 별도 기술로 중복 기록하지 않는다.
+        if any(skill.lower() in existing.lower() for existing in found):
+            continue
+        if re.search(re.escape(skill), text, re.IGNORECASE):
+            found.append(skill)
+    return found
 
 
 def _clean_lines(text: str) -> list[str]:
     return [re.sub(r"\s+", " ", line).strip() for line in text.splitlines() if line.strip()]
 
 
+def _normalize_soft_wraps(text: str) -> str:
+    """PDF가 단어 중간에서 끊은 줄만 합친다. 불릿 줄과 섹션 줄바꿈은 보존한다."""
+    return re.sub(r"(?<=[A-Za-z가-힣])\s*\n\s*(?=[A-Za-z가-힣])", "", text)
+
+
 def _project_blocks(text: str) -> list[str]:
     matches = list(re.finditer(r"(?:^|\n|경력기술서\s+)\s*\d+\)\s*프로젝트명\s*:\s*(.+)", text))
-    return [text[m.start(): matches[index + 1].start() if index + 1 < len(matches) else len(text)] for index, m in enumerate(matches)]
+    section_end = re.compile(r"\n\s*(?:경험/활동/교육|자격/어학/수상|자기소개서|사람인 인[·.]적성검사)")
+    blocks = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        boundary = section_end.search(text, match.end(), end)
+        if boundary:
+            end = boundary.start()
+        blocks.append(text[match.start():end])
+    return blocks
 
 
 class V2ProfileExtractor:
@@ -101,16 +123,47 @@ class V2ProfileExtractor:
     def _projects(self, text: str) -> list[dict]:
         result = []
         for block in _project_blocks(text):
+            block = _normalize_soft_wraps(block)
             title = re.search(r"프로젝트명\s*:\s*(.+)", block)
             period = re.search(r"수행 기간\s*:\s*([^\n]+)", block)
-            role = re.search(r"주요 역할\s*:\s*([^\n]+)", block)
+            role = re.search(
+                r"주요 역할\s*:\s*(.*?)(?=\n\s*-\s*(?:업무 성과|수행 회사|수행 기간)|\n\s*(?:업무 성과|수행 회사|수행 기간)|$)",
+                block,
+                re.DOTALL,
+            )
             if not title:
                 continue
-            highlights = [line.lstrip("- ").strip() for line in _clean_lines(block) if line.lstrip().startswith("-")]
+            stack_section = re.search(
+                r"사용 언어 및 프레임워크\s*:\s*(.*?)(?=\n\s*-\s*주요 역할|\n\s*주요 역할|$)",
+                block,
+                re.DOTALL,
+            )
+            stack_text = stack_section.group(1) if stack_section else ""
+            stack_lines = {
+                re.sub(r"\s+", " ", line).strip().lstrip("- ")
+                for line in stack_text.splitlines()
+                if line.strip()
+            }
+            highlights = []
+            for line in _clean_lines(block):
+                clean = line.lstrip("- ").strip()
+                if not clean or "프로젝트명:" in clean:
+                    continue
+                achievement = re.match(r"(?:업무 성과)\s*:\s*(.+)$", clean)
+                if achievement:
+                    highlights.append(achievement.group(1).strip())
+                    continue
+                if re.match(r"(?:수행 기간|수행 회사|사용 언어 및 프레임워크|주요 역할)\s*:", clean):
+                    continue
+                if clean in stack_lines or clean.startswith("경력기술서"):
+                    continue
+                highlights.append(clean)
             result.append({
-                "name": title.group(1).strip(), "role": role.group(1).strip() if role else "",
-                "period": period.group(1).strip() if period else "", "summary": "",
-                "highlights": highlights[:8], "stack": _skills(block),
+                "name": title.group(1).strip(), "role": "프로젝트",
+                "period": period.group(1).strip() if period else "",
+                "summary": re.sub(r"\s+", " ", role.group(1)).strip() if role else "",
+                "highlights": highlights,
+                "stack": _skills(stack_text),
             })
         return result
 

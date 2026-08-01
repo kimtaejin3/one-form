@@ -85,4 +85,9 @@ MySQL PostgreSQL
     assert len(profile["careers"]) == 2
     assert profile["careers"][0]["company"] == "라인월드"
     assert len(profile["projects"]) == 2
-    assert "React" in profile["projects"][0]["stack"]
+    assert "React Native" in profile["projects"][0]["stack"]
+    assert profile["projects"][0]["role"] == "프로젝트"
+    assert "화면 설계" in profile["projects"][0]["summary"]
+    assert len(profile["projects"][0]["highlights"]) == 1
+    assert profile["projects"][0]["stack"] == ["TypeScript", "React Native", "Supabase", "Swift"]
+    assert not any("토스" in highlight for highlight in profile["projects"][1]["highlights"])
