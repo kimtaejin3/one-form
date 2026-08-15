@@ -3,12 +3,76 @@
 # ponytail: layout 모드는 표에서 좌표 순서를 보존한다 — 이력서에선 이름이 학력보다 앞에
 #   오는지가, 공고에선 '자격요건/우대사항' 열이 섞이지 않는지가 여기서 갈린다.
 """
+from base64 import b64encode
 from io import BytesIO
+import logging
 
+from PIL import Image
 from pypdf import PdfReader
+from pypdf.generic._image_xobject import _xobj_to_image
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 MAX_PAGES = 30
+MAX_PHOTO_BYTES = 2 * 1024 * 1024
+MAX_PHOTO_PIXELS = 8_000_000
+MAX_PHOTO_DECODE_PIXELS = 16_000_000
+MAX_PHOTO_CANDIDATES = 8
+
+_IMAGE_MIME = {
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png": "image/png",
+    "webp": "image/webp",
+}
+_logger = logging.getLogger(__name__)
+
+
+def _photo_candidates(page):
+    candidates = []
+    visited = set()
+
+    def visit(container):
+        resources = container.get("/Resources")
+        if not resources or not (xobjects := resources.get_object().get("/XObject")):
+            return
+        for reference in xobjects.get_object().values():
+            xobject = reference.get_object()
+            marker = id(xobject)
+            if marker in visited:
+                continue
+            visited.add(marker)
+            if xobject.get("/Subtype") == "/Form":
+                visit(xobject)
+                continue
+            if xobject.get("/Subtype") != "/Image":
+                continue
+            pixels = int(xobject.get("/Width", 0)) * int(xobject.get("/Height", 0))
+            if 0 < pixels <= MAX_PHOTO_PIXELS:
+                candidates.append((pixels, "xobject", xobject))
+
+    visit(page)
+
+    inline = []
+    inline_pixels = 0
+    inline_bytes = 0
+    content = page.get_contents()
+    for params, operator in content.operations if content is not None else []:
+        if operator != b"INLINE IMAGE":
+            continue
+        settings = params["settings"]
+        pixels = int(settings.get("/Width", settings.get("/W", 0))) * int(
+            settings.get("/Height", settings.get("/H", 0))
+        )
+        data_size = len(params["data"])
+        if pixels <= 0 or pixels > MAX_PHOTO_PIXELS or data_size > MAX_PHOTO_BYTES:
+            inline = []
+            break
+        inline.append((pixels, "inline", f"~{len(inline)}~"))
+        inline_pixels += pixels
+        inline_bytes += data_size
+    if inline_pixels <= MAX_PHOTO_PIXELS and inline_bytes <= MAX_PHOTO_BYTES:
+        candidates.extend(inline)
+    return sorted(candidates, key=lambda item: item[0], reverse=True)
 
 
 def pdf_pages(pdf_bytes: bytes) -> list[str]:
@@ -34,3 +98,41 @@ def pdf_pages(pdf_bytes: bytes) -> list[str]:
     if not any(page.strip() for page in pages):
         raise ValueError("텍스트를 추출할 수 없는 PDF입니다. 텍스트형 PDF를 업로드해 주세요.")
     return pages
+
+
+def pdf_photo_data_url(pdf_bytes: bytes) -> str:
+    """첫 페이지 내장 이미지 중 가장 큰 브라우저 지원 이미지를 data URL로 반환한다."""
+    try:
+        # Pillow는 설정값의 2배부터 해제 폭탄을 거절하므로 8MP에서 막히게 절반을 지정한다.
+        Image.MAX_IMAGE_PIXELS = MAX_PHOTO_PIXELS // 2
+        reader = PdfReader(BytesIO(pdf_bytes))
+        if reader.is_encrypted:
+            reader.decrypt("")
+        page = reader.pages[0]
+        decoded_pixels = 0
+        for index, (pixels, kind, candidate) in enumerate(_photo_candidates(page)):
+            if index >= MAX_PHOTO_CANDIDATES or decoded_pixels + pixels > MAX_PHOTO_DECODE_PIXELS:
+                break
+            decoded_pixels += pixels
+            try:
+                if kind == "xobject":
+                    extension, data, image = _xobj_to_image(candidate)
+                    extension = extension.lstrip(".").lower()
+                else:
+                    image_file = page.images[candidate]
+                    extension = image_file.name.rsplit(".", 1)[-1].lower()
+                    data, image = image_file.data, image_file.image
+            except Exception:
+                _logger.info("PDF 내장 이미지 하나를 건너뜁니다.", exc_info=True)
+                continue
+            if (
+                extension in _IMAGE_MIME
+                and image.width * image.height <= MAX_PHOTO_PIXELS
+                and len(data) <= MAX_PHOTO_BYTES
+            ):
+                encoded = b64encode(data).decode("ascii")
+                return f"data:{_IMAGE_MIME[extension]};base64,{encoded}"
+        return ""
+    except Exception:
+        _logger.info("PDF 사진 추출을 건너뜁니다.", exc_info=True)
+        return ""  # 사진 추출 실패가 이력서 텍스트 파싱까지 막으면 안 된다.

@@ -21,6 +21,7 @@ export default function UploadResume({ onUploaded }: Props) {
           disabled={resume.isPending}
         />
       </label>
+      <span className="of-mono">PDF만 지원 · 최대 10MB · 30페이지 이하</span>
       {resume.data && <span className="of-mono">{resume.data.message}</span>}
       {resume.error && <span className="form-error">PDF 업로드에 실패했습니다. 파일을 확인해 주세요.</span>}
     </div>

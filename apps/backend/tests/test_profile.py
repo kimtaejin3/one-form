@@ -1,3 +1,8 @@
+from io import BytesIO
+
+from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject, NumberObject
+
 from app.core import pdf
 from app.profile import service
 
@@ -20,6 +25,86 @@ class _Reader:
         pass
 
 
+def _flate_image_pdf(width: int, height: int, data: bytes) -> bytes:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    image = DecodedStreamObject()
+    image.set_data(data)
+    image.update(
+        {
+            NameObject("/Type"): NameObject("/XObject"),
+            NameObject("/Subtype"): NameObject("/Image"),
+            NameObject("/Width"): NumberObject(width),
+            NameObject("/Height"): NumberObject(height),
+            NameObject("/ColorSpace"): NameObject("/DeviceRGB"),
+            NameObject("/BitsPerComponent"): NumberObject(8),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/XObject"): DictionaryObject(
+                {NameObject("/Photo"): writer._add_object(image.flate_encode())}
+            )
+        }
+    )
+    stream = BytesIO()
+    writer.write(stream)
+    return stream.getvalue()
+
+
+def _supported_and_larger_unsupported_pdf() -> bytes:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+
+    supported = DecodedStreamObject()
+    supported.set_data(b"\xff\x00\x00" * 4)
+    supported.update(
+        {
+            NameObject("/Type"): NameObject("/XObject"),
+            NameObject("/Subtype"): NameObject("/Image"),
+            NameObject("/Width"): NumberObject(2),
+            NameObject("/Height"): NumberObject(2),
+            NameObject("/ColorSpace"): NameObject("/DeviceRGB"),
+            NameObject("/BitsPerComponent"): NumberObject(8),
+        }
+    )
+    unsupported = DecodedStreamObject()
+    unsupported.set_data(b"not-jp2")
+    unsupported.update(
+        {
+            NameObject("/Type"): NameObject("/XObject"),
+            NameObject("/Subtype"): NameObject("/Image"),
+            NameObject("/Width"): NumberObject(3),
+            NameObject("/Height"): NumberObject(3),
+            NameObject("/Filter"): NameObject("/JPXDecode"),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/XObject"): DictionaryObject(
+                {
+                    NameObject("/Supported"): writer._add_object(supported.flate_encode()),
+                    NameObject("/Unsupported"): writer._add_object(unsupported),
+                }
+            )
+        }
+    )
+    stream = BytesIO()
+    writer.write(stream)
+    return stream.getvalue()
+
+
+def _inline_image_pdf() -> bytes:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    content = DecodedStreamObject()
+    content.set_data(b"BI /W 2 /H 2 /CS /RGB /BPC 8 ID " + b"\xff\x00\x00" * 4 + b" EI")
+    page[NameObject("/Contents")] = writer._add_object(content)
+    stream = BytesIO()
+    writer.write(stream)
+    return stream.getvalue()
+
+
 def test_profile_from_pdf_extracts_safe_contact_fields(monkeypatch):
     # PDF 텍스트 추출은 app.core.pdf로 옮겼다(companies 공고 수집과 공유).
     monkeypatch.setattr(pdf, "PdfReader", _Reader)
@@ -30,7 +115,81 @@ def test_profile_from_pdf_extracts_safe_contact_fields(monkeypatch):
     assert profile["personal"]["name"] == "홍길동"
     assert profile["personal"]["email"] == "gil@example.com"
     assert profile["personal"]["phone"] == "010-1234-5678"
+    assert profile["personal"]["photo"] == ""
     assert profile["links"][0] == {"label": "GitHub", "url": "https://github.com/gildong"}
+
+
+def test_profile_from_pdf_uses_extracted_photo(monkeypatch):
+    monkeypatch.setattr(pdf, "PdfReader", _Reader)
+    monkeypatch.setattr(
+        service,
+        "pdf_photo_data_url",
+        lambda _content: "data:image/jpeg;base64,cGhvdG8=",
+    )
+
+    profile = service.profile_from_pdf(b"pdf bytes")
+
+    assert profile["personal"]["photo"] == "data:image/jpeg;base64,cGhvdG8="
+
+
+def test_pdf_photo_extracts_real_pypdf_image():
+    photo = pdf.pdf_photo_data_url(_flate_image_pdf(2, 2, b"\xff\x00\x00" * 4))
+
+    assert photo.startswith("data:image/png;base64,")
+
+
+def test_pdf_photo_skips_larger_unsupported_format():
+    photo = pdf.pdf_photo_data_url(_supported_and_larger_unsupported_pdf())
+
+    assert photo.startswith("data:image/png;base64,")
+
+
+def test_pdf_photo_extracts_safe_inline_image():
+    photo = pdf.pdf_photo_data_url(_inline_image_pdf())
+
+    assert photo.startswith("data:image/png;base64,")
+
+
+def test_pdf_photo_skips_oversized_image(monkeypatch):
+    calls = 0
+    original = pdf._xobj_to_image
+
+    def tracked(xobject):
+        nonlocal calls
+        calls += 1
+        return original(xobject)
+
+    monkeypatch.setattr(pdf, "_xobj_to_image", tracked)
+
+    assert pdf.pdf_photo_data_url(_flate_image_pdf(3_000, 3_000, b"compressed")) == ""
+    assert calls == 0
+
+
+def test_pdf_photo_stops_when_decode_budget_is_exhausted(monkeypatch):
+    class _PageOnlyReader:
+        is_encrypted = False
+        pages = [object()]
+
+        def __init__(self, _stream):
+            pass
+
+    calls = 0
+
+    def broken_image(_candidate):
+        nonlocal calls
+        calls += 1
+        raise ValueError("broken image")
+
+    monkeypatch.setattr(pdf, "PdfReader", _PageOnlyReader)
+    monkeypatch.setattr(
+        pdf,
+        "_photo_candidates",
+        lambda _page: [(8_000_000, "xobject", object())] * 4,
+    )
+    monkeypatch.setattr(pdf, "_xobj_to_image", broken_image)
+
+    assert pdf.pdf_photo_data_url(b"pdf bytes") == ""
+    assert calls == 2
 
 
 def test_profile_from_pdf_rejects_empty_file():
