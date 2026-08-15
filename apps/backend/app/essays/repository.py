@@ -5,35 +5,18 @@ from app.core.db import get_sessionmaker
 from app.core.mock import mock
 from app.essays.models import EssayAnswer, EssayCompany, EssayQuestion
 
-# 유니크 문항 풀. prompt는 제네릭(회사명 없는 표현) — 답변에 회사명을 리터럴로 쓴다.
+# 2026년 상반기 삼성전자 신입 공고 스냅샷(2026-03-10~03-17).
+# 출처: https://www.jobkorea.co.kr/company/1808899/keyword?C_Idx=171&Ort_Year=0&Page=9
 _QUESTIONS = [
-    {"id": 1, "tag": "지원동기", "prompt": "지원한 이유와 입사 후 이루고 싶은 목표를 구체적으로 서술하시오.", "char_limit": 700},
-    {"id": 2, "tag": "지원동기", "prompt": "지원한 회사의 서비스 중 개선하고 싶은 것과 그 이유는 무엇입니까?", "char_limit": 800},
-    {"id": 3, "tag": "경험", "prompt": "본인이 주도적으로 문제를 해결한 경험을 서술하시오.", "char_limit": 1000},
-    {"id": 4, "tag": "경험", "prompt": "팀으로 협업하며 갈등을 겪었던 경험과 이를 해결한 과정을 서술하시오.", "char_limit": 800},
-    {"id": 5, "tag": "경험", "prompt": "새로운 목표를 세우고 이를 달성하기 위해 끈기 있게 노력했던 경험을 서술하시오.", "char_limit": 1000},
-    {"id": 6, "tag": "역량", "prompt": "지원 직무에 필요한 역량을 갖추기 위해 노력한 과정을 서술하시오.", "char_limit": 1500},
-    {"id": 7, "tag": "역량", "prompt": "지원 분야와 관련해 본인이 갖춘 전문성을 사례와 함께 기술하시오.", "char_limit": 1000},
-    {"id": 8, "tag": "성장과정", "prompt": "본인의 성장과정에서 가장 큰 영향을 준 사건과 그로 인해 변화한 점을 서술하시오.", "char_limit": 1500},
-    {"id": 9, "tag": "포부", "prompt": "입사 후 10년간의 커리어 계획과 회사에 기여할 수 있는 바를 서술하시오.", "char_limit": 1200},
-    {"id": 10, "tag": "자기소개", "prompt": "본인을 한 문장으로 소개하고, 그렇게 표현한 이유를 경험에 기반해 서술하시오.", "char_limit": 500},
-    {"id": 11, "tag": "역량", "prompt": "글로벌 환경에서 일하기 위해 준비해온 것과 앞으로의 계획을 서술하시오.", "char_limit": 1000},
-    {"id": 12, "tag": "포부", "prompt": "본인이 생각하는 좋은 개발 문화란 무엇이며, 그것을 위해 어떤 기여를 할 수 있습니까?", "char_limit": 800},
+    {"id": 1, "tag": "지원동기", "prompt": "삼성전자를 지원한 이유와 입사 후 회사에서 이루고 싶은 꿈을 기술하십시오.", "char_limit": 700},
+    {"id": 2, "tag": "성장과정", "prompt": "본인의 성장과정을 간략히 기술하되 현재의 자신에게 가장 큰 영향을 끼친 사건, 인물 등을 포함하여 기술하시기 바랍니다. (※작품 속 가상인물도 가능)", "char_limit": 1500},
+    {"id": 3, "tag": "사회이슈", "prompt": "최근 사회 이슈 중 중요하다고 생각되는 한 가지를 선택하고 이에 관한 자신의 견해를 기술해 주시기 바랍니다.", "char_limit": 1000},
+    {"id": 4, "tag": "직무역량", "prompt": "지원한 직무 관련 본인의 전문지식과 경험을 작성하고, 본인이 지원 직무에 적합한 사유를 삼성전자 제품과 서비스 사용 경험을 기반으로 기술하시기 바랍니다.", "char_limit": 1000},
 ]
 
-# 기업 → 문항 참조. 여러 기업이 같은 문항 id를 공유한다(문항은 유니크, 답변은 기업별로 별개).
-# 어떤 기업도 참조하지 않는 문항(10·12) = 공통 슬롯 1개로 작성.
+# 기업 → 공고 참조. 원문을 확인하지 않은 기업은 시드하지 않는다.
 _COMPANIES = [
-    {"name": "네이버", "deadline": "2026-07-28", "question_ids": [1, 3, 6]},
-    {"name": "토스", "deadline": "2026-07-25", "question_ids": [3, 6, 9]},
-    {"name": "카카오", "deadline": "2026-07-30", "question_ids": [2, 4, 8]},
-    {"name": "삼성전자", "deadline": "2026-08-03", "question_ids": [1, 5, 8]},
-    {"name": "SK하이닉스", "deadline": "2026-08-07", "question_ids": [5, 7]},
-    {"name": "현대자동차", "deadline": "2026-07-31", "question_ids": [1, 7, 9]},
-    {"name": "LG전자", "deadline": "2026-08-10", "question_ids": [4, 8]},
-    {"name": "쿠팡", "deadline": "2026-08-05", "question_ids": [3, 9]},
-    {"name": "당근", "deadline": "2026-07-29", "question_ids": [2, 11]},
-    {"name": "라인", "deadline": "2026-08-14", "question_ids": [6, 11]},
+    {"name": "삼성전자", "deadline": "2026-03-17", "question_ids": [1, 2, 3, 4]},
 ]
 
 # ponytail: in-memory 저장 — 서버 재시작 시 소실. DB 도입 시 이 모듈만 교체(router/schemas 불변).

@@ -51,6 +51,15 @@ export default function QuestionListItem({
           {shown.content.split('\n')[0].trim() || '미작성'}
         </span>
       )}
+      {!common && (
+        <span className="of-essay-item__companies" aria-label="연결된 기업">
+          {question.slots.map((item) => (
+            <span key={item.company} className="of-essay-company-chip">
+              {item.company}
+            </span>
+          ))}
+        </span>
+      )}
       <span className="of-essay-item__meta of-mono">
         {common ? COMMON : `${question.slots.length}개 기업`} · {question.char_limit}자
       </span>

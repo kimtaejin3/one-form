@@ -10,6 +10,14 @@ const VIEWS = [
 ] as const
 type View = (typeof VIEWS)[number]['key']
 
+type CompanySummary = {
+  name: string
+  deadline: string
+  questionCount: number
+  doneCount: number
+  writtenCount: number
+}
+
 const ALL_TAGS = '전체 유형'
 const PAGE_SIZE = 8
 
@@ -50,6 +58,16 @@ export default function EssaysPage() {
   const byName = new Map(slots.filter((s) => s.company !== COMMON).map((s) => [s.company, s]))
   const companies = [...byName.values()].sort((a, b) => a.deadline.localeCompare(b.deadline))
   const company = view === 'company' ? (byName.get(pickedCompany) ?? companies[0]) : undefined
+  const companySummaries: CompanySummary[] = companies.map((item) => {
+    const companySlots = slots.filter((slot) => slot.company === item.company)
+    return {
+      name: item.company,
+      deadline: item.deadline,
+      questionCount: companySlots.length,
+      doneCount: companySlots.filter((slot) => slot.status === '초안 완료').length,
+      writtenCount: companySlots.filter((slot) => slot.status !== '미작성').length,
+    }
+  })
 
   // 유형 필터는 문항별 뷰 전용 — 기업별에선 회사 선택이 주 필터라 유형까지 겹치지 않는다.
   const tags = [ALL_TAGS, ...new Set(questions.map((q) => q.tag))]
@@ -123,20 +141,58 @@ export default function EssaysPage() {
       </div>
 
       {view === 'company' && company && (
-        <div className="row">
-          <Dropdown
-            label="기업 선택"
-            options={companies.map((c) => ({ value: c.company, label: c.company }))}
-            value={company.company}
-            onChange={(v) => {
-              setPickedCompany(v)
-              setPickedPage(1)
-            }}
-          />
-          <span className="of-mono">
-            마감 {company.deadline} · {dday(company.deadline)}
-          </span>
-        </div>
+        <section className="of-essay-company-board" aria-label="지원 기업 현황">
+          <div className="of-essay-company-board__heading">
+            <div>
+              <h2>지원 기업</h2>
+              <p>기업을 고르면 해당 회사의 문항만 모아 볼 수 있어요.</p>
+            </div>
+            <span className="of-mono">{companySummaries.length}개 기업</span>
+          </div>
+          <div className="of-essay-company-board__grid">
+            {companySummaries.map((summary) => {
+              const selectedCompany = summary.name === company.company
+              const missingCount = summary.questionCount - summary.writtenCount
+              return (
+                <button
+                  key={summary.name}
+                  type="button"
+                  className={`of-essay-company-card${selectedCompany ? ' of-essay-company-card--on' : ''}`}
+                  aria-pressed={selectedCompany}
+                  onClick={() => {
+                    setPickedCompany(summary.name)
+                    setPickedPage(1)
+                  }}
+                >
+                  <span className="of-essay-company-card__top">
+                    <strong>{summary.name}</strong>
+                    <span className="of-mono">{dday(summary.deadline)}</span>
+                  </span>
+                  <span className="of-essay-company-card__progress">
+                    {summary.doneCount}/{summary.questionCount} 완료
+                  </span>
+                  <span className="of-essay-company-card__meta">
+                    {missingCount > 0 ? `미작성 ${missingCount}개` : '모든 문항 작성'} · 마감 {summary.deadline}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="row of-essay-company-filter">
+            <Dropdown
+              label="기업 선택"
+              options={companies.map((c) => ({ value: c.company, label: c.company }))}
+              value={company.company}
+              onChange={(v) => {
+                setPickedCompany(v)
+                setPickedPage(1)
+              }}
+            />
+            <span className="of-mono">
+              마감 {company.deadline} · {dday(company.deadline)}
+            </span>
+          </div>
+        </section>
       )}
 
       <div className="of-essay-split" role="tabpanel" id="essay-view-panel">

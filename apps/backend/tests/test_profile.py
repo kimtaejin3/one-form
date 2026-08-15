@@ -1,3 +1,4 @@
+from app.core import pdf
 from app.profile import service
 
 
@@ -20,7 +21,8 @@ class _Reader:
 
 
 def test_profile_from_pdf_extracts_safe_contact_fields(monkeypatch):
-    monkeypatch.setattr(service, "PdfReader", _Reader)
+    # PDF 텍스트 추출은 app.core.pdf로 옮겼다(companies 공고 수집과 공유).
+    monkeypatch.setattr(pdf, "PdfReader", _Reader)
 
     profile = service.profile_from_pdf(b"pdf bytes")
 

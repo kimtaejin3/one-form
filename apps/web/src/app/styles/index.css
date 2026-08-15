@@ -329,20 +329,172 @@
 .signal__source {
   font-size: 12px;
   color: var(--of-muted);
+  flex-wrap: wrap;
 }
-.strength {
+.signal blockquote {
+  margin: 6px 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--of-border-strong);
+  font-size: 13px;
+  color: var(--of-body);
+}
+/* 출처 칩 — 링크라서 hover만 강조하고 색은 칩 규칙을 따른다 */
+.source-chip {
+  text-decoration: none;
+  white-space: nowrap;
+}
+.source-chip:hover {
+  background: var(--of-selection);
+}
+.brief-meta {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.brief-meta dt {
+  color: var(--of-muted);
+  font-size: 12px;
+}
+.brief-meta dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+.disclaimer {
+  margin: 4px 0 0;
+  color: var(--of-muted);
+}
+/* 분석 상태 배너 — partial(주의)·failed(경고)로 색만 갈린다 */
+.analysis-status {
+  padding: 12px 14px;
+  border-radius: var(--of-radius-md);
+  border: 1px solid var(--of-border-strong);
+  background: var(--of-surface-alt);
+  font-size: 13px;
+}
+.analysis-status ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--of-body);
+}
+.analysis-status--partial {
+  border-color: var(--of-status-doing-ink);
+  background: var(--of-status-doing-bg);
+  color: var(--of-status-doing-ink);
+}
+.analysis-status--failed {
+  border-color: var(--of-warn);
+  color: var(--of-warn);
+}
+.analysis-status--stale {
+  border-color: var(--of-status-doing-ink);
+  background: var(--of-status-doing-bg);
+  color: var(--of-status-doing-ink);
+}
+/* 기업 정보 탭 */
+.tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--of-border);
+}
+.tab {
+  padding: 9px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--of-muted);
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--of-body);
+}
+.tab--on {
+  color: var(--of-primary-strong);
+  border-bottom-color: var(--of-primary);
+  font-weight: 600;
+}
+.source-chip__changed {
+  color: var(--of-status-doing-ink);
+  font-weight: 600;
+}
+/* 사실 한 조각 + 근거 칩이 한 덩어리로 줄바꿈되게 */
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.source-refs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+}
+.job-tab {
+  cursor: pointer;
+  border: 1px solid var(--of-border-strong);
+  font: inherit;
+  font-size: 13px;
+}
+.job-tab--on {
+  background: var(--of-primary);
+  color: var(--of-surface);
+  border-color: var(--of-primary);
+}
+.job-insight__title {
+  font-size: 15px;
+}
+.job-insight__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  padding: 12px 0;
-  border-top: 1px solid var(--of-border);
 }
-.strength:first-of-type {
-  border-top: none;
-  padding-top: 0;
+/* 매칭: 강점은 초록, 갭은 회색 — 점수보다 설명이 먼저 읽히게 */
+.match {
+  padding: 10px 12px;
+  border-radius: var(--of-radius-md);
+  border: 1px solid var(--of-border);
+  border-left: 3px solid var(--of-border-strong);
+  background: var(--of-surface-alt);
 }
-.strength__text p {
-  margin: 2px 0;
+.match--strength {
+  border-left-color: var(--of-status-done-ink);
+}
+.match__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.match__need {
+  font-weight: 600;
+}
+.match__badge {
+  padding: 1px 7px;
+  border-radius: var(--of-radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--of-status-doing-bg);
+  color: var(--of-status-doing-ink);
+}
+.match--strength .match__badge {
+  background: var(--of-status-done-bg);
+  color: var(--of-status-done-ink);
+}
+.match__score {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--of-primary-strong);
+}
+.match__evidence,
+.match__reason {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--of-body);
 }
 .fit {
   display: flex;
@@ -367,23 +519,6 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--of-primary-strong);
-}
-.qa {
-  padding: 10px 0;
-  border-top: 1px solid var(--of-border);
-}
-.qa:first-of-type {
-  border-top: none;
-  padding-top: 0;
-}
-.qa__q {
-  margin: 0 0 4px;
-  font-weight: 600;
-}
-.qa__hint {
-  margin: 0;
-  font-size: 14px;
-  color: var(--of-body);
 }
 .job-grid {
   display: grid;
@@ -939,6 +1074,76 @@
   font-size: 13px;
   color: var(--of-muted);
 }
+.of-essay-company-board {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--of-border);
+  border-radius: var(--of-radius-lg);
+  background: var(--of-surface);
+}
+.of-essay-company-board__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.of-essay-company-board__heading h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.of-essay-company-board__heading p {
+  margin: 4px 0 0;
+  color: var(--of-muted);
+  font-size: 13px;
+}
+.of-essay-company-board__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+.of-essay-company-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--of-border);
+  border-radius: var(--of-radius-md);
+  background: var(--of-surface);
+  color: var(--of-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.of-essay-company-card:hover,
+.of-essay-company-card--on {
+  border-color: var(--of-primary);
+  background: var(--of-accent-soft);
+}
+.of-essay-company-card__top,
+.of-essay-company-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.of-essay-company-card__top strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.of-essay-company-card__progress {
+  font-size: 20px;
+  font-weight: 700;
+}
+.of-essay-company-card__meta {
+  color: var(--of-muted);
+  font-size: 12px;
+}
+.of-essay-company-filter {
+  align-items: end;
+  padding-top: 2px;
+}
 .of-essay-split {
   display: grid;
   grid-template-columns: minmax(240px, 320px) 1fr;
@@ -1007,6 +1212,22 @@
   overflow: hidden;
   font-size: 13px;
   color: var(--of-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.of-essay-item__companies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.of-essay-company-chip {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 2px 7px;
+  border: 1px solid var(--of-border);
+  border-radius: 999px;
+  color: var(--of-muted);
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

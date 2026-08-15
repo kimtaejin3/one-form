@@ -1,5 +1,5 @@
-import { AnalyzeCompany } from '@/features/analyze-company'
+import { CompanyIntelligence } from '@/widgets/company-intelligence'
 
 export default function CompaniesPage() {
-  return <AnalyzeCompany />
+  return <CompanyIntelligence />
 }

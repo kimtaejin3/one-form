@@ -107,6 +107,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/companies/{normalized_name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Company */
+        get: operations["get_company_api_companies__normalized_name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/{normalized_name}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Company */
+        post: operations["refresh_company_api_companies__normalized_name__refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/{normalized_name}/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sources */
+        get: operations["get_sources_api_companies__normalized_name__sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/{normalized_name}/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Jobs */
+        get: operations["get_jobs_api_companies__normalized_name__jobs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/{normalized_name}/matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Matches */
+        get: operations["get_matches_api_companies__normalized_name__matches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/essays/questions": {
         parameters: {
             query?: never;
@@ -236,6 +321,22 @@ export interface components {
             /** Connections */
             connections: components["schemas"]["Connection"][];
         };
+        /** AnalysisJobStatus */
+        AnalysisJobStatus: {
+            /** Normalized Name */
+            normalized_name: string;
+            status: components["schemas"]["AnalysisStatus"];
+            /** Warnings */
+            warnings: string[];
+            /** Last Analyzed At */
+            last_analyzed_at: string | null;
+        };
+        /**
+         * AnalysisStatus
+         * @description 단계별 상태 — 수집 실패를 전체 실패로 만들지 않는다(계획서 §4).
+         * @enum {string}
+         */
+        AnalysisStatus: "queued" | "collecting" | "analyzing" | "ready" | "partial" | "failed";
         /** AnswerSlot */
         AnswerSlot: {
             /** Company */
@@ -306,31 +407,98 @@ export interface components {
         CompanyAnalyzeRequest: {
             /** Name */
             name: string;
+            /** Job Url */
+            job_url?: string | null;
+            /**
+             * Force Refresh
+             * @default false
+             */
+            force_refresh: boolean;
         };
-        /** CompanyBrief */
-        CompanyBrief: {
+        /** CompanyIntelligence */
+        CompanyIntelligence: {
             /** Name */
             name: string;
+            /** Normalized Name */
+            normalized_name: string;
             /** Domain */
             domain: string;
-            /** Summary */
-            summary: string;
-            /** Stage */
-            stage: string;
+            summary: components["schemas"]["SourcedText"] | null;
+            stage: components["schemas"]["SourcedText"] | null;
             /** Business Areas */
-            business_areas: string[];
+            business_areas: components["schemas"]["SourcedText"][];
             /** Products */
-            products: string[];
-            /** Jd Skills */
-            jd_skills: string[];
+            products: components["schemas"]["SourcedText"][];
             /** Signals */
-            signals: components["schemas"]["Signal"][];
-            /** Strength Matching */
-            strength_matching: components["schemas"]["StrengthMatch"][];
-            /** Interview Points */
-            interview_points: components["schemas"]["InterviewPoint"][];
-            /** Apply Tips */
-            apply_tips: string[];
+            signals: components["schemas"]["IntelligenceSignal"][];
+            /** Jobs */
+            jobs: components["schemas"]["CompanyJob"][];
+            /** Sources */
+            sources: components["schemas"]["SourceSummary"][];
+            /** Source Count */
+            source_count: number;
+            /** Manual Urls */
+            manual_urls: string[];
+            status: components["schemas"]["AnalysisStatus"];
+            /** Warnings */
+            warnings: string[];
+            /** Needs Review */
+            needs_review: string[];
+            /** Last Analyzed At */
+            last_analyzed_at: string | null;
+            /** Fresh Until */
+            fresh_until: string | null;
+            /** Is Stale */
+            is_stale: boolean;
+        };
+        /**
+         * CompanyJob
+         * @description 공고/JD 구조화 결과. 모든 항목이 원문 공고(source_id) 하나에서 나온다.
+         */
+        CompanyJob: {
+            /** Id */
+            id: number;
+            /** Source Id */
+            source_id: number;
+            /** Title */
+            title: string;
+            /** Role Category */
+            role_category: string;
+            /** Location */
+            location: string;
+            /** Employment */
+            employment: string;
+            /** Deadline */
+            deadline: string;
+            /** Description */
+            description: string;
+            /** Requirements */
+            requirements: string[];
+            /** Preferred */
+            preferred: string[];
+            /** Core Skills */
+            core_skills: string[];
+            /** Problem Types */
+            problem_types: string[];
+        };
+        /**
+         * CompanyMatch
+         * @description 기업 요구 → 내 경험 → 근거. 점수보다 설명이 먼저다(계획서 §8).
+         */
+        CompanyMatch: {
+            /** Job Id */
+            job_id: number | null;
+            /** Company Need */
+            company_need: string;
+            /** Profile Evidence */
+            profile_evidence: string;
+            match_type: components["schemas"]["MatchType"];
+            /** Score */
+            score: number;
+            /** Reason */
+            reason: string;
+            /** Source Ids */
+            source_ids: number[];
         };
         /** Connection */
         Connection: {
@@ -369,12 +537,19 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** InterviewPoint */
-        InterviewPoint: {
-            /** Question */
-            question: string;
-            /** Hint */
-            hint: string;
+        /** IntelligenceSignal */
+        IntelligenceSignal: {
+            /** Label */
+            label: string;
+            /** Detail */
+            detail: string;
+            signal_type: components["schemas"]["SignalType"];
+            /** Confidence */
+            confidence: number;
+            /** Evidence Quote */
+            evidence_quote: string | null;
+            /** Source Ids */
+            source_ids: number[];
         };
         /** Job */
         Job: {
@@ -471,6 +646,11 @@ export interface components {
             /** Missing Skills */
             missing_skills: string[];
         };
+        /**
+         * MatchType
+         * @enum {string}
+         */
+        MatchType: "strength" | "gap" | "question";
         /** Notification */
         Notification: {
             /** Id */
@@ -578,24 +758,56 @@ export interface components {
             /** Message */
             message: string;
         };
-        /** Signal */
-        Signal: {
-            /** Label */
-            label: string;
-            /** Detail */
-            detail: string;
-            /** Source */
-            source: string;
+        /**
+         * SignalType
+         * @enum {string}
+         */
+        SignalType: "business" | "product" | "hiring" | "technology" | "risk" | "culture";
+        /**
+         * SourceKind
+         * @enum {string}
+         */
+        SourceKind: "official_site" | "careers" | "dart" | "newsroom" | "job_posting" | "user_url";
+        /** SourceSummary */
+        SourceSummary: {
+            /** Id */
+            id: number;
+            kind: components["schemas"]["SourceKind"];
+            /** Url */
+            url: string;
+            /** Title */
+            title: string;
+            /** Publisher */
+            publisher: string;
+            /** Published At */
+            published_at: string | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            trust_level: components["schemas"]["TrustLevel"];
+            /** Changed */
+            changed: boolean;
         };
-        /** StrengthMatch */
-        StrengthMatch: {
-            /** Company Issue */
-            company_issue: string;
-            /** My Experience */
-            my_experience: string;
-            /** Fit */
-            fit: number;
+        /**
+         * SourcedText
+         * @description 근거를 달고 다니는 사실 한 조각. source_ids가 비면 저장하지 않는다(계획서 §6.4).
+         *
+         *     요약·규모·사업 영역·제품 — 모든 사실 필드가 이 형태다. 평범한 str로 두면
+         *     "근거 없는 문장"이 조용히 섞여 들어온다.
+         */
+        SourcedText: {
+            /** Text */
+            text: string;
+            /** Source Ids */
+            source_ids: number[];
         };
+        /**
+         * TrustLevel
+         * @enum {string}
+         */
+        TrustLevel: "primary" | "secondary" | "user_provided";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -812,7 +1024,164 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CompanyBrief"];
+                    "application/json": components["schemas"]["CompanyIntelligence"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_company_api_companies__normalized_name__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                normalized_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyIntelligence"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_company_api_companies__normalized_name__refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                normalized_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisJobStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sources_api_companies__normalized_name__sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                normalized_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_jobs_api_companies__normalized_name__jobs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                normalized_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyJob"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_matches_api_companies__normalized_name__matches_get: {
+        parameters: {
+            query?: {
+                job_id?: number | null;
+            };
+            header?: never;
+            path: {
+                normalized_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyMatch"][];
                 };
             };
             /** @description Validation Error */

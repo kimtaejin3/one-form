@@ -5,38 +5,14 @@ PDF 레이아웃은 작성 도구마다 달라 정규식으로 모든 항목을 
 """
 from __future__ import annotations
 
-from io import BytesIO
-
-from pypdf import PdfReader
-
 from app.core.config import settings
+from app.core.pdf import MAX_FILE_SIZE, MAX_PAGES, pdf_pages  # noqa: F401 — 상수는 기존 임포트 호환
 from app.profile.extractors import get_profile_extractor
 from app.profile import repository
 
-MAX_FILE_SIZE = 10 * 1024 * 1024
-MAX_PAGES = 30
 
 def profile_from_pdf(pdf_bytes: bytes) -> dict:
-    if not pdf_bytes:
-        raise ValueError("비어 있는 파일입니다.")
-    if len(pdf_bytes) > MAX_FILE_SIZE:
-        raise ValueError("PDF 파일은 10MB 이하만 업로드할 수 있습니다.")
-    try:
-        reader = PdfReader(BytesIO(pdf_bytes))
-        if reader.is_encrypted:
-            reader.decrypt("")
-        if len(reader.pages) > MAX_PAGES:
-            raise ValueError("PDF는 30페이지 이하만 업로드할 수 있습니다.")
-        # pypdf의 layout 모드는 표에서 좌표 순서를 보존한다. 이름이 학력보다 앞에 오는 실제 이력서에 중요.
-        pages = [page.extract_text(extraction_mode="layout") or "" for page in reader.pages]
-    except ValueError:
-        raise
-    except Exception as exc:
-        raise ValueError("읽을 수 없는 PDF입니다. 암호화 또는 이미지형 PDF인지 확인해 주세요.") from exc
-
-    if not any(page.strip() for page in pages):
-        raise ValueError("텍스트를 추출할 수 없는 PDF입니다. 텍스트형 PDF를 업로드해 주세요.")
-    return get_profile_extractor(settings.RESUME_EXTRACTOR_VERSION).extract(pages)
+    return get_profile_extractor(settings.RESUME_EXTRACTOR_VERSION).extract(pdf_pages(pdf_bytes))
 
 
 def _filled_count(value: object) -> int:

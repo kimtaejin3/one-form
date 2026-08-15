@@ -24,6 +24,13 @@ class Llm(Protocol):
         self, profile_text: str, job_text: str, base_rate: int, matched: list[str]
     ) -> tuple[int, str]: ...
 
+    async def complete_json(self, prompt: str, schema: dict) -> dict:
+        """JSON 스키마에 맞는 구조화 출력. 못 하면 빈 dict(호출부가 폴백한다).
+
+        companies/analysis.py가 쓴다 — 목 어댑터는 사실을 지어내지 않으려고 {}를 준다.
+        """
+        ...
+
 
 def _parse(text: str, base_rate: int) -> tuple[int, str]:
     """응답 파싱 — 첫 줄 숫자가 매칭률, 둘째 줄이 근거. 형식이 어긋나면 base_rate 유지."""
@@ -45,6 +52,10 @@ class MockLlm:
         else:
             reason = "요구 스킬과 직접 겹치는 경험은 적지만 도메인 경험이 인접합니다"
         return rate, reason
+
+    async def complete_json(self, prompt: str, schema: dict) -> dict:
+        # 목은 기업 사실을 지어내지 않는다 — 구조화 실패로 알리고 호출부가 원문 요약으로 폴백.
+        return {}
 
 
 class AnthropicLlm:
@@ -89,6 +100,32 @@ class AnthropicLlm:
         # content[0]은 thinking 블록일 수 있다 — text 블록만 고른다.
         text = next((b["text"] for b in body["content"] if b["type"] == "text"), "")
         return _parse(text, base_rate)
+
+    async def complete_json(self, prompt: str, schema: dict) -> dict:
+        """도구 강제 호출로 구조화 — 텍스트에서 JSON을 긁는 것보다 견고하다."""
+        import httpx
+
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                res = await client.post(
+                    self.URL,
+                    headers={"x-api-key": self._api_key, "anthropic-version": "2023-06-01"},
+                    json={
+                        "model": self.MODEL,
+                        "max_tokens": 4096,
+                        "tools": [
+                            {"name": "emit", "description": "분석 결과", "input_schema": schema}
+                        ],
+                        "tool_choice": {"type": "tool", "name": "emit"},
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                )
+                res.raise_for_status()
+                body = res.json()
+            block = next(b for b in body["content"] if b["type"] == "tool_use")
+            return block["input"]
+        except Exception:
+            return {}  # 분석 실패는 호출부가 partial로 표시한다
 
 
 class GeminiLlm:
@@ -150,6 +187,40 @@ class GeminiLlm:
                 return rate, reason
         except Exception:  # 인증·네트워크·응답 형태·파싱 실패 — 근거 하나 때문에 피드가 죽으면 안 된다
             return await MockLlm().refine(profile_text, job_text, base_rate, matched)
+
+    async def complete_json(self, prompt: str, schema: dict) -> dict:
+        import httpx
+
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                res = await client.post(
+                    self.URL.format(model=self.MODEL),
+                    params={"key": self._api_key},
+                    json={
+                        # responseSchema는 Gemini 전용 표기라 JSON 스키마를 그대로 못 넘긴다 —
+                        # 스키마는 프롬프트에 싣고 JSON MIME만 강제한다.
+                        "contents": [
+                            {
+                                "parts": [
+                                    {
+                                        "text": f"{prompt}\n\n[출력 JSON 스키마]\n"
+                                        f"{json.dumps(schema, ensure_ascii=False)}"
+                                    }
+                                ]
+                            }
+                        ],
+                        "generationConfig": {
+                            "maxOutputTokens": 8192,
+                            "responseMimeType": "application/json",
+                        },
+                    },
+                )
+                res.raise_for_status()
+                text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+            parsed = json.loads(text)
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:
+            return {}
 
 
 def get_llm() -> Llm:
