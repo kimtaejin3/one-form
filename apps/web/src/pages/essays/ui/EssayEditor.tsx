@@ -30,7 +30,7 @@ export default function EssayEditor({
   const mine = gen.variables?.key === key // 다른 슬롯의 생성 상태를 여기 표시하지 않는다
   const savingMine =
     save.variables?.questionId === question.id && save.variables.company === slot.company
-  const over = text.length - question.char_limit
+  const over = question.char_limit == null ? 0 : text.length - question.char_limit
   const done = slot.status === '초안 완료'
 
   // 작성 중인 본문을 초안이 말없이 덮어쓰지 않게 한 번 확인한다.
@@ -88,7 +88,9 @@ export default function EssayEditor({
       />
 
       <div className={`of-essay-count${over > 0 ? ' of-essay-count--over' : ''}`}>
-        {text.length} / {question.char_limit}자{over > 0 && ` · ${over}자 초과`}
+        {question.char_limit == null
+          ? `${text.length}자 · 제한 없음`
+          : `${text.length} / ${question.char_limit}자${over > 0 ? ` · ${over}자 초과` : ''}`}
       </div>
 
       <div className="row of-essay-actions">

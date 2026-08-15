@@ -13,7 +13,7 @@ class EssayQuestion(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     tag: Mapped[str] = mapped_column(Text)
     prompt: Mapped[str] = mapped_column(Text)
-    char_limit: Mapped[int] = mapped_column(Integer)
+    char_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class EssayCompany(Base):

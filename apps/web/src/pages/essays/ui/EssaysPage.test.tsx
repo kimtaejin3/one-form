@@ -85,6 +85,12 @@ function items() {
   return screen.getAllByRole('button', { name: /\?/ })
 }
 
+function companyCards() {
+  return within(screen.getByRole('region', { name: '지원 기업 현황' }))
+    .getAllByRole('button')
+    .filter((button) => button.hasAttribute('aria-pressed'))
+}
+
 function item(label: string) {
   const found = items().find((el) => el.textContent?.includes(label))
   if (!found) throw new Error(`문항 없음: ${label}`)
@@ -116,7 +122,7 @@ function renderPage() {
 }
 
 function toCompanyView() {
-  fireEvent.click(screen.getByRole('tab', { name: '기업별' }))
+  fireEvent.click(screen.getByRole('button', { name: '기업별' }))
 }
 
 async function pick(label: string, option: string) {
@@ -232,6 +238,65 @@ test('글자 수는 작성한 리터럴 길이로 세고 초과를 경고한다'
   expect(screen.getByText(/자 초과/)).toBeTruthy()
 })
 
+test('자유양식은 글자 제한 없이 현재 글자 수와 상시 채용을 보여준다', async () => {
+  store = [
+    {
+      id: 10,
+      tag: '자유양식',
+      prompt: '이력서 및 자기소개서 (자유양식)',
+      char_limit: null,
+      slots: [
+        {
+          company: '오큘러스에쿼티파트너스',
+          deadline: '',
+          content: '',
+          status: '미작성',
+        },
+      ],
+    },
+  ] as unknown as typeof store
+  renderPage()
+
+  const textarea = await screen.findByLabelText('자소서 본문')
+  expect(screen.getByText('1개 기업 · 글자 수 제한 없음')).toBeTruthy()
+  fireEvent.change(textarea, { target: { value: '자유 형식 본문' } })
+  expect(screen.getByText('8자 · 제한 없음')).toBeTruthy()
+  expect(screen.queryByText(/자 초과/)).toBeNull()
+
+  toCompanyView()
+  expect(screen.getByText('상시 채용')).toBeTruthy()
+  expect(
+    within(screen.getByRole('button', { name: /오큘러스에쿼티파트너스/ })).getByText(
+      '미작성 1개 · 상시 채용',
+    ),
+  ).toBeTruthy()
+})
+
+test('상시 채용은 날짜 마감 기업 뒤에 정렬한다', async () => {
+  store = [
+    ...copy(BASE.slice(0, 1)),
+    {
+      id: 10,
+      tag: '자유양식',
+      prompt: '이력서 및 자기소개서 (자유양식)',
+      char_limit: null,
+      slots: [
+        {
+          company: '오큘러스에쿼티파트너스',
+          deadline: '',
+          content: '',
+          status: '미작성',
+        },
+      ],
+    },
+  ] as unknown as typeof store
+  renderPage()
+  await screen.findByLabelText('자소서 본문')
+
+  toCompanyView()
+  expect(screen.getByRole('combobox', { name: '기업 선택' }).textContent).toContain('토스')
+})
+
 // {회사} 치환은 폐기됐다 — 화면 어디에도 토큰·삽입 버튼·미리보기가 남아 있으면 안 된다.
 test('{회사} 토큰·삽입 버튼·미리보기가 남아 있지 않다', async () => {
   renderPage()
@@ -242,24 +307,70 @@ test('{회사} 토큰·삽입 버튼·미리보기가 남아 있지 않다', asy
   expect(screen.queryByLabelText('답변 미리보기')).toBeNull()
 })
 
-test('검색이 문항 텍스트·유형·회사명으로 목록을 좁힌다', async () => {
+test('문항별 검색은 문항 내용만 검색하고 유형은 별도 필터로 좁힌다', async () => {
   renderPage()
   await waitFor(() => expect(items()).toHaveLength(4))
-  const box = screen.getByLabelText('문항 검색')
+  expect(screen.getByRole('group', { name: '작성 기준' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: '문항별' })).toHaveAttribute('aria-pressed', 'true')
+  const box = screen.getByLabelText('문항 내용 검색')
 
-  fireEvent.change(box, { target: { value: '포부' } }) // 유형
+  fireEvent.change(box, { target: { value: '포부' } })
   expect(items()).toHaveLength(1)
   expect(item('입사 후 포부')).toBeTruthy()
 
-  fireEvent.change(box, { target: { value: '토스' } }) // 회사명(슬롯)
-  expect(items()).toHaveLength(2)
-
-  fireEvent.change(box, { target: { value: '한 문장으로' } }) // 문항 텍스트
-  expect(items()).toHaveLength(1)
-
-  fireEvent.change(box, { target: { value: '없는말' } })
+  fireEvent.change(box, { target: { value: '토스' } }) // 회사명은 검색 범위가 아니다
   expect(screen.queryAllByRole('button', { name: /\?/ })).toHaveLength(0)
-  expect(screen.getByText('해당하는 문항이 없어요.')).toBeTruthy()
+
+  fireEvent.change(box, { target: { value: '' } })
+  await pickTag('경험')
+  expect(items()).toHaveLength(1)
+  expect(item('문제를 해결한 경험')).toBeTruthy()
+})
+
+test('기업별 검색은 기업 카드와 해당 기업 문항만 좁힌다', async () => {
+  renderPage()
+  await screen.findByLabelText('문항 내용 검색')
+  toCompanyView()
+
+  expect(screen.queryByLabelText('문항 내용 검색')).toBeNull()
+  const box = screen.getByLabelText('기업명 검색')
+  fireEvent.change(box, { target: { value: '네이버' } })
+
+  expect(companyCards()).toHaveLength(1)
+  expect(companyCards()[0].textContent).toContain('네이버')
+  expect(items()).toHaveLength(2)
+  expect(screen.getByRole('combobox', { name: '기업 선택' }).textContent).toContain('네이버')
+
+  fireEvent.change(box, { target: { value: '없는 기업' } })
+  expect(screen.getByText('일치하는 기업이 없어요.')).toBeTruthy()
+  expect(screen.queryAllByRole('button', { name: /\?/ })).toHaveLength(0)
+})
+
+test('작성 기준을 바꾸면 해당 기준의 검색어를 초기화한다', async () => {
+  renderPage()
+  const questionSearch = await screen.findByLabelText('문항 내용 검색')
+  fireEvent.change(questionSearch, { target: { value: '포부' } })
+
+  toCompanyView()
+  expect(screen.getByLabelText('기업명 검색')).toHaveValue('')
+  fireEvent.change(screen.getByLabelText('기업명 검색'), { target: { value: '네이버' } })
+
+  fireEvent.click(screen.getByRole('button', { name: '문항별' }))
+  expect(screen.getByLabelText('문항 내용 검색')).toHaveValue('')
+})
+
+test('작성 기준을 왕복해도 저장 전 본문이 유지된다', async () => {
+  renderPage()
+  fireEvent.change(await screen.findByLabelText('자소서 본문'), {
+    target: { value: '네이버에 쓰던 본문' },
+  })
+
+  toCompanyView()
+  await pick('기업 선택', '네이버')
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('네이버에 쓰던 본문')
+
+  fireEvent.click(screen.getByRole('button', { name: '문항별' }))
+  expect(screen.getByLabelText('자소서 본문')).toHaveValue('네이버에 쓰던 본문')
 })
 
 // 재구조가 만든 데이터 소실 회귀(문항·기업 전환 = 본문 초기화)를 못박는다.
@@ -365,10 +476,10 @@ test('유형 필터가 문항별 뷰에서만 목록을 좁히고 검색과 함�
   expect(item('문제를 해결한 경험')).toBeTruthy()
 
   // 검색과 AND — '경험' 유형 안에서 '포부'를 찾으면 아무것도 없다
-  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '포부' } })
+  fireEvent.change(screen.getByLabelText('문항 내용 검색'), { target: { value: '포부' } })
   expect(screen.getByText('해당하는 문항이 없어요.')).toBeTruthy()
 
-  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '' } })
+  fireEvent.change(screen.getByLabelText('문항 내용 검색'), { target: { value: '' } })
   await pickTag('전체 유형')
   expect(items()).toHaveLength(4)
 
@@ -401,11 +512,11 @@ test('페이지당 8개로 끊어 보여주고 이동한다', async () => {
   expect(screen.getByRole('button', { name: '다음 페이지' })).toBeDisabled()
 
   // 검색이 바뀌면 1페이지로 리셋 — 안 그러면 짧아진 목록에서 빈 화면을 본다
-  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '20번 문항' } })
+  fireEvent.change(screen.getByLabelText('문항 내용 검색'), { target: { value: '20번 문항' } })
   expect(items()).toHaveLength(1)
   expect(screen.queryByRole('navigation')).toBeNull()
 
-  fireEvent.change(screen.getByLabelText('문항 검색'), { target: { value: '' } })
+  fireEvent.change(screen.getByLabelText('문항 내용 검색'), { target: { value: '' } })
   expect(screen.getByRole('button', { name: '1페이지' })).toHaveAttribute('aria-current', 'page')
   expect(item('1번 문항은?')).toBeTruthy()
 })

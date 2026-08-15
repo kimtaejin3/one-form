@@ -11,7 +11,7 @@ def test_get_endpoints(client):
     assert len(client.get("/api/notifications").json()) == 8
     assert client.get("/api/jobs/1").json()["match_analysis"]["matched_skills"] is not None
     questions = client.get("/api/essays/questions").json()
-    assert len(questions) == 4
+    assert len(questions) == 10
     assert all(q["prompt"] and q["tag"] and q["slots"] for q in questions)
 
 

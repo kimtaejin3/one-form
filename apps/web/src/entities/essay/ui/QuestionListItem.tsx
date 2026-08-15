@@ -61,7 +61,8 @@ export default function QuestionListItem({
         </span>
       )}
       <span className="of-essay-item__meta of-mono">
-        {common ? COMMON : `${question.slots.length}개 기업`} · {question.char_limit}자
+        {common ? COMMON : `${question.slots.length}개 기업`} ·{' '}
+        {question.char_limit == null ? '글자 수 제한 없음' : `${question.char_limit}자`}
       </span>
     </button>
   )

@@ -11,10 +11,15 @@ def _slot(question: dict, company: str):
 
 def test_slots_one_per_using_company(client):
     by_id = {q["id"]: q for q in client.get("/api/essays/questions").json()}
-    assert len(by_id) == 4
+    assert len(by_id) == 10
 
     assert [s["company"] for s in by_id[1]["slots"]] == ["삼성전자"]
-    assert _slot(by_id[1], "삼성전자")["deadline"] == "2026-03-17"
+    assert _slot(by_id[1], "삼성전자")["deadline"] == "2025-09-03"
+
+    companies = {s["company"] for q in by_id.values() for s in q["slots"]}
+    assert companies == {"삼성전자", "현대오토에버", "포스코DX", "오큘러스에쿼티파트너스"}
+    assert by_id[10]["tag"] == "자유양식"
+    assert by_id[10]["char_limit"] is None
 
 
 def test_slots_default_empty(client):
@@ -33,7 +38,7 @@ def test_save_answer_is_per_company(client):
     assert saved.status_code == 200
     assert _slot(saved.json(), "삼성전자") == {
         "company": "삼성전자",
-        "deadline": "2026-03-17",
+        "deadline": "2025-09-03",
         "content": "반도체 공정 자동화에…",
         "status": "작성 중",
     }

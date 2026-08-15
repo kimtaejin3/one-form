@@ -746,7 +746,7 @@ export interface components {
             /** Prompt */
             prompt: string;
             /** Char Limit */
-            char_limit: number;
+            char_limit: number | null;
             /** Slots */
             slots: components["schemas"]["AnswerSlot"][];
         };

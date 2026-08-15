@@ -16,7 +16,7 @@ class Question(BaseModel):
     id: int
     tag: str  # 문항 유형: 지원동기·경험·역량·성장과정·포부·자기소개
     prompt: str
-    char_limit: int
+    char_limit: int | None  # 자유양식처럼 글자 수 제한이 없으면 None
     slots: list[AnswerSlot]  # (기업 × 문항) 단위 답변. 기업마다 독립
 
 

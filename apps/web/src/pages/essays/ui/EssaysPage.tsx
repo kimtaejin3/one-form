@@ -21,14 +21,13 @@ type CompanySummary = {
 const ALL_TAGS = '전체 유형'
 const PAGE_SIZE = 8
 
-/** 검색은 문항 텍스트·유형·이 문항을 쓰는 회사명까지 훑는다. */
 function matches(q: Question, needle: string) {
-  const hay = [q.prompt, q.tag, ...q.slots.map((s) => s.company)].join(' ').toLowerCase()
-  return hay.includes(needle.trim().toLowerCase())
+  return q.prompt.toLowerCase().includes(needle.trim().toLowerCase())
 }
 
 /** 남은 날짜는 시각이 아니라 달력 일수로 센다 — 'sv-SE'는 로컬 날짜를 YYYY-MM-DD로 준다. */
 function dday(deadline: string) {
+  if (!deadline) return '상시'
   const days = Math.round(
     (Date.parse(deadline) - Date.parse(new Date().toLocaleDateString('sv-SE'))) / 86_400_000,
   )
@@ -56,9 +55,17 @@ export default function EssaysPage() {
   // 슬롯이 곧 기업 목록이다(마감 임박순). 공통 슬롯은 회사가 아니므로 뺀다.
   const slots = questions.flatMap((q) => q.slots)
   const byName = new Map(slots.filter((s) => s.company !== COMMON).map((s) => [s.company, s]))
-  const companies = [...byName.values()].sort((a, b) => a.deadline.localeCompare(b.deadline))
-  const company = view === 'company' ? (byName.get(pickedCompany) ?? companies[0]) : undefined
-  const companySummaries: CompanySummary[] = companies.map((item) => {
+  const companies = [...byName.values()].sort((a, b) =>
+    (a.deadline || '9999-12-31').localeCompare(b.deadline || '9999-12-31'),
+  )
+  const shownCompanies = companies.filter((item) =>
+    item.company.toLowerCase().includes(search.trim().toLowerCase()),
+  )
+  const company =
+    view === 'company'
+      ? (shownCompanies.find((item) => item.company === pickedCompany) ?? shownCompanies[0])
+      : undefined
+  const companySummaries: CompanySummary[] = shownCompanies.map((item) => {
     const companySlots = slots.filter((slot) => slot.company === item.company)
     return {
       name: item.company,
@@ -73,12 +80,15 @@ export default function EssaysPage() {
   const tags = [ALL_TAGS, ...new Set(questions.map((q) => q.tag))]
   const tag = tags.includes(pickedTag) ? pickedTag : ALL_TAGS
 
-  const pool = company
-    ? questions.filter((q) => q.slots.some((s) => s.company === company.company))
-    : questions
+  const pool =
+    view === 'company'
+      ? company
+        ? questions.filter((q) => q.slots.some((s) => s.company === company.company))
+        : []
+      : questions
   const list = pool
     .filter((q) => company || tag === ALL_TAGS || q.tag === tag)
-    .filter((q) => matches(q, search))
+    .filter((q) => view === 'company' || matches(q, search))
   const done = slots.filter((s) => s.status === '초안 완료').length
 
   // 필터가 바뀌어 목록이 짧아지면 페이지도 따라 접힌다(렌더 중 보정 — useEffect 불필요).
@@ -95,11 +105,35 @@ export default function EssaysPage() {
 
   return (
     <div className="stack">
+      <div className="of-essay-view-switch" role="group" aria-label="작성 기준">
+        {VIEWS.map((v) => (
+          <button
+            key={v.key}
+            type="button"
+            aria-label={v.label}
+            aria-pressed={v.key === view}
+            className={`of-essay-view-option${v.key === view ? ' of-essay-view-option--on' : ''}`}
+            onClick={() => {
+              setView(v.key)
+              setSearch('')
+              setPickedPage(1)
+            }}
+          >
+            <strong>{v.label} 작성</strong>
+            <span>
+              {v.key === 'question'
+                ? `${questions.length}개 문항을 유형별로 작성`
+                : `${companies.length}개 기업의 문항을 모아 작성`}
+            </span>
+          </button>
+        ))}
+      </div>
+
       <div className="of-essay-toolbar">
         <Input
           type="search"
-          aria-label="문항 검색"
-          placeholder="문항·유형·회사명으로 검색"
+          aria-label={view === 'question' ? '문항 내용 검색' : '기업명 검색'}
+          placeholder={view === 'question' ? '문항 내용으로 검색' : '기업명으로 검색'}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
@@ -117,30 +151,12 @@ export default function EssaysPage() {
             }}
           />
         )}
-        <div className="job-filters" role="tablist" aria-label="보기 방식">
-          {VIEWS.map((v) => (
-            <button
-              key={v.key}
-              type="button"
-              role="tab"
-              aria-selected={v.key === view}
-              aria-controls="essay-view-panel"
-              className={`filter-chip${v.key === view ? ' filter-chip--on' : ''}`}
-              onClick={() => {
-                setView(v.key)
-                setPickedPage(1)
-              }}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
         <p className="of-essay-progress">
           진행: 기업별 문항 {slots.length}개 중 {done} 완료
         </p>
       </div>
 
-      {view === 'company' && company && (
+      {view === 'company' && (
         <section className="of-essay-company-board" aria-label="지원 기업 현황">
           <div className="of-essay-company-board__heading">
             <div>
@@ -151,7 +167,7 @@ export default function EssaysPage() {
           </div>
           <div className="of-essay-company-board__grid">
             {companySummaries.map((summary) => {
-              const selectedCompany = summary.name === company.company
+              const selectedCompany = summary.name === company?.company
               const missingCount = summary.questionCount - summary.writtenCount
               return (
                 <button
@@ -172,30 +188,38 @@ export default function EssaysPage() {
                     {summary.doneCount}/{summary.questionCount} 완료
                   </span>
                   <span className="of-essay-company-card__meta">
-                    {missingCount > 0 ? `미작성 ${missingCount}개` : '모든 문항 작성'} · 마감 {summary.deadline}
+                    {missingCount > 0 ? `미작성 ${missingCount}개` : '모든 문항 작성'} ·{' '}
+                    {summary.deadline ? `마감 ${summary.deadline}` : '상시 채용'}
                   </span>
                 </button>
               )
             })}
+            {companySummaries.length === 0 && (
+              <p className="of-essay-empty of-mono">일치하는 기업이 없어요.</p>
+            )}
           </div>
-          <div className="row of-essay-company-filter">
-            <Dropdown
-              label="기업 선택"
-              options={companies.map((c) => ({ value: c.company, label: c.company }))}
-              value={company.company}
-              onChange={(v) => {
-                setPickedCompany(v)
-                setPickedPage(1)
-              }}
-            />
-            <span className="of-mono">
-              마감 {company.deadline} · {dday(company.deadline)}
-            </span>
-          </div>
+          {company && (
+            <div className="row of-essay-company-filter">
+              <Dropdown
+                label="기업 선택"
+                options={shownCompanies.map((c) => ({ value: c.company, label: c.company }))}
+                value={company.company}
+                onChange={(v) => {
+                  setPickedCompany(v)
+                  setPickedPage(1)
+                }}
+              />
+              <span className="of-mono">
+                {company.deadline
+                  ? `마감 ${company.deadline} · ${dday(company.deadline)}`
+                  : '상시 채용'}
+              </span>
+            </div>
+          )}
         </section>
       )}
 
-      <div className="of-essay-split" role="tabpanel" id="essay-view-panel">
+      <div className="of-essay-split">
         <div className="stack">
           <div className="of-essay-list">
             {list.length === 0 && <p className="of-essay-empty of-mono">해당하는 문항이 없어요.</p>}

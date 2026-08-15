@@ -4,6 +4,7 @@
 """
 import asyncio
 
+from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.activities.models import Activity
@@ -20,15 +21,16 @@ from app.profile.models import Profile
 
 
 async def seed_essays(session) -> None:
+    # 참조 데이터는 현재 큐레이션과 정확히 맞춘다. 사용자 답변은 보존한다.
+    await session.execute(delete(EssayCompany))
+    await session.execute(delete(EssayQuestion))
     for q in essays_repo._QUESTIONS:
-        await session.execute(
-            pg_insert(EssayQuestion).values(**q).on_conflict_do_nothing(index_elements=["id"])
-        )
+        await session.execute(pg_insert(EssayQuestion).values(**q))
     for c in essays_repo._COMPANIES:
         await session.execute(
             pg_insert(EssayCompany).values(
                 name=c["name"], deadline=c["deadline"], question_ids=c["question_ids"]
-            ).on_conflict_do_nothing(index_elements=["name"])
+            )
         )
 
 
