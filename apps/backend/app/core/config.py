@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     EMBEDDING_PROVIDER: str | None = None
 
     # 이력서 파서 버전. 새 규칙은 extractors/v3.py로 추가한 뒤 이 값으로 점진 전환한다.
-    RESUME_EXTRACTOR_VERSION: str = "v2"
+    RESUME_EXTRACTOR_VERSION: str = "v3"
 
     # DB 연결 문자열. 있으면 Postgres 캐시, 없으면 인메모리 폴백.
     DATABASE_URL: str | None = None

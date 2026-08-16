@@ -1,4 +1,5 @@
 from io import BytesIO
+from pathlib import Path
 import re
 
 import pytest
@@ -340,3 +341,54 @@ MySQL PostgreSQL
     assert len(profile["projects"][0]["highlights"]) == 1
     assert profile["projects"][0]["stack"] == ["TypeScript", "React Native", "Supabase", "Swift"]
     assert not any("토스" in highlight for highlight in profile["projects"][1]["highlights"])
+
+
+def test_v3_extracts_section_based_resume():
+    from app.profile.extractors.registry import get_profile_extractor
+    from app.profile.extractors.v1 import V1ProfileExtractor
+    from app.profile.extractors.v2 import V2ProfileExtractor
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    fixture = (Path(__file__).parent / "fixtures" / "modern_resume.txt").read_text()
+    profile = V3ProfileExtractor().extract(fixture.split("\f"))
+
+    assert profile["personal"]["name"] == "김태진"
+    assert profile["personal"]["name_en"] == "Taejin Kim"
+    assert profile["personal"]["headline"] == "Node.js 기반 풀스택 개발자"
+    assert profile["personal"]["summary"].startswith("Node.js 생태계를 중심으로")
+    assert profile["links"] == [{"label": "GitHub", "url": "https://github.com/kimtaejin3"}]
+    assert profile["skill_groups"][0] == {
+        "category": "언어",
+        "skills": ["TypeScript", "JavaScript", "Python"],
+    }
+    assert [career["company"] for career in profile["careers"]] == ["라인월드", "그린다에이아이"]
+    assert any(project["name"] == "push-on" for project in profile["projects"])
+    assert any(project["organization"] == "라인월드" for project in profile["projects"])
+    assert [item["repository"] for item in profile["open_source_contributions"]] == [
+        "nodejs/node",
+        "eslint/eslint",
+    ]
+    assert len(profile["activities"]) == 3
+    assert profile["educations"][0]["school"] == "충남대학교"
+    assert len(profile["awards"]) == 2
+    assert profile["languages"][0]["test"] == "TOEIC Speaking"
+    assert profile["certificates"][0]["name"] == "정보처리기능사"
+    assert isinstance(get_profile_extractor("v1"), V1ProfileExtractor)
+    assert isinstance(get_profile_extractor("v2"), V2ProfileExtractor)
+    assert isinstance(get_profile_extractor("v3"), V3ProfileExtractor)
+
+
+def test_v3_keeps_bare_repository_names():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""오픈소스 기여
+react-hook-form
+- 성능을 개선했습니다.
+react-icons
+- 아이콘을 갱신했습니다.
+"""])
+
+    assert [item["repository"] for item in profile["open_source_contributions"]] == [
+        "react-hook-form",
+        "react-icons",
+    ]

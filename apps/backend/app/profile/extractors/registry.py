@@ -2,10 +2,12 @@
 from app.profile.extractors.base import ProfileExtractor
 from app.profile.extractors.v1 import V1ProfileExtractor
 from app.profile.extractors.v2 import V2ProfileExtractor
+from app.profile.extractors.v3 import V3ProfileExtractor
 
 _EXTRACTORS: dict[str, ProfileExtractor] = {
     "v1": V1ProfileExtractor(),
     "v2": V2ProfileExtractor(),
+    "v3": V3ProfileExtractor(),
 }
 
 
