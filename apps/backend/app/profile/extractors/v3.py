@@ -15,6 +15,7 @@ SECTION_NAMES = (
 )
 
 _DATE = r"\d{4}\.\d{2}\s*(?:~|–|-)\s*(?:\d{4}\.\d{2}|재직\s*중)"
+_SINGLE_DATE = r"\d{4}\.\d{2}"
 _PRIVATE_DIGITS = str.maketrans({**{chr(0xE071 + index): str(index) for index in range(10)}, "\uE094": "."})
 
 
@@ -36,6 +37,10 @@ def _text(text: str) -> str:
 def _period(text: str) -> str:
     match = re.search(_DATE, text)
     return re.sub(r"\s*(?:~|–|-)\s*", " ~ ", match.group(0)) if match else ""
+
+
+def _activity_period(text: str) -> str:
+    return _period(text) or (match.group(0) if (match := re.search(_SINGLE_DATE, text)) else "")
 
 
 def _clean(line: str) -> str:
@@ -169,10 +174,10 @@ def _activities(text: str) -> list[dict]:
         parts = _pipe(line)
         if len(parts) == 4:
             end = next((next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4), len(lines))
-            result.append({"type": parts[0], "title": parts[1], "org": parts[2], "period": _period(parts[3]), "description": " ".join(_highlight_lines(lines[index + 1:end]))})
-        elif not line.startswith(" ") and (period := _period(line)):
-            title = re.sub(_DATE, "", _clean(line)).strip()
-            end = next((next_index for next_index in range(index + 1, len(lines)) if not lines[next_index].startswith(" ") and _period(lines[next_index])), len(lines))
+            result.append({"type": parts[0], "title": parts[1], "org": parts[2], "period": _activity_period(parts[3]), "description": " ".join(_highlight_lines(lines[index + 1:end]))})
+        elif not line.startswith(" ") and (period := _activity_period(line)):
+            title = re.sub(rf"{_DATE}|{_SINGLE_DATE}", "", _clean(line)).strip()
+            end = next((next_index for next_index in range(index + 1, len(lines)) if not lines[next_index].startswith(" ") and _activity_period(lines[next_index])), len(lines))
             result.append({"type": "활동", "title": title, "org": "", "period": period, "description": " ".join(_highlight_lines(lines[index + 1:end]))})
     return result
 
@@ -192,14 +197,12 @@ def _credentials(text: str) -> tuple[list[dict], list[dict], list[dict], list[di
             languages.append({"language": "영어", "test": parts[1], "score": parts[2], "date": parts[3]})
         elif len(parts) == 3 and parts[0] == "자격":
             certificates.append({"name": parts[1], "issuer": "", "date": parts[2]})
-    if educations or awards or languages or certificates:
-        return educations, awards, languages, certificates
     for line in text.splitlines():
         clean = _clean(line)
         if not clean:
             continue
-        if (period := _period(clean)) and "대학교" in clean:
-            before = re.sub(_DATE, "", clean).replace("졸업", "").strip()
+        if not _pipe(line) and (period := _period(line)) and "대학교" in line:
+            before = re.sub(_DATE, "", line).replace("졸업", "").strip()
             fields = re.split(r"\s{2,}", before)
             if len(fields) >= 2:
                 educations.append({"school": fields[0], "major": fields[1], "period": period, "status": "졸업" if "졸업" in clean else "", "gpa": ""})

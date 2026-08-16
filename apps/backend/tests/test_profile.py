@@ -380,7 +380,16 @@ def test_v3_extracts_section_based_resume():
         "eslint/eslint",
     ]
     assert len(profile["activities"]) == 3
+    assert profile["activities"][2]["title"] == "웹 접근성 과정"
+    assert profile["activities"][2]["period"] == "2021.07"
     assert profile["educations"][0]["school"] == "충남대학교"
+    assert profile["educations"][1] == {
+        "school": "예시대학교",
+        "major": "소프트웨어학과",
+        "period": "2019.03 ~ 2023.02",
+        "status": "졸업",
+        "gpa": "",
+    }
     assert len(profile["awards"]) == 2
     assert profile["languages"][0]["test"] == "TOEIC Speaking"
     assert profile["certificates"][0]["name"] == "정보처리기능사"
