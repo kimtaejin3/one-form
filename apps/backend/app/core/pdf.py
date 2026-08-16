@@ -40,14 +40,21 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         final_section,
         re.DOTALL,
     )
+    root = re.search(rb"/Root\s+(\d+)\s+0\s+R", final_xref.group("trailer")) if final_xref else None
+    target = pdf_bytes[pointer : pdf_bytes.find(b"endobj", pointer)] if pointer_object else b""
+    target_is_root_catalog = bool(
+        root
+        and pointer_object
+        and int(root.group(1)) == int(pointer_object.group(1))
+        and re.search(rb"/Type\s*/Catalog\b", target)
+    )
     final_single = re.search(rb"^xref\s+(\d+)\s+1\s+0*(\d+)\s+\d+\s+n\s+trailer", final_section)
     safe_incremental = bool(
         final_xref and final_single
         and b"/Prev" in final_xref.group("trailer")
-        and pointer_object
+        and target_is_root_catalog
         and int(final_single.group(1)) == int(pointer_object.group(1))
         and int(final_single.group(2)) == pointer
-        and re.search(rb"/Root\s+" + final_single.group(1) + rb"\s+0\s+R", final_xref.group("trailer"))
     )
     if (
         not match
@@ -55,6 +62,9 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         or pointer == actual
         or not pointer_object
         or not final_xref
+        or final_section.count(b"%%EOF") != 1
+        or b"/XRefStm" in final_xref.group("trailer")
+        or not target_is_root_catalog
         or (b"/Prev" in final_xref.group("trailer") and not safe_incremental)
     ):
         return pdf_bytes

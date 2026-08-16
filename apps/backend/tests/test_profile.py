@@ -277,6 +277,35 @@ def test_pdf_pages_rejects_wrong_startxref_in_incremental_pdf():
         pdf.pdf_pages(damaged)
 
 
+def test_pdf_pages_rejects_ambiguous_xref_tail():
+    damaged = _text_pdf_with_catalog_startxref("김태진") + b"\n5 0 obj\n<</Type /XRef>>\nendobj\n"
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
+def test_pdf_pages_rejects_xref_stream_trailer():
+    damaged = _text_pdf_with_catalog_startxref("김태진").replace(
+        b"/Info 1 0 R", b"/Info 1 0 R /XRefStm 42"
+    )
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
+def test_pdf_pages_rejects_non_catalog_startxref_target():
+    damaged = _text_pdf_with_catalog_startxref("김태진")
+    pages_offset = damaged.index(b"2 0 obj")
+    damaged = re.sub(
+        rb"(startxref\s+)\d+(\s+%%EOF\s*)$",
+        rb"\g<1>" + str(pages_offset).encode() + rb"\g<2>",
+        damaged,
+    )
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
 def test_profile_from_pdf_rejects_empty_file():
     try:
         service.profile_from_pdf(b"")
