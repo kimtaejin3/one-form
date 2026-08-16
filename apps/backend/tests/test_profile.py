@@ -1,7 +1,17 @@
 from io import BytesIO
+import re
+
+import pytest
 
 from pypdf import PdfWriter
-from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject, NumberObject
+from pypdf.generic import (
+    ArrayObject,
+    DecodedStreamObject,
+    DictionaryObject,
+    NameObject,
+    NumberObject,
+    TextStringObject,
+)
 
 from app.core import pdf
 from app.profile import service
@@ -105,6 +115,57 @@ def _inline_image_pdf() -> bytes:
     return stream.getvalue()
 
 
+def _text_pdf_with_catalog_startxref(text: str) -> bytes:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    cmap = DecodedStreamObject()
+    cmap.set_data(
+        b"""/CIDInit /ProcSet findresource begin
+12 dict begin begincmap
+/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def
+/CMapName /Adobe-Identity-UCS def /CMapType 2 def
+1 begincodespacerange <0000> <ffff> endcodespacerange
+3 beginbfchar <0001> <ae40> <0002> <d0dc> <0003> <c9c4> endbfchar
+endcmap CMapName currentdict /CMap defineresource pop end end"""
+    )
+    descendant = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/CIDFontType2"),
+            NameObject("/BaseFont"): NameObject("/NotoSansCJKkr-Regular"),
+            NameObject("/CIDSystemInfo"): DictionaryObject(
+                {
+                    NameObject("/Registry"): TextStringObject("Adobe"),
+                    NameObject("/Ordering"): TextStringObject("Identity"),
+                    NameObject("/Supplement"): NumberObject(0),
+                }
+            ),
+        }
+    )
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type0"),
+            NameObject("/BaseFont"): NameObject("/NotoSansCJKkr-Regular"),
+            NameObject("/Encoding"): NameObject("/Identity-H"),
+            NameObject("/DescendantFonts"): ArrayObject([writer._add_object(descendant)]),
+            NameObject("/ToUnicode"): writer._add_object(cmap),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})}
+    )
+    content = DecodedStreamObject()
+    content.set_data(b"BT /F1 12 Tf 72 720 Td <000100020003> Tj ET")
+    page[NameObject("/Contents")] = writer._add_object(content)
+    stream = BytesIO()
+    writer.write(stream)
+    damaged = stream.getvalue()
+    root_number = int(re.search(rb"/Root (\d+) 0 R", damaged).group(1))
+    catalog_offset = damaged.index(f"{root_number} 0 obj".encode())
+    return re.sub(rb"(startxref\s+)\d+(\s+%%EOF\s*)$", rb"\g<1>" + str(catalog_offset).encode() + rb"\g<2>", damaged)
+
+
 def test_profile_from_pdf_extracts_safe_contact_fields(monkeypatch):
     # PDF 텍스트 추출은 app.core.pdf로 옮겼다(companies 공고 수집과 공유).
     monkeypatch.setattr(pdf, "PdfReader", _Reader)
@@ -190,6 +251,17 @@ def test_pdf_photo_stops_when_decode_budget_is_exhausted(monkeypatch):
 
     assert pdf.pdf_photo_data_url(b"pdf bytes") == ""
     assert calls == 2
+
+
+def test_pdf_pages_repairs_wrong_final_startxref():
+    damaged = _text_pdf_with_catalog_startxref("김태진")
+
+    assert pdf.pdf_pages(damaged) == ["김태진"]
+
+
+def test_pdf_pages_rejects_unrepairable_bytes():
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(b"%PDF-not-a-real-document")
 
 
 def test_profile_from_pdf_rejects_empty_file():

@@ -6,6 +6,7 @@
 from base64 import b64encode
 from io import BytesIO
 import logging
+import re
 
 from PIL import Image
 from pypdf import PdfReader
@@ -25,6 +26,25 @@ _IMAGE_MIME = {
     "webp": "image/webp",
 }
 _logger = logging.getLogger(__name__)
+_FINAL_STARTXREF = re.compile(rb"startxref\s+(\d+)\s+%%EOF\s*$")
+
+
+def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
+    match = _FINAL_STARTXREF.search(pdf_bytes)
+    actual = pdf_bytes.rfind(b"\nxref\n") + 1
+    if not match or actual <= 0 or int(match.group(1)) == actual:
+        return pdf_bytes
+    return pdf_bytes[: match.start(1)] + str(actual).encode() + pdf_bytes[match.end(1) :]
+
+
+def _pdf_reader(pdf_bytes: bytes) -> PdfReader:
+    try:
+        return PdfReader(BytesIO(pdf_bytes))
+    except Exception:
+        repaired = _repair_final_startxref(pdf_bytes)
+        if repaired == pdf_bytes:
+            raise
+        return PdfReader(BytesIO(repaired))
 
 
 def _photo_candidates(page):
@@ -82,7 +102,7 @@ def pdf_pages(pdf_bytes: bytes) -> list[str]:
     if len(pdf_bytes) > MAX_FILE_SIZE:
         raise ValueError("PDF 파일은 10MB 이하만 업로드할 수 있습니다.")
     try:
-        reader = PdfReader(BytesIO(pdf_bytes))
+        reader = _pdf_reader(pdf_bytes)
         if reader.is_encrypted:
             reader.decrypt("")
         if len(reader.pages) > MAX_PAGES:
@@ -105,7 +125,7 @@ def pdf_photo_data_url(pdf_bytes: bytes) -> str:
     try:
         # Pillow는 설정값의 2배부터 해제 폭탄을 거절하므로 8MP에서 막히게 절반을 지정한다.
         Image.MAX_IMAGE_PIXELS = MAX_PHOTO_PIXELS // 2
-        reader = PdfReader(BytesIO(pdf_bytes))
+        reader = _pdf_reader(pdf_bytes)
         if reader.is_encrypted:
             reader.decrypt("")
         page = reader.pages[0]
