@@ -51,7 +51,8 @@ test('확장 프로필 항목을 표시하고 편집할 수 있다', async () =>
   expect(await screen.findByText('Node.js 기반 풀스택 개발자')).toBeTruthy()
   expect(screen.getByText('TypeScript')).toBeTruthy()
   expect(screen.getByText('nodejs/node')).toBeTruthy()
-  expect(screen.getByText('라인월드 · csms_sim3d')).toBeTruthy()
+  expect(screen.getByText('csms_sim3d')).toBeTruthy()
+  expect(screen.getByText('라인월드 · 개발자 · 2024.01 - 2024.12')).toBeTruthy()
 
   fireEvent.click(screen.getByRole('button', { name: '프로필 편집' }))
 

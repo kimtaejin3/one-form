@@ -125,11 +125,9 @@ export default function ProfilePage() {
             <div className="resume-list">
               {profile.projects.map((p) => (
                 <div key={p.name} className="resume-entry">
-                  <span className="resume-entry__title">
-                    {p.organization ? `${p.organization} · ${p.name}` : p.name}
-                  </span>
+                  <span className="resume-entry__title">{p.name}</span>
                   <span className="resume-entry__meta">
-                    {p.role} · {p.period}
+                    {p.organization && `${p.organization} · `}{p.role} · {p.period}
                   </span>
                   <span className="resume-entry__desc">{p.summary}</span>
                   <ul className="resume-entry__list">
