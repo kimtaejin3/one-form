@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Personal(BaseModel):
@@ -6,6 +6,8 @@ class Personal(BaseModel):
     name: str
     name_en: str
     name_cn: str
+    headline: str = ""
+    summary: str = ""
     address: str
     phone: str
     email: str
@@ -55,6 +57,7 @@ class Career(BaseModel):
 
 class Project(BaseModel):
     name: str
+    organization: str = ""
     role: str
     period: str
     summary: str
@@ -71,6 +74,17 @@ class ProfileActivity(BaseModel):
     description: str
 
 
+class SkillGroup(BaseModel):
+    category: str
+    skills: list[str]
+
+
+class OpenSourceContribution(BaseModel):
+    repository: str
+    url: str
+    highlights: list[str]
+
+
 class Profile(BaseModel):
     registered: bool  # 마스터 프로필 등록 여부 — 미등록이면 프론트가 채용공고를 숨긴다
     personal: Personal
@@ -82,6 +96,8 @@ class Profile(BaseModel):
     careers: list[Career]
     projects: list[Project]
     activities: list[ProfileActivity]
+    skill_groups: list[SkillGroup] = Field(default_factory=list)
+    open_source_contributions: list[OpenSourceContribution] = Field(default_factory=list)
 
 
 class ResumeUploadResponse(BaseModel):

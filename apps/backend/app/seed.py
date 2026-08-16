@@ -43,6 +43,7 @@ async def seed_profile(session) -> None:
             personal=p["personal"], links=p["links"], educations=p["educations"],
             awards=p["awards"], languages=p["languages"], certificates=p["certificates"],
             careers=p["careers"], projects=p["projects"], activities=p["activities"],
+            skill_groups=p["skill_groups"], open_source_contributions=p["open_source_contributions"],
         ).on_conflict_do_nothing(index_elements=["id"])
     )
 

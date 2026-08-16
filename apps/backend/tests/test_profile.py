@@ -177,6 +177,10 @@ def test_profile_from_pdf_extracts_safe_contact_fields(monkeypatch):
     assert profile["personal"]["email"] == "gil@example.com"
     assert profile["personal"]["phone"] == "010-1234-5678"
     assert profile["personal"]["photo"] == ""
+    assert profile["personal"]["headline"] == ""
+    assert profile["personal"]["summary"] == ""
+    assert profile["skill_groups"] == []
+    assert profile["open_source_contributions"] == []
     assert profile["links"][0] == {"label": "GitHub", "url": "https://github.com/gildong"}
 
 
@@ -275,12 +279,24 @@ def test_profile_from_pdf_rejects_empty_file():
 
 def test_profile_can_be_updated(client):
     profile = client.get("/api/profile").json()
-    profile["personal"]["name"] = "수정된 이름"
+    profile["personal"]["headline"] = "Node.js 기반 풀스택 개발자"
+    profile["skill_groups"] = [{"category": "언어", "skills": ["TypeScript", "Python"]}]
+    profile["open_source_contributions"] = [{
+        "repository": "nodejs/node",
+        "url": "https://github.com/nodejs/node",
+        "highlights": ["vm.compileFunction 매개변수 검증 개선"],
+    }]
 
     response = client.put("/api/profile", json=profile)
 
     assert response.status_code == 200
-    assert response.json()["personal"]["name"] == "수정된 이름"
+    assert response.json()["personal"]["headline"] == "Node.js 기반 풀스택 개발자"
+    assert response.json()["skill_groups"] == [{"category": "언어", "skills": ["TypeScript", "Python"]}]
+    assert response.json()["open_source_contributions"] == [{
+        "repository": "nodejs/node",
+        "url": "https://github.com/nodejs/node",
+        "highlights": ["vm.compileFunction 매개변수 검증 개선"],
+    }]
 
 
 def test_v2_extracts_structured_saramin_style_resume():

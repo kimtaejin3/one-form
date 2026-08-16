@@ -666,6 +666,15 @@ export interface components {
             /** Unread */
             unread: boolean;
         };
+        /** OpenSourceContribution */
+        OpenSourceContribution: {
+            /** Repository */
+            repository: string;
+            /** Url */
+            url: string;
+            /** Highlights */
+            highlights: string[];
+        };
         /** Personal */
         Personal: {
             /** Photo */
@@ -676,6 +685,16 @@ export interface components {
             name_en: string;
             /** Name Cn */
             name_cn: string;
+            /**
+             * Headline
+             * @default
+             */
+            headline: string;
+            /**
+             * Summary
+             * @default
+             */
+            summary: string;
             /** Address */
             address: string;
             /** Phone */
@@ -708,6 +727,10 @@ export interface components {
             projects: components["schemas"]["Project"][];
             /** Activities */
             activities: components["schemas"]["ProfileActivity"][];
+            /** Skill Groups */
+            skill_groups?: components["schemas"]["SkillGroup"][];
+            /** Open Source Contributions */
+            open_source_contributions?: components["schemas"]["OpenSourceContribution"][];
         };
         /** ProfileActivity */
         ProfileActivity: {
@@ -726,6 +749,11 @@ export interface components {
         Project: {
             /** Name */
             name: string;
+            /**
+             * Organization
+             * @default
+             */
+            organization: string;
             /** Role */
             role: string;
             /** Period */
@@ -763,6 +791,13 @@ export interface components {
          * @enum {string}
          */
         SignalType: "business" | "product" | "hiring" | "technology" | "risk" | "culture";
+        /** SkillGroup */
+        SkillGroup: {
+            /** Category */
+            category: string;
+            /** Skills */
+            skills: string[];
+        };
         /**
          * SourceKind
          * @enum {string}

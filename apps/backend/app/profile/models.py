@@ -19,3 +19,5 @@ class Profile(Base):
     careers: Mapped[list] = mapped_column(JSONB)
     projects: Mapped[list] = mapped_column(JSONB)
     activities: Mapped[list] = mapped_column(JSONB)
+    skill_groups: Mapped[list] = mapped_column(JSONB)
+    open_source_contributions: Mapped[list] = mapped_column(JSONB)

@@ -12,6 +12,8 @@ _PROFILE = {
         "name": "김지원",
         "name_en": "Kim Jiwon",
         "name_cn": "金志願",
+        "headline": "",
+        "summary": "",
         "address": "서울특별시 성동구 왕십리로 222, 101동 1004호",
         "phone": "010-1234-5678",
         "email": "jiwon@example.com",
@@ -70,6 +72,7 @@ _PROFILE = {
     "projects": [
         {
             "name": "one-form — 지원서 통합 플랫폼",
+            "organization": "",
             "role": "풀스택 · 기획",
             "period": "2026.07 – 진행 중",
             "summary": "채용 채널 파편화를 해결하는 지원서 통합 플랫폼. 경험-공고 임베딩 매칭, 기업 분석 RAG, 자소서 자동 생성.",
@@ -85,6 +88,7 @@ _PROFILE = {
         },
         {
             "name": "실시간 협업 노트 서비스",
+            "organization": "",
             "role": "프론트엔드 · 실시간 동기화",
             "period": "2025.11 · 교내 해커톤",
             "summary": "24시간 해커톤에서 4인 팀으로 개발한 실시간 동시 편집 노트. 심사위원 만장일치 대상.",
@@ -96,6 +100,7 @@ _PROFILE = {
         },
         {
             "name": "오픈소스 CLI 자동화 도구",
+            "organization": "",
             "role": "개인 프로젝트",
             "period": "2025.09",
             "summary": "반복 개발 작업을 자동화하는 CLI 도구. 공개SW 개발자대회 장려상.",
@@ -111,6 +116,8 @@ _PROFILE = {
         {"type": "활동", "title": "GDSC 웹 스터디 리드", "org": "Google Developer Student Clubs", "period": "2024.03 – 2025.02", "description": "주 1회 프론트엔드 스터디를 운영하고 멤버 12명의 토이 프로젝트를 멘토링."},
         {"type": "교육", "title": "우아한테크코스 프리코스", "org": "우아한형제들", "period": "2025.11 – 2025.12", "description": "JavaScript 미션 4주 과정 수료."},
     ],
+    "skill_groups": [],
+    "open_source_contributions": [],
 }
 
 
@@ -127,6 +134,7 @@ async def get_profile():
             "personal": row.personal, "links": row.links, "educations": row.educations,
             "awards": row.awards, "languages": row.languages, "certificates": row.certificates,
             "careers": row.careers, "projects": row.projects, "activities": row.activities,
+            "skill_groups": row.skill_groups, "open_source_contributions": row.open_source_contributions,
         }
 
 
