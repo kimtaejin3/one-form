@@ -5,25 +5,27 @@ import { useSaveProfile } from '../model'
 
 type Props = { profile: ProfileData; onCancel: () => void; onSaved: () => void }
 
-type ListKey = 'links' | 'educations' | 'careers' | 'projects' | 'certificates' | 'languages' | 'awards' | 'activities'
+type ListKey = 'links' | 'educations' | 'careers' | 'projects' | 'certificates' | 'languages' | 'awards' | 'activities' | 'skill_groups' | 'open_source_contributions'
 type ProfileItem = Record<string, string | string[]>
 
 const LIST_SECTIONS: { key: ListKey; title: string; empty: ProfileItem }[] = [
   { key: 'links', title: '링크', empty: { label: '', url: '' } },
   { key: 'educations', title: '학력', empty: { school: '', major: '', period: '', status: '', gpa: '' } },
   { key: 'careers', title: '경력', empty: { company: '', role: '', period: '', highlights: [], stack: [] } },
-  { key: 'projects', title: '프로젝트', empty: { name: '', role: '', period: '', summary: '', highlights: [], stack: [] } },
+  { key: 'projects', title: '프로젝트', empty: { name: '', organization: '', role: '', period: '', summary: '', highlights: [], stack: [] } },
   { key: 'certificates', title: '자격증', empty: { name: '', issuer: '', date: '' } },
   { key: 'languages', title: '어학', empty: { language: '', test: '', score: '', date: '' } },
   { key: 'awards', title: '수상', empty: { title: '', org: '', date: '' } },
   { key: 'activities', title: '대외활동 / 교육', empty: { type: '', title: '', org: '', period: '', description: '' } },
+  { key: 'skill_groups', title: '기술', empty: { category: '', skills: [] } },
+  { key: 'open_source_contributions', title: '오픈소스 기여', empty: { repository: '', url: '', highlights: [] } },
 ]
 
 export default function ProfileEditor({ profile, onCancel, onSaved }: Props) {
   const save = useSaveProfile()
   const [personal, setPersonal] = useState(profile.personal)
   const [sections, setSections] = useState(() => Object.fromEntries(
-    LIST_SECTIONS.map(({ key }) => [key, profile[key] as unknown as ProfileItem[]]),
+    LIST_SECTIONS.map(({ key }) => [key, (profile[key] ?? []) as unknown as ProfileItem[]]),
   ) as Record<ListKey, ProfileItem[]>)
   const [error, setError] = useState('')
 
@@ -113,12 +115,12 @@ export default function ProfileEditor({ profile, onCancel, onSaved }: Props) {
 
 const PERSONAL_LABELS: Record<string, string> = {
   photo: '사진 URL', name: '이름', name_en: '영문 이름', name_cn: '한자 이름', address: '주소',
-  phone: '연락처', email: '이메일', emergency_phone: '비상 연락처', emergency_relation: '관계',
+  headline: '직무 제목', summary: '소개', phone: '연락처', email: '이메일', emergency_phone: '비상 연락처', emergency_relation: '관계',
 }
 
 const FIELD_LABELS: Record<string, string> = {
   label: '이름', url: 'URL', school: '학교', major: '전공', period: '기간', status: '상태', gpa: '학점',
   company: '회사', role: '역할', highlights: '주요 성과', stack: '기술 스택', name: '이름', summary: '설명',
   issuer: '발급 기관', date: '일자', language: '언어', test: '시험', score: '점수', title: '제목',
-  org: '기관', type: '유형', description: '설명',
+  org: '기관', type: '유형', description: '설명', category: '분류', skills: '기술', repository: '저장소', organization: '소속',
 }

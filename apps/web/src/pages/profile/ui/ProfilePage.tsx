@@ -51,6 +51,12 @@ export default function ProfilePage() {
                 <dd>{profile.personal.emergency_relation}</dd>
               </dl>
             </div>
+            {(profile.personal.headline || profile.personal.summary) && (
+              <div className="resume-list">
+                {profile.personal.headline && <span className="resume-entry__title">{profile.personal.headline}</span>}
+                {profile.personal.summary && <span className="resume-entry__desc">{profile.personal.summary}</span>}
+              </div>
+            )}
           </section>
 
           <section>
@@ -119,7 +125,9 @@ export default function ProfilePage() {
             <div className="resume-list">
               {profile.projects.map((p) => (
                 <div key={p.name} className="resume-entry">
-                  <span className="resume-entry__title">{p.name}</span>
+                  <span className="resume-entry__title">
+                    {p.organization ? `${p.organization} · ${p.name}` : p.name}
+                  </span>
                   <span className="resume-entry__meta">
                     {p.role} · {p.period}
                   </span>
@@ -140,6 +148,40 @@ export default function ProfilePage() {
               ))}
             </div>
           </section>
+
+          {(profile.skill_groups?.length ?? 0) > 0 && (
+            <section>
+              <h3 className="resume-section__title">기술</h3>
+              <div className="resume-list">
+                {profile.skill_groups!.map((group) => (
+                  <div key={group.category} className="resume-entry">
+                    <span className="resume-entry__title">{group.category}</span>
+                    <div className="row">
+                      {group.skills.map((skill) => <span key={skill} className="of-chip">{skill}</span>)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {(profile.open_source_contributions?.length ?? 0) > 0 && (
+            <section>
+              <h3 className="resume-section__title">오픈소스 기여</h3>
+              <div className="resume-list">
+                {profile.open_source_contributions!.map((contribution) => (
+                  <div key={contribution.repository} className="resume-entry">
+                    <a className="resume-entry__title" href={contribution.url} target="_blank" rel="noreferrer">
+                      {contribution.repository}
+                    </a>
+                    <ul className="resume-entry__list">
+                      {contribution.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section>
             <h3 className="resume-section__title">자격증</h3>
