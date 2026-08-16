@@ -3,11 +3,19 @@
 영문 이름 | Taejin Kim
 직무 | Node.js 기반 풀스택 개발자
 요약 | Node.js 생태계를 중심으로 제품의 전체 흐름을 구현합니다.
+주소 | 서울특별시 예시구
+연락처 | 010-0000-0000
+이메일 | developer@example.com
 GitHub | github.com/kimtaejin3
+LinkedIn | https://linkedin.com/in/example-developer
+포트폴리오 | https://portfolio.example.com
 
 기술 스택
 언어 | TypeScript, JavaScript, Python
 프론트엔드 | React, Vite
+백엔드 | Node.js, FastAPI
+데이터베이스 | PostgreSQL, MySQL
+도구 | Docker, Git
 
 경력
 2026.01 – 재직중 | 라인월드 | 풀스택 개발자

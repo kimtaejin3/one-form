@@ -356,11 +356,22 @@ def test_v3_extracts_section_based_resume():
     assert profile["personal"]["name_en"] == "Taejin Kim"
     assert profile["personal"]["headline"] == "Node.js 기반 풀스택 개발자"
     assert profile["personal"]["summary"].startswith("Node.js 생태계를 중심으로")
-    assert profile["links"] == [{"label": "GitHub", "url": "https://github.com/kimtaejin3"}]
-    assert profile["skill_groups"][0] == {
-        "category": "언어",
-        "skills": ["TypeScript", "JavaScript", "Python"],
-    }
+    assert profile["personal"]["address"] == "서울특별시 예시구"
+    assert profile["personal"]["phone"] == "010-0000-0000"
+    assert profile["personal"]["email"] == "developer@example.com"
+    assert profile["links"] == [
+        {"label": "GitHub", "url": "https://github.com/kimtaejin3"},
+        {"label": "LinkedIn", "url": "https://linkedin.com/in/example-developer"},
+        {"label": "포트폴리오", "url": "https://portfolio.example.com"},
+        {"label": "GitHub", "url": "https://github.com/eslint/eslint"},
+    ]
+    assert profile["skill_groups"] == [
+        {"category": "언어", "skills": ["TypeScript", "JavaScript", "Python"]},
+        {"category": "프론트엔드", "skills": ["React", "Vite"]},
+        {"category": "백엔드", "skills": ["Node.js", "FastAPI"]},
+        {"category": "데이터베이스", "skills": ["PostgreSQL", "MySQL"]},
+        {"category": "도구", "skills": ["Docker", "Git"]},
+    ]
     assert [career["company"] for career in profile["careers"]] == ["라인월드", "그린다에이아이"]
     assert any(project["name"] == "push-on" for project in profile["projects"])
     assert any(project["organization"] == "라인월드" for project in profile["projects"])

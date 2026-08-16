@@ -1,6 +1,7 @@
 """v3: 섹션 제목이 있는 현대형 이력서의 보수적 추출기."""
 import re
 
+from app.profile.extractors.v1 import add_links
 from app.profile.extractors.v2 import V2ProfileExtractor, _skills
 
 SECTION_NAMES = (
@@ -52,7 +53,10 @@ def _identity(text: str, intro: str) -> dict:
         parts = _pipe(line)
         if len(parts) == 2:
             labeled[parts[0]] = parts[1]
-    labels = {"이름": "name", "영문 이름": "name_en", "직무": "headline", "요약": "summary"}
+    labels = {
+        "이름": "name", "영문 이름": "name_en", "직무": "headline", "요약": "summary",
+        "주소": "address", "연락처": "phone", "전화번호": "phone", "휴대폰": "phone", "이메일": "email",
+    }
     personal.update({field: labeled[label] for label, field in labels.items() if labeled.get(label)})
     before_intro = text.split("소개", maxsplit=1)[0]
     lines = [_clean(line) for line in before_intro.splitlines() if _clean(line)]
@@ -74,9 +78,10 @@ def _identity(text: str, intro: str) -> dict:
     return personal
 
 
-def _links(text: str) -> list[dict]:
-    urls = list(dict.fromkeys(re.findall(r"(?i)(?:https?://)?github\.com/[\w.-]+", text)))
-    return [{"label": "GitHub", "url": url if url.startswith("http") else f"https://{url}"} for url in urls]
+def _links(existing: list[dict], text: str) -> list[dict]:
+    parsed = {"links": []}
+    add_links(parsed, re.sub(r"(?<!https://)(?<!http://)github\.com/", "https://github.com/", text))
+    return list({link["url"]: link for link in [*parsed["links"], *existing]}.values())
 
 
 def _skill_groups(text: str) -> list[dict]:
@@ -219,8 +224,7 @@ class V3ProfileExtractor(V2ProfileExtractor):
         sections = _sections(text)
         if intro := sections.get("소개"):
             profile["personal"].update(_identity(text, intro))
-            if links := _links(text.split("소개", maxsplit=1)[0] + "\n" + intro):
-                profile["links"] = links
+            profile["links"] = _links(profile["links"], text.split("소개", maxsplit=1)[0] + "\n" + intro)
         if skills := _skill_groups(sections.get("기술 스택", "")):
             profile["skill_groups"] = skills
         if "경력" in sections or "프로젝트" in sections:
