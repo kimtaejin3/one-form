@@ -33,7 +33,7 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
     match = _FINAL_STARTXREF.search(pdf_bytes)
     actual = pdf_bytes.rfind(b"\nxref\n") + 1
     pointer = int(match.group(1)) if match else -1
-    pointer_object = re.match(rb"\s*(\d+)\s+\d+\s+obj\b", pdf_bytes[pointer:]) if pointer >= 0 else None
+    pointer_object = re.match(rb"\s*(\d+)\s+(\d+)\s+obj\b", pdf_bytes[pointer:]) if pointer >= 0 else None
     final_section = pdf_bytes[actual:] if actual > 0 else b""
     boundary = pdf_bytes.rfind(b"%%EOF", 0, actual) + 5
     final_tail = pdf_bytes[boundary:] if boundary > 4 else pdf_bytes
@@ -44,15 +44,18 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         stripped_tail[final_start:] if final_start >= 0 else b"",
         re.DOTALL,
     )
-    root = re.search(rb"/Root\s+(\d+)\s+0\s+R", final_xref.group("trailer")) if final_xref else None
+    root = re.search(rb"/Root\s+(\d+)\s+(\d+)\s+R", final_xref.group("trailer")) if final_xref else None
     target = pdf_bytes[pointer : pdf_bytes.find(b"endobj", pointer)] if pointer_object else b""
     target_is_root_catalog = bool(
         root
         and pointer_object
         and int(root.group(1)) == int(pointer_object.group(1))
+        and int(root.group(2)) == int(pointer_object.group(2))
+        and not re.search(rb"\((?!ko\))|(?<!\(ko)\)", target)
         and re.search(rb"/Type\s*/Catalog\b", target)
     )
-    final_single = re.search(rb"^xref\s+(\d+)\s+1\s+0*(\d+)\s+\d+\s+n\s+trailer", final_section)
+    final_single = re.search(rb"^xref\s+(\d+)\s+1\s+0*(\d+)\s+(\d+)\s+n\s+trailer", final_section)
+    xref_entry = re.search(rb"(?m)^" + f"{pointer:010d}".encode() + rb"\s+(\d{5})\s+n\s*$", final_section)
     safe_incremental = bool(
         final_xref and final_single
         and b"/Prev" in final_xref.group("trailer")
@@ -60,6 +63,7 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         and boundary < pointer < actual
         and int(final_single.group(1)) == int(pointer_object.group(1))
         and int(final_single.group(2)) == pointer
+        and int(final_single.group(3)) == int(pointer_object.group(2))
     )
     previous = re.search(rb"/Prev\s+(\d+)", final_xref.group("trailer")) if final_xref else None
     if (
@@ -71,8 +75,12 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         or b"#" in final_tail
         or boundary >= pointer
         or final_section.count(b"%%EOF") != 1
+        or b"(" in final_xref.group("trailer")
+        or b")" in final_xref.group("trailer")
         or b"/XRefStm" in final_xref.group("trailer")
         or not target_is_root_catalog
+        or not xref_entry
+        or int(xref_entry.group(1)) != int(pointer_object.group(2))
         or (b"/Prev" in final_xref.group("trailer") and not safe_incremental)
         or (previous and (int(previous.group(1)) <= 0 or int(previous.group(1)) >= boundary or pdf_bytes[int(previous.group(1)) :].lstrip()[:4] != b"xref"))
     ):

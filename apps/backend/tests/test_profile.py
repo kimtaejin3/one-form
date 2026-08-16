@@ -306,6 +306,33 @@ def test_pdf_pages_rejects_non_catalog_startxref_target():
         pdf.pdf_pages(damaged)
 
 
+def test_pdf_pages_rejects_string_key_decoys():
+    damaged = _text_pdf_with_catalog_startxref("김태진").replace(
+        b"/Info 1 0 R", b"/Dummy (/Root 99 0 R) /Info 1 0 R"
+    )
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
+def test_pdf_pages_rejects_catalog_generation_mismatch():
+    damaged = _text_pdf_with_catalog_startxref("김태진").replace(b"3 0 obj", b"3 1 obj", 1)
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
+@pytest.mark.parametrize("replacement", [b"00001 n", b"0000000114 00000 n"])
+def test_pdf_pages_rejects_mismatched_xref_entry(replacement):
+    damaged = _text_pdf_with_catalog_startxref("김태진")
+    catalog_offset = damaged.index(b"3 0 obj")
+    entry = f"{catalog_offset:010d} 00000 n".encode()
+    damaged = damaged.replace(entry, replacement, 1)
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
 def test_profile_from_pdf_rejects_empty_file():
     try:
         service.profile_from_pdf(b"")
