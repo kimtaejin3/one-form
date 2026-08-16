@@ -269,6 +269,14 @@ def test_pdf_pages_rejects_unrepairable_bytes():
         pdf.pdf_pages(b"%PDF-not-a-real-document")
 
 
+def test_pdf_pages_rejects_wrong_startxref_in_incremental_pdf():
+    base = _text_pdf_with_catalog_startxref("김태진")
+    damaged = base + b"\n4 0 obj\n<<>>\nendobj\nxref\n4 1\n0000000000 00000 n \ntrailer\n<< /Size 5 /Prev 0 >>\nstartxref\n" + str(base.index(b"3 0 obj")).encode() + b"\n%%EOF\n"
+
+    with pytest.raises(ValueError, match="읽을 수 없는 PDF"):
+        pdf.pdf_pages(damaged)
+
+
 def test_profile_from_pdf_rejects_empty_file():
     try:
         service.profile_from_pdf(b"")

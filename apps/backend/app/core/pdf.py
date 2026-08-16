@@ -32,7 +32,31 @@ _FINAL_STARTXREF = re.compile(rb"startxref\s+(\d+)\s+%%EOF\s*$")
 def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
     match = _FINAL_STARTXREF.search(pdf_bytes)
     actual = pdf_bytes.rfind(b"\nxref\n") + 1
-    if not match or actual <= 0 or int(match.group(1)) == actual:
+    pointer = int(match.group(1)) if match else -1
+    pointer_object = re.match(rb"\s*(\d+)\s+\d+\s+obj\b", pdf_bytes[pointer:]) if pointer >= 0 else None
+    final_section = pdf_bytes[actual:] if actual > 0 else b""
+    final_xref = re.search(
+        rb"^xref\n.*\ntrailer\s*<<(?P<trailer>.*?)>>\s*startxref\s+\d+\s+%%EOF\s*$",
+        final_section,
+        re.DOTALL,
+    )
+    final_single = re.search(rb"^xref\s+(\d+)\s+1\s+0*(\d+)\s+\d+\s+n\s+trailer", final_section)
+    safe_incremental = bool(
+        final_xref and final_single
+        and b"/Prev" in final_xref.group("trailer")
+        and pointer_object
+        and int(final_single.group(1)) == int(pointer_object.group(1))
+        and int(final_single.group(2)) == pointer
+        and re.search(rb"/Root\s+" + final_single.group(1) + rb"\s+0\s+R", final_xref.group("trailer"))
+    )
+    if (
+        not match
+        or actual <= 0
+        or pointer == actual
+        or not pointer_object
+        or not final_xref
+        or (b"/Prev" in final_xref.group("trailer") and not safe_incremental)
+    ):
         return pdf_bytes
     return pdf_bytes[: match.start(1)] + str(actual).encode() + pdf_bytes[match.end(1) :]
 
