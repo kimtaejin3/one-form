@@ -169,9 +169,11 @@ export default function ProfilePage() {
               <div className="resume-list">
                 {profile.open_source_contributions!.map((contribution) => (
                   <div key={contribution.repository} className="resume-entry">
-                    <a className="resume-entry__title" href={contribution.url} target="_blank" rel="noreferrer">
-                      {contribution.repository}
-                    </a>
+                    {contribution.url ? (
+                      <a className="resume-entry__title" href={contribution.url} target="_blank" rel="noreferrer">
+                        {contribution.repository}
+                      </a>
+                    ) : <span className="resume-entry__title">{contribution.repository}</span>}
                     <ul className="resume-entry__list">
                       {contribution.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
                     </ul>

@@ -29,7 +29,10 @@ const profile: ProfileData = {
   projects: [{ name: 'csms_sim3d', organization: '라인월드', role: '개발자', period: '2024.01 - 2024.12', summary: '시뮬레이터', highlights: ['성능 개선'], stack: ['Node.js'] }],
   activities: [{ type: '교육', title: '프론트엔드 교육', org: '원폼', period: '2020.01', description: 'React 교육' }],
   skill_groups: [{ category: '백엔드', skills: ['TypeScript', 'Node.js'] }],
-  open_source_contributions: [{ repository: 'nodejs/node', url: 'https://github.com/nodejs/node', highlights: ['문서 개선'] }],
+  open_source_contributions: [
+    { repository: 'nodejs/node', url: 'https://github.com/nodejs/node', highlights: ['문서 개선'] },
+    { repository: 'example/repository', url: '', highlights: ['코드 개선'] },
+  ],
 }
 
 function renderPage() {
@@ -51,6 +54,7 @@ test('확장 프로필 항목을 표시하고 편집할 수 있다', async () =>
   expect(await screen.findByText('Node.js 기반 풀스택 개발자')).toBeTruthy()
   expect(screen.getByText('TypeScript')).toBeTruthy()
   expect(screen.getByText('nodejs/node')).toBeTruthy()
+  expect(screen.queryByRole('link', { name: 'example/repository' })).toBeNull()
   expect(screen.getByText('csms_sim3d')).toBeTruthy()
   expect(screen.getByText('라인월드 · 개발자 · 2024.01 - 2024.12')).toBeTruthy()
 
