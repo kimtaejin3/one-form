@@ -31,22 +31,24 @@ _FINAL_STARTXREF = re.compile(rb"startxref\s+(\d+)\s+%%EOF\s*$")
 
 def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
     match = _FINAL_STARTXREF.search(pdf_bytes)
-    actual = pdf_bytes.rfind(b"\nxref\n") + 1
+    xrefs = list(re.finditer(rb"(?m)^xref(?:\r\n|\r|\n)", pdf_bytes))
+    actual = xrefs[-1].start() if xrefs else -1
     pointer = int(match.group(1)) if match else -1
-    gap = re.match(rb"(?:\r?\n)?", pdf_bytes[pointer:]) if pointer >= 0 else None
+    gap = re.match(rb"(?:(?:\r\n|\r|\n))?", pdf_bytes[pointer:]) if pointer >= 0 else None
     object_offset = pointer + len(gap.group()) if gap else -1
     pointer_object = re.match(rb"(\d+)\s+(\d+)\s+obj\b", pdf_bytes[object_offset:]) if gap else None
     final_section = pdf_bytes[actual:] if actual > 0 else b""
     boundary = pdf_bytes.rfind(b"%%EOF", 0, actual) + 5
     final_tail = pdf_bytes[boundary:] if boundary > 4 else pdf_bytes
     stripped_tail = re.sub(rb"(?<!%)%(?!%)[^\r\n]*", b"", final_tail)
-    final_start = stripped_tail.rfind(b"\nxref\n") + 1
+    final_starts = list(re.finditer(rb"(?m)^xref(?:\r\n|\r|\n)", stripped_tail))
+    final_start = final_starts[-1].start() if final_starts else -1
     final_xref = re.search(
-        rb"^xref\r?\n.*\r?\ntrailer\s*<<(?P<trailer>.*?)>>\s*startxref\s+\d+\s+%%EOF\s*$",
+        rb"^xref(?:\r\n|\r|\n).*(?:\r\n|\r|\n)trailer\s*<<(?P<trailer>.*?)>>\s*startxref\s+\d+\s+%%EOF\s*$",
         stripped_tail[final_start:] if final_start >= 0 else b"",
         re.DOTALL,
     )
-    root = re.search(rb"/Root\s+(\d+)\s+(\d+)\s+R", final_xref.group("trailer")) if final_xref else None
+    root = re.search(rb"/Root\s+(\d+)\s+(\d+)\s+R(?![A-Za-z0-9#])", final_xref.group("trailer")) if final_xref else None
     target = pdf_bytes[object_offset : pdf_bytes.find(b"endobj", object_offset)] if pointer_object else b""
     target_tokens = target.replace(b"(ko)", b"")
     target_is_root_catalog = bool(
@@ -85,18 +87,24 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         and int(final_single.group(3)) == int(pointer_object.group(2))
     )
     trailer = final_xref.group("trailer") if final_xref else b""
-    previous = re.search(rb"/Prev\s+(\d+)", trailer)
+    previous = re.search(rb"/Prev\s+(\d+)(?![.A-Za-z0-9#])", trailer)
     previous_tail = pdf_bytes[int(previous.group(1)) : boundary] if previous else b""
-    previous_is_classic = bool(
-        previous
-        and 0 < int(previous.group(1)) < boundary
-        and re.fullmatch(
-            rb"xref\r?\n.+?trailer\s*<<.+?>>\s*startxref\s+"
+    previous_xref = (
+        re.fullmatch(
+            rb"xref(?:\r\n|\r|\n).+?trailer\s*<<(?P<trailer>.+?)>>\s*startxref\s+"
             + previous.group(1)
             + rb"\s+%%EOF",
             previous_tail,
             re.DOTALL,
         )
+        if previous and 0 < int(previous.group(1)) < boundary
+        else None
+    )
+    previous_is_classic = bool(
+        previous_xref
+        and b"/XRefStm" not in previous_xref.group("trailer")
+        and b"#" not in previous_xref.group("trailer")
+        and b"%" not in previous_xref.group("trailer")
     )
     if (
         not match
@@ -104,7 +112,7 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         or pointer == actual
         or not pointer_object
         or not final_xref
-        or re.search(rb"(?<!%)%(?!%)", target + trailer)
+        or b"%" in target + trailer
         or b"#" in final_tail
         or boundary >= pointer
         or final_section.count(b"%%EOF") != 1

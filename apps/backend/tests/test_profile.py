@@ -353,12 +353,21 @@ def test_pdf_repair_allows_only_line_break_before_catalog():
     "old,new",
     [
         (b"/Type /Catalog", b"% /Type /Catalog"),
+        (b"/Type /Catalog", b"%% /Type /Catalog"),
         (b"/Info 1 0 R", b"/Info 1 0 R /Prev abcdef"),
+        (b"/Info 1 0 R", b"/Info 1 0 R /Prev 1abc"),
         (b"xref\n0 9", b"xref\n4 9"),
     ],
 )
 def test_pdf_repair_rejects_unverified_xref_tokens(old, new):
     damaged = _text_pdf_with_catalog_startxref("김태진").replace(old, new, 1)
+
+    assert pdf._repair_final_startxref(damaged) == damaged
+
+
+def test_pdf_repair_rejects_root_token_prefix():
+    damaged = _text_pdf_with_catalog_startxref("김태진")
+    damaged = re.sub(rb"(/Root\s+\d+\s+0\s+)R", rb"\1Real", damaged, count=1)
 
     assert pdf._repair_final_startxref(damaged) == damaged
 
