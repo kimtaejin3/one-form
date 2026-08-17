@@ -505,6 +505,7 @@ def test_v3_extracts_section_based_resume():
         "eslint/eslint",
     ]
     assert len(profile["activities"]) == 3
+    assert profile["activities"][1]["description"] == "기술 세미나를 진행했습니다."
     assert profile["activities"][2]["title"] == "웹 접근성 과정"
     assert profile["activities"][2]["period"] == "2021.07"
     assert profile["educations"][0]["school"] == "충남대학교"
@@ -536,4 +537,27 @@ react-icons
     assert [item["repository"] for item in profile["open_source_contributions"]] == [
         "react-hook-form",
         "react-icons",
+    ]
+
+
+def test_v3_preserves_v2_certificate_when_credentials_are_unrecognized():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""예시 자격증 2024.01 최종합격 예시기관
+학력 · 수상 · 자격
+Certifications
+"""])
+
+    assert profile["certificates"] == [{"name": "예시 자격증", "issuer": "예시기관", "date": "2024.01"}]
+
+
+def test_v3_maps_career_projects_to_their_career_organization():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    fixture = (Path(__file__).parent / "fixtures" / "career_projects.txt").read_text()
+    profile = V3ProfileExtractor().extract([fixture])
+
+    assert [(project["name"], project["organization"]) for project in profile["projects"]] == [
+        ("주문 API 재구축", "알파소프트"),
+        ("운영 대시보드 개선", "베타랩"),
     ]

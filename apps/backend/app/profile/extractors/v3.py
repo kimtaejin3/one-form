@@ -109,6 +109,14 @@ def _highlight_lines(lines: list[str]) -> list[str]:
     return [_clean(line) for line in lines if _clean(line)][:6]
 
 
+def _career_company(line: str) -> str:
+    parts = _pipe(line)
+    if len(parts) == 3 and _period(parts[0]):
+        return parts[1]
+    match = re.match(rf"^(.+?)\s{{2,}}(.+?)\s+({_DATE})\s*$", line)
+    return match.group(1).strip() if match else ""
+
+
 def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dict], list[dict]]:
     careers: list[dict] = []
     projects: list[dict] = []
@@ -135,14 +143,14 @@ def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dic
         projects.append({"name": parts[0], "organization": parts[1], "period": _period(parts[2]), "role": parts[3], "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join(highlights))})
     if projects:
         return careers, projects
-    company = careers[0]["company"] if careers else ""
-    for source, organization, indent in ((career_text, company, "  "), (project_text, "", "")):
+    for source, indent in ((career_text, "  "), (project_text, "")):
         lines = source.splitlines()
-        starts = [index for index, line in enumerate(lines) if line.startswith(indent) and line[len(indent):].strip() and (indent or _period(line))]
+        starts = [index for index, line in enumerate(lines) if line.startswith(indent) and not line[len(indent):].lstrip().startswith(("-", "•")) and line[len(indent):].strip() and (indent or _period(line))]
         for position, start in enumerate(starts):
             end = starts[position + 1] if position + 1 < len(starts) else len(lines)
             title = _clean(lines[start])
             highlights = _highlight_lines(lines[start + 1:end])
+            organization = next((_career_company(line) for line in reversed(lines[:start]) if _career_company(line)), "") if indent else ""
             projects.append({"name": re.sub(_DATE, "", title).strip(), "organization": organization, "period": _period(title), "role": "프로젝트", "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join([title, *highlights]))})
     return careers, projects
 
@@ -173,11 +181,17 @@ def _activities(text: str) -> list[dict]:
     for index, line in enumerate(lines):
         parts = _pipe(line)
         if len(parts) == 4:
-            end = next((next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4), len(lines))
+            end = next(
+                (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or (not lines[next_index].startswith(" ") and _activity_period(lines[next_index]))),
+                len(lines),
+            )
             result.append({"type": parts[0], "title": parts[1], "org": parts[2], "period": _activity_period(parts[3]), "description": " ".join(_highlight_lines(lines[index + 1:end]))})
         elif not line.startswith(" ") and (period := _activity_period(line)):
             title = re.sub(rf"{_DATE}|{_SINGLE_DATE}", "", _clean(line)).strip()
-            end = next((next_index for next_index in range(index + 1, len(lines)) if not lines[next_index].startswith(" ") and _activity_period(lines[next_index])), len(lines))
+            end = next(
+                (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or (not lines[next_index].startswith(" ") and _activity_period(lines[next_index]))),
+                len(lines),
+            )
             result.append({"type": "활동", "title": title, "org": "", "period": period, "description": " ".join(_highlight_lines(lines[index + 1:end]))})
     return result
 
@@ -232,14 +246,19 @@ class V3ProfileExtractor(V2ProfileExtractor):
             profile["skill_groups"] = skills
         if "경력" in sections or "프로젝트" in sections:
             careers, projects = _careers_and_projects(sections.get("경력", ""), sections.get("프로젝트", ""))
-            if "경력" in sections:
+            if careers:
                 profile["careers"] = careers
-            if "프로젝트" in sections:
+            if projects:
                 profile["projects"] = projects
         if "오픈소스 기여" in sections:
-            profile["open_source_contributions"] = _open_source(sections["오픈소스 기여"])
+            if contributions := _open_source(sections["오픈소스 기여"]):
+                profile["open_source_contributions"] = contributions
         if "외부 활동" in sections:
-            profile["activities"] = _activities(sections["외부 활동"])
+            if activities := _activities(sections["외부 활동"]):
+                profile["activities"] = activities
         if "학력 · 수상 · 자격" in sections:
-            profile["educations"], profile["awards"], profile["languages"], profile["certificates"] = _credentials(sections["학력 · 수상 · 자격"])
+            educations, awards, languages, certificates = _credentials(sections["학력 · 수상 · 자격"])
+            for field, values in (("educations", educations), ("awards", awards), ("languages", languages), ("certificates", certificates)):
+                if values:
+                    profile[field] = values
         return profile
