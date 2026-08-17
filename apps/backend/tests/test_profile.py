@@ -626,3 +626,68 @@ def test_v3_keeps_date_bearing_activity_bullet_in_description():
         "type": "활동", "title": "예시 행사", "org": "", "period": "2024.01",
         "description": "2024.02 후속 세미나에 참여했습니다.",
     }]
+
+
+def test_v3_rejects_contaminated_structured_period_cells():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""경력
+2024.01 ~ 2024.02 추가 | 예시회사 | 개발자
+프로젝트
+예시 프로젝트 | 예시회사 | 2024.01 ~ 2024.02 추가 | 개발
+"""])
+
+    assert profile["careers"] == []
+    assert profile["projects"] == []
+
+
+def test_v3_rejects_invalid_structured_credentials():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""학력 · 수상 · 자격
+학력 | 예시대학교 | 예시학과 | 2020.03 ~ 2024.02 추가 | 졸업
+수상 | 2024.01 추가 | 예시상 | 예시기관
+어학 | TOEIC Speaking | AL | 2024.02 추가
+"""])
+
+    assert profile["educations"] == []
+    assert profile["awards"] == []
+    assert profile["languages"] == []
+
+
+def test_v3_skips_period_only_layout_project():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""경력
+2024.01 ~ 2024.02 | 예시회사 | 개발자
+  2024.03 ~ 2024.04
+"""])
+
+    assert profile["projects"] == []
+
+
+def test_v3_deduplicates_career_and_standalone_project_by_name_and_organization():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""경력
+2024.01 ~ 2024.12 | 예시회사 | 개발자
+  예시 프로젝트
+  - 구조를 개선했습니다.
+프로젝트
+예시 프로젝트 | 예시회사 | 2024.03 ~ 2024.06 | 개발
+- 배포를 자동화했습니다.
+"""])
+
+    assert len(profile["projects"]) == 1
+    assert profile["projects"][0]["period"] == "2024.03 ~ 2024.06"
+    assert profile["projects"][0]["highlights"] == ["구조를 개선했습니다.", "배포를 자동화했습니다."]
+
+
+def test_v3_rejects_pipe_activity_without_type():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""외부 활동
+ | 예시 활동 | 예시기관 | 2024.01
+"""])
+
+    assert profile["activities"] == []

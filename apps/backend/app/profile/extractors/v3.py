@@ -40,7 +40,11 @@ def _period(text: str) -> str:
 
 
 def _activity_period(text: str) -> str:
-    return _period(text) if re.fullmatch(_DATE, text.strip()) else _date(text)
+    return _structured_period(text) or _date(text)
+
+
+def _structured_period(text: str) -> str:
+    return _period(text) if re.fullmatch(_DATE, text.strip()) else ""
 
 
 def _date(text: str) -> str:
@@ -123,14 +127,14 @@ def _highlight_lines(lines: list[str]) -> list[str]:
 
 def _career_company(line: str) -> str:
     parts = _pipe(line)
-    if len(parts) == 3 and _period(parts[0]):
+    if len(parts) == 3 and _structured_period(parts[0]):
         return parts[1]
     match = re.match(rf"^(.+?)\s{{2,}}(.+?)\s+({_DATE})\s*$", line)
     return match.group(1).strip() if match else ""
 
 
 def _valid_career(parts: list[str]) -> bool:
-    return len(parts) == 3 and bool(parts[1] and parts[2] and _period(parts[0]))
+    return len(parts) == 3 and bool(parts[1] and parts[2] and _structured_period(parts[0]))
 
 
 def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dict], list[dict]]:
@@ -144,7 +148,7 @@ def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dic
             continue
         end = next((next_index for next_index, next_parts in pipe_rows[index + 1:] if _valid_career(next_parts)), len(career_lines))
         highlights = _highlight_lines(career_lines[index + 1:end])
-        careers.append({"company": parts[1], "role": parts[2], "period": _period(parts[0]), "highlights": highlights, "stack": _skills(" ".join(highlights))})
+        careers.append({"company": parts[1], "role": parts[2], "period": _structured_period(parts[0]), "highlights": highlights, "stack": _skills(" ".join(highlights))})
     if not careers:
         matches = list(re.finditer(rf"(?m)^(.+?)\s{{2,}}(.+?)\s+({_DATE})\s*$", career_text))
         for index, match in enumerate(matches):
@@ -161,7 +165,7 @@ def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dic
         lines = project_text.splitlines()
         end = next((next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4), len(lines))
         highlights = _highlight_lines(lines[index + 1:end])
-        period = _period(parts[2]) if len(parts) == 4 else ""
+        period = _structured_period(parts[2]) if len(parts) == 4 else ""
         if len(parts) == 4 and all((parts[0], parts[1], parts[3], period)):
             standalone.append({"name": parts[0], "organization": parts[1], "period": period, "role": parts[3], "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join(highlights))})
     for source, indent in ((career_text, "  "), (project_text, "")):
@@ -170,11 +174,27 @@ def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dic
         for position, start in enumerate(starts):
             end = starts[position + 1] if position + 1 < len(starts) else len(lines)
             title = _clean(lines[start])
+            name = re.sub(_DATE, "", title).strip()
+            if not name:
+                continue
             highlights = _highlight_lines(lines[start + 1:end])
             organization = next((_career_company(line) for line in reversed(lines[:start]) if _career_company(line)), "") if indent else ""
-            projects.append({"name": re.sub(_DATE, "", title).strip(), "organization": organization, "period": _period(title), "role": "프로젝트", "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join([title, *highlights]))})
+            projects.append({"name": name, "organization": organization, "period": _period(title), "role": "프로젝트", "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join([title, *highlights]))})
     projects.extend(standalone)
-    unique = {(project["name"], project["organization"], project["period"]): project for project in projects}
+    unique: dict[tuple[str, str], dict] = {}
+    for project in projects:
+        key = project["name"], project["organization"]
+        if key not in unique:
+            unique[key] = project
+            continue
+        current = unique[key]
+        current["period"] = current["period"] or project["period"]
+        if len(project["summary"]) > len(current["summary"]):
+            current["summary"] = project["summary"]
+        if current["role"] == "프로젝트" and project["role"] != "프로젝트":
+            current["role"] = project["role"]
+        for field in ("highlights", "stack"):
+            current[field] = list(dict.fromkeys([*current[field], *project[field]]))
     return careers, list(unique.values())
 
 
@@ -205,7 +225,7 @@ def _activities(text: str) -> list[dict]:
         parts = _pipe(line)
         if len(parts) == 4:
             period = _activity_period(parts[3])
-            if not (parts[1] and parts[2] and period):
+            if not (parts[0] and parts[1] and parts[2] and period):
                 continue
             end = next(
                 (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or _layout_activity_period(lines[next_index])),
@@ -230,7 +250,7 @@ def _credentials(text: str) -> tuple[list[dict], list[dict], list[dict], list[di
     for line in text.splitlines():
         parts = _pipe(line)
         if len(parts) == 5 and parts[0] == "학력":
-            period = _period(parts[3])
+            period = _structured_period(parts[3])
             if all((parts[1], parts[2], parts[4], period)):
                 educations.append({"school": parts[1], "major": parts[2], "period": period, "status": parts[4], "gpa": ""})
         elif len(parts) == 4 and parts[0] == "수상":
