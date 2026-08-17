@@ -333,6 +333,57 @@ def test_pdf_pages_rejects_mismatched_xref_entry(replacement):
         pdf.pdf_pages(damaged)
 
 
+def test_pdf_repair_allows_only_line_break_before_catalog():
+    damaged = _text_pdf_with_catalog_startxref("김태진")
+    root_number = int(re.search(rb"/Root (\d+) 0 R", damaged).group(1))
+    catalog_offset = damaged.index(f"{root_number} 0 obj".encode())
+    entry = f"{catalog_offset:010d} 00000 n".encode()
+    damaged = damaged.replace(entry, f"{catalog_offset - 1:010d} 00000 n".encode(), 1)
+    damaged = re.sub(
+        rb"(startxref\s+)\d+(\s+%%EOF\s*)$",
+        rb"\g<1>" + str(catalog_offset - 1).encode() + rb"\g<2>",
+        damaged,
+    )
+
+    assert damaged[catalog_offset - 1 : catalog_offset] in (b"\n", b"\r")
+    assert pdf.pdf_pages(damaged) == ["김태진"]
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        (b"/Type /Catalog", b"% /Type /Catalog"),
+        (b"/Info 1 0 R", b"/Info 1 0 R /Prev abcdef"),
+        (b"xref\n0 9", b"xref\n4 9"),
+    ],
+)
+def test_pdf_repair_rejects_unverified_xref_tokens(old, new):
+    damaged = _text_pdf_with_catalog_startxref("김태진").replace(old, new, 1)
+
+    assert pdf._repair_final_startxref(damaged) == damaged
+
+
+def test_pdf_reader_retries_once_without_mutating_input(monkeypatch):
+    damaged = _text_pdf_with_catalog_startxref("김태진")
+    original = bytes(damaged)
+    attempts = []
+
+    class RetryReader:
+        def __init__(self, stream):
+            attempts.append(stream.read())
+            if len(attempts) == 1:
+                raise ValueError("bad startxref")
+
+    monkeypatch.setattr(pdf, "PdfReader", RetryReader)
+
+    pdf._pdf_reader(damaged)
+
+    assert damaged == original
+    assert len(attempts) == 2
+    assert attempts[0] == original
+    assert attempts[1] != original
+
+
 def test_profile_from_pdf_rejects_empty_file():
     try:
         service.profile_from_pdf(b"")
