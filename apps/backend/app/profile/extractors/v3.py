@@ -40,7 +40,19 @@ def _period(text: str) -> str:
 
 
 def _activity_period(text: str) -> str:
-    return _period(text) or (match.group(0) if (match := re.search(_SINGLE_DATE, text)) else "")
+    return _period(text) if re.fullmatch(_DATE, text.strip()) else _date(text)
+
+
+def _date(text: str) -> str:
+    return text.strip() if re.fullmatch(_SINGLE_DATE, text.strip()) else ""
+
+
+def _layout_activity_period(line: str) -> str:
+    line = line.strip()
+    if line.startswith(("-", "•")):
+        return ""
+    match = re.search(rf"({_DATE}|{_SINGLE_DATE})\s*$", line)
+    return (_period(match.group(1)) or _date(match.group(1))) if match and line[:match.start()].strip() else ""
 
 
 def _clean(line: str) -> str:
@@ -117,6 +129,10 @@ def _career_company(line: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def _valid_career(parts: list[str]) -> bool:
+    return len(parts) == 3 and bool(parts[1] and parts[2] and _period(parts[0]))
+
+
 def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dict], list[dict]]:
     careers: list[dict] = []
     projects: list[dict] = []
@@ -124,24 +140,30 @@ def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dic
     career_lines = career_text.splitlines()
     pipe_rows = [(index, _pipe(line)) for index, line in enumerate(career_lines)]
     for index, parts in pipe_rows:
-        if len(parts) != 3 or not _period(parts[0]):
+        if not _valid_career(parts):
             continue
-        end = next((next_index for next_index, next_parts in pipe_rows[index + 1:] if len(next_parts) == 3 and _period(next_parts[0])), len(career_lines))
+        end = next((next_index for next_index, next_parts in pipe_rows[index + 1:] if _valid_career(next_parts)), len(career_lines))
         highlights = _highlight_lines(career_lines[index + 1:end])
         careers.append({"company": parts[1], "role": parts[2], "period": _period(parts[0]), "highlights": highlights, "stack": _skills(" ".join(highlights))})
     if not careers:
         matches = list(re.finditer(rf"(?m)^(.+?)\s{{2,}}(.+?)\s+({_DATE})\s*$", career_text))
         for index, match in enumerate(matches):
+            if "|" in match.group(0):
+                continue
             end = matches[index + 1].start() if index + 1 < len(matches) else len(career_text)
             highlights = _highlight_lines(career_text[match.end():end].splitlines())
-            careers.append({"company": match.group(1).strip(), "role": match.group(2).strip(), "period": _period(match.group(3)), "highlights": highlights, "stack": _skills(" ".join(highlights))})
+            company, role = match.group(1).strip(), match.group(2).strip()
+            if company and role:
+                careers.append({"company": company, "role": role, "period": _period(match.group(3)), "highlights": highlights, "stack": _skills(" ".join(highlights))})
     for index, parts in [(index, _pipe(line)) for index, line in enumerate(project_text.splitlines())]:
         if len(parts) != 4:
             continue
         lines = project_text.splitlines()
         end = next((next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4), len(lines))
         highlights = _highlight_lines(lines[index + 1:end])
-        standalone.append({"name": parts[0], "organization": parts[1], "period": _period(parts[2]), "role": parts[3], "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join(highlights))})
+        period = _period(parts[2]) if len(parts) == 4 else ""
+        if len(parts) == 4 and all((parts[0], parts[1], parts[3], period)):
+            standalone.append({"name": parts[0], "organization": parts[1], "period": period, "role": parts[3], "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join(highlights))})
     for source, indent in ((career_text, "  "), (project_text, "")):
         lines = source.splitlines()
         starts = [index for index, line in enumerate(lines) if line.startswith(indent) and not _pipe(line) and not line[len(indent):].lstrip().startswith(("-", "•")) and line[len(indent):].strip() and (indent or _period(line))]
@@ -186,14 +208,14 @@ def _activities(text: str) -> list[dict]:
             if not (parts[1] and parts[2] and period):
                 continue
             end = next(
-                (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or (not lines[next_index].startswith(" ") and _activity_period(lines[next_index]))),
+                (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or _layout_activity_period(lines[next_index])),
                 len(lines),
             )
             result.append({"type": parts[0], "title": parts[1], "org": parts[2], "period": period, "description": " ".join(_highlight_lines(lines[index + 1:end]))})
-        elif not line.startswith(" ") and (period := _activity_period(line)):
+        elif period := _layout_activity_period(line):
             title = re.sub(rf"{_DATE}|{_SINGLE_DATE}", "", _clean(line)).strip()
             end = next(
-                (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or (not lines[next_index].startswith(" ") and _activity_period(lines[next_index]))),
+                (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or _layout_activity_period(lines[next_index])),
                 len(lines),
             )
             result.append({"type": "활동", "title": title, "org": "", "period": period, "description": " ".join(_highlight_lines(lines[index + 1:end]))})
@@ -208,13 +230,18 @@ def _credentials(text: str) -> tuple[list[dict], list[dict], list[dict], list[di
     for line in text.splitlines():
         parts = _pipe(line)
         if len(parts) == 5 and parts[0] == "학력":
-            educations.append({"school": parts[1], "major": parts[2], "period": _period(parts[3]), "status": parts[4], "gpa": ""})
+            period = _period(parts[3])
+            if all((parts[1], parts[2], parts[4], period)):
+                educations.append({"school": parts[1], "major": parts[2], "period": period, "status": parts[4], "gpa": ""})
         elif len(parts) == 4 and parts[0] == "수상":
-            awards.append({"title": parts[2], "org": parts[3], "date": parts[1]})
+            if all((parts[2], parts[3], date := _date(parts[1]))):
+                awards.append({"title": parts[2], "org": parts[3], "date": date})
         elif len(parts) == 4 and parts[0] == "어학":
-            languages.append({"language": "영어", "test": parts[1], "score": parts[2], "date": parts[3]})
+            if all((parts[1], parts[2], date := _date(parts[3]))):
+                languages.append({"language": "영어", "test": parts[1], "score": parts[2], "date": date})
         elif len(parts) == 3 and parts[0] == "자격":
-            certificates.append({"name": parts[1], "issuer": "", "date": parts[2]})
+            if parts[1] and (date := _date(parts[2])):
+                certificates.append({"name": parts[1], "issuer": "", "date": date})
     for line in text.splitlines():
         clean = _clean(line)
         if not clean:
@@ -222,8 +249,9 @@ def _credentials(text: str) -> tuple[list[dict], list[dict], list[dict], list[di
         if not _pipe(line) and (period := _period(line)) and "대학교" in line:
             before = re.sub(_DATE, "", line).replace("졸업", "").strip()
             fields = re.split(r"\s{2,}", before)
-            if len(fields) >= 2:
-                educations.append({"school": fields[0], "major": fields[1], "period": period, "status": "졸업" if "졸업" in clean else "", "gpa": ""})
+            status = "졸업" if "졸업" in clean else ""
+            if len(fields) >= 2 and all((fields[0], fields[1], status)):
+                educations.append({"school": fields[0], "major": fields[1], "period": period, "status": status, "gpa": ""})
         award = re.match(r"(.+?)\s*—\s*(.+?)\s*\((\d{4}\.\d{2})\)", clean)
         if award and any(word in award.group(1) for word in ("대상", "최우수상", "우수상", "장려상")):
             awards.append({"title": award.group(1), "org": award.group(2), "date": award.group(3)})

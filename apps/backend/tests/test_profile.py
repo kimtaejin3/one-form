@@ -578,3 +578,51 @@ def test_v3_preserves_v2_activities_when_pipe_activity_is_malformed():
         "type": "교육", "title": "기존 교육 활동", "org": "",
         "period": "2024.01 ~ 2024.02", "description": "",
     }]
+
+
+def test_v3_preserves_v2_career_when_pipe_career_is_malformed():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["", """2024.01 ~ 2024.02  기존회사  기존 역할
+경력
+2025.01 ~ 2025.02 | | 새 역할
+"""])
+
+    assert [career["company"] for career in profile["careers"]] == ["기존회사"]
+
+
+def test_v3_preserves_v2_project_when_pipe_project_is_malformed():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""경력기술서 1) 프로젝트명: 기존 프로젝트
+- 수행 기간 : 2024.01 ~ 2024.02
+프로젝트
+ | 예시기관 | 2025.01 ~ 2025.02 | 개발
+"""])
+
+    assert [project["name"] for project in profile["projects"]] == ["기존 프로젝트"]
+
+
+def test_v3_preserves_v2_certificate_when_pipe_certificate_is_malformed():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""기존 자격증 2024.01 최종합격 기존기관
+학력 · 수상 · 자격
+자격 |  | 2025.01
+"""])
+
+    assert profile["certificates"] == [{"name": "기존 자격증", "issuer": "기존기관", "date": "2024.01"}]
+
+
+def test_v3_keeps_date_bearing_activity_bullet_in_description():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""외부 활동
+예시 행사 2024.01
+- 2024.02 후속 세미나에 참여했습니다.
+"""])
+
+    assert profile["activities"] == [{
+        "type": "활동", "title": "예시 행사", "org": "", "period": "2024.01",
+        "description": "2024.02 후속 세미나에 참여했습니다.",
+    }]
