@@ -365,9 +365,10 @@ def test_pdf_repair_rejects_unverified_xref_tokens(old, new):
     assert pdf._repair_final_startxref(damaged) == damaged
 
 
-def test_pdf_repair_rejects_root_token_prefix():
+@pytest.mark.parametrize("suffix", [b"Real", b"R.", b"R_", b"R-"])
+def test_pdf_repair_rejects_root_token_prefix(suffix):
     damaged = _text_pdf_with_catalog_startxref("김태진")
-    damaged = re.sub(rb"(/Root\s+\d+\s+0\s+)R", rb"\1Real", damaged, count=1)
+    damaged = re.sub(rb"(/Root\s+\d+\s+0\s+)R", rb"\1" + suffix, damaged, count=1)
 
     assert pdf._repair_final_startxref(damaged) == damaged
 

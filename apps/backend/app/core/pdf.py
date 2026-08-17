@@ -27,11 +27,13 @@ _IMAGE_MIME = {
 }
 _logger = logging.getLogger(__name__)
 _FINAL_STARTXREF = re.compile(rb"startxref\s+(\d+)\s+%%EOF\s*$")
+_TOKEN_END = rb"(?=[\x00\t\n\f\r /<>\[\](){}%]|$)"
+_XREF_START = rb"(?:(?<=\n)|(?<=\r)|\A)xref(?:\r\n|\r|\n)"
 
 
 def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
     match = _FINAL_STARTXREF.search(pdf_bytes)
-    xrefs = list(re.finditer(rb"(?m)^xref(?:\r\n|\r|\n)", pdf_bytes))
+    xrefs = list(re.finditer(_XREF_START, pdf_bytes))
     actual = xrefs[-1].start() if xrefs else -1
     pointer = int(match.group(1)) if match else -1
     gap = re.match(rb"(?:(?:\r\n|\r|\n))?", pdf_bytes[pointer:]) if pointer >= 0 else None
@@ -41,14 +43,14 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
     boundary = pdf_bytes.rfind(b"%%EOF", 0, actual) + 5
     final_tail = pdf_bytes[boundary:] if boundary > 4 else pdf_bytes
     stripped_tail = re.sub(rb"(?<!%)%(?!%)[^\r\n]*", b"", final_tail)
-    final_starts = list(re.finditer(rb"(?m)^xref(?:\r\n|\r|\n)", stripped_tail))
+    final_starts = list(re.finditer(_XREF_START, stripped_tail))
     final_start = final_starts[-1].start() if final_starts else -1
     final_xref = re.search(
         rb"^xref(?:\r\n|\r|\n).*(?:\r\n|\r|\n)trailer\s*<<(?P<trailer>.*?)>>\s*startxref\s+\d+\s+%%EOF\s*$",
         stripped_tail[final_start:] if final_start >= 0 else b"",
         re.DOTALL,
     )
-    root = re.search(rb"/Root\s+(\d+)\s+(\d+)\s+R(?![A-Za-z0-9#])", final_xref.group("trailer")) if final_xref else None
+    root = re.search(rb"/Root\s+(\d+)\s+(\d+)\s+R" + _TOKEN_END, final_xref.group("trailer")) if final_xref else None
     target = pdf_bytes[object_offset : pdf_bytes.find(b"endobj", object_offset)] if pointer_object else b""
     target_tokens = target.replace(b"(ko)", b"")
     target_is_root_catalog = bool(
@@ -87,11 +89,13 @@ def _repair_final_startxref(pdf_bytes: bytes) -> bytes:
         and int(final_single.group(3)) == int(pointer_object.group(2))
     )
     trailer = final_xref.group("trailer") if final_xref else b""
-    previous = re.search(rb"/Prev\s+(\d+)(?![.A-Za-z0-9#])", trailer)
+    previous = re.search(rb"/Prev\s+(\d+)" + _TOKEN_END, trailer)
     previous_tail = pdf_bytes[int(previous.group(1)) : boundary] if previous else b""
     previous_xref = (
         re.fullmatch(
-            rb"xref(?:\r\n|\r|\n).+?trailer\s*<<(?P<trailer>.+?)>>\s*startxref\s+"
+            rb"xref(?:\r\n|\r|\n)"
+            rb"(?:\d+\s+\d+(?:\r\n|\r|\n)(?:\d{10}\s+\d{5}\s+[fn]\s*(?:\r\n|\r|\n))+)+"
+            rb"trailer\s*<<(?P<trailer>[^#%()]*)>>\s*startxref\s+"
             + previous.group(1)
             + rb"\s+%%EOF",
             previous_tail,
