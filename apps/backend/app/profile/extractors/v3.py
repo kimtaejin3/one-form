@@ -120,6 +120,7 @@ def _career_company(line: str) -> str:
 def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dict], list[dict]]:
     careers: list[dict] = []
     projects: list[dict] = []
+    standalone: list[dict] = []
     career_lines = career_text.splitlines()
     pipe_rows = [(index, _pipe(line)) for index, line in enumerate(career_lines)]
     for index, parts in pipe_rows:
@@ -140,19 +141,19 @@ def _careers_and_projects(career_text: str, project_text: str) -> tuple[list[dic
         lines = project_text.splitlines()
         end = next((next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4), len(lines))
         highlights = _highlight_lines(lines[index + 1:end])
-        projects.append({"name": parts[0], "organization": parts[1], "period": _period(parts[2]), "role": parts[3], "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join(highlights))})
-    if projects:
-        return careers, projects
+        standalone.append({"name": parts[0], "organization": parts[1], "period": _period(parts[2]), "role": parts[3], "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join(highlights))})
     for source, indent in ((career_text, "  "), (project_text, "")):
         lines = source.splitlines()
-        starts = [index for index, line in enumerate(lines) if line.startswith(indent) and not line[len(indent):].lstrip().startswith(("-", "•")) and line[len(indent):].strip() and (indent or _period(line))]
+        starts = [index for index, line in enumerate(lines) if line.startswith(indent) and not _pipe(line) and not line[len(indent):].lstrip().startswith(("-", "•")) and line[len(indent):].strip() and (indent or _period(line))]
         for position, start in enumerate(starts):
             end = starts[position + 1] if position + 1 < len(starts) else len(lines)
             title = _clean(lines[start])
             highlights = _highlight_lines(lines[start + 1:end])
             organization = next((_career_company(line) for line in reversed(lines[:start]) if _career_company(line)), "") if indent else ""
             projects.append({"name": re.sub(_DATE, "", title).strip(), "organization": organization, "period": _period(title), "role": "프로젝트", "summary": highlights[0] if highlights else "", "highlights": highlights, "stack": _skills(" ".join([title, *highlights]))})
-    return careers, projects
+    projects.extend(standalone)
+    unique = {(project["name"], project["organization"], project["period"]): project for project in projects}
+    return careers, list(unique.values())
 
 
 def _open_source(text: str) -> list[dict]:
@@ -181,11 +182,14 @@ def _activities(text: str) -> list[dict]:
     for index, line in enumerate(lines):
         parts = _pipe(line)
         if len(parts) == 4:
+            period = _activity_period(parts[3])
+            if not (parts[1] and parts[2] and period):
+                continue
             end = next(
                 (next_index for next_index in range(index + 1, len(lines)) if len(_pipe(lines[next_index])) == 4 or (not lines[next_index].startswith(" ") and _activity_period(lines[next_index]))),
                 len(lines),
             )
-            result.append({"type": parts[0], "title": parts[1], "org": parts[2], "period": _activity_period(parts[3]), "description": " ".join(_highlight_lines(lines[index + 1:end]))})
+            result.append({"type": parts[0], "title": parts[1], "org": parts[2], "period": period, "description": " ".join(_highlight_lines(lines[index + 1:end]))})
         elif not line.startswith(" ") and (period := _activity_period(line)):
             title = re.sub(rf"{_DATE}|{_SINGLE_DATE}", "", _clean(line)).strip()
             end = next(

@@ -560,4 +560,21 @@ def test_v3_maps_career_projects_to_their_career_organization():
     assert [(project["name"], project["organization"]) for project in profile["projects"]] == [
         ("주문 API 재구축", "알파소프트"),
         ("운영 대시보드 개선", "베타랩"),
+        ("독립 배포 도구", "개인 프로젝트"),
     ]
+
+
+def test_v3_preserves_v2_activities_when_pipe_activity_is_malformed():
+    from app.profile.extractors.v3 import V3ProfileExtractor
+
+    profile = V3ProfileExtractor().extract(["""경험/활동/교육
+2024.01 ~ 2024.02  기존 교육 활동  교육
+자격/어학/수상
+외부 활동
+교육 |  | 예시기관 | 2024.03
+"""])
+
+    assert profile["activities"] == [{
+        "type": "교육", "title": "기존 교육 활동", "org": "",
+        "period": "2024.01 ~ 2024.02", "description": "",
+    }]
