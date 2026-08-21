@@ -92,3 +92,15 @@ def test_chat_rejects_invalid_llm_output(monkeypatch):
 
 def test_extract_text_file():
     assert extract_material("memo.txt", "안녕 이력".encode()) == "안녕 이력"
+
+
+def test_endpoints_smoke(client):
+    assert client.get("/api/resume/templates").json()[0]["id"]
+    state = client.get("/api/resume/seed").json()
+    assert "doc" in state and "style" in state
+    html = client.post("/api/resume/preview", json={"state": state})
+    assert html.status_code == 200 and state["doc"]["header"]["name"] in html.text
+    pdf = client.post("/api/resume/render", json={"state": state})
+    assert pdf.status_code == 200 and pdf.content[:4] == b"%PDF"
+    chat = client.post("/api/resume/chat", json={"state": state, "materials": [], "message": "요약 써줘"})
+    assert "state" in chat.json() and "reply" in chat.json()

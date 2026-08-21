@@ -90,6 +90,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/resume/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Templates */
+        get: operations["templates_api_resume_templates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/seed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Seed */
+        get: operations["seed_api_resume_seed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/materials/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract */
+        post: operations["extract_api_resume_materials_extract_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_api_resume_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_resume_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/render": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Render */
+        post: operations["render_api_resume_render_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/companies/analyze": {
         parameters: {
             query?: never;
@@ -336,6 +438,11 @@ export interface components {
             /** Date */
             date: string;
         };
+        /** Body_extract_api_resume_materials_extract_post */
+        Body_extract_api_resume_materials_extract_post: {
+            /** File */
+            file: string;
+        };
         /** Body_upload_resume_api_profile_resume_post */
         Body_upload_resume_api_profile_resume_post: {
             /** File */
@@ -460,6 +567,11 @@ export interface components {
             /** Source Ids */
             source_ids: number[];
         };
+        /**
+         * Density
+         * @enum {string}
+         */
+        Density: "compact" | "normal" | "relaxed";
         /** DraftRequest */
         DraftRequest: {
             /** Question Id */
@@ -485,11 +597,21 @@ export interface components {
             /** Gpa */
             gpa: string;
         };
+        /**
+         * FontScale
+         * @enum {string}
+         */
+        FontScale: "S" | "M" | "L";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * HeadingStyle
+         * @enum {string}
+         */
+        HeadingStyle: "plain" | "bar" | "underline";
         /** IntelligenceSignal */
         IntelligenceSignal: {
             /** Label */
@@ -585,6 +707,11 @@ export interface components {
             /** Date */
             date: string;
         };
+        /**
+         * Layout
+         * @enum {string}
+         */
+        Layout: "single" | "two-column";
         /** Link */
         Link: {
             /** Label */
@@ -703,6 +830,154 @@ export interface components {
             /** Slots */
             slots: components["schemas"]["AnswerSlot"][];
         };
+        /** ResumeChatRequest */
+        ResumeChatRequest: {
+            state: components["schemas"]["ResumeState"];
+            /**
+             * Materials
+             * @default []
+             */
+            materials: components["schemas"]["ResumeMaterial"][];
+            /** Message */
+            message: string;
+        };
+        /** ResumeChatResponse */
+        ResumeChatResponse: {
+            state: components["schemas"]["ResumeState"];
+            /** Reply */
+            reply: string;
+        };
+        /** ResumeDoc */
+        ResumeDoc: {
+            header: components["schemas"]["ResumeHeader"];
+            /**
+             * Summary
+             * @default
+             */
+            summary: string;
+            /**
+             * Sections
+             * @default []
+             */
+            sections: components["schemas"]["ResumeSection"][];
+        };
+        /** ResumeExtractResponse */
+        ResumeExtractResponse: {
+            /** Text */
+            text: string;
+        };
+        /** ResumeHeader */
+        ResumeHeader: {
+            /** Name */
+            name: string;
+            /**
+             * Contact
+             * @default []
+             */
+            contact: string[];
+            /**
+             * Links
+             * @default []
+             */
+            links: components["schemas"]["ResumeLink"][];
+        };
+        /** ResumeLink */
+        ResumeLink: {
+            /** Label */
+            label: string;
+            /** Url */
+            url: string;
+        };
+        /** ResumeMaterial */
+        ResumeMaterial: {
+            /** Kind */
+            kind: string;
+            /**
+             * Label
+             * @default
+             */
+            label: string;
+            /** Text */
+            text: string;
+        };
+        /** ResumeRenderRequest */
+        ResumeRenderRequest: {
+            state: components["schemas"]["ResumeState"];
+        };
+        /** ResumeSection */
+        ResumeSection: {
+            /** Id */
+            id: string;
+            type: components["schemas"]["SectionType"];
+            /** Title */
+            title: string;
+            /** Order */
+            order: number;
+            /**
+             * Visible
+             * @default true
+             */
+            visible: boolean;
+            /**
+             * Items
+             * @default []
+             */
+            items: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ResumeState */
+        ResumeState: {
+            doc: components["schemas"]["ResumeDoc"];
+            /**
+             * @default {
+             *       "template": "classic",
+             *       "font": "Pretendard",
+             *       "accent_color": "#334155",
+             *       "density": "normal",
+             *       "heading_style": "bar",
+             *       "layout": "single",
+             *       "font_scale": "M"
+             *     }
+             */
+            style: components["schemas"]["ResumeStyle"];
+        };
+        /** ResumeStyle */
+        ResumeStyle: {
+            /**
+             * Template
+             * @default classic
+             */
+            template: string;
+            /**
+             * Font
+             * @default Pretendard
+             */
+            font: string;
+            /**
+             * Accent Color
+             * @default #334155
+             */
+            accent_color: string;
+            /** @default normal */
+            density: components["schemas"]["Density"];
+            /** @default bar */
+            heading_style: components["schemas"]["HeadingStyle"];
+            /** @default single */
+            layout: components["schemas"]["Layout"];
+            /** @default M */
+            font_scale: components["schemas"]["FontScale"];
+        };
+        /** ResumeTemplate */
+        ResumeTemplate: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Thumbnail */
+            thumbnail: string;
+            preset: components["schemas"]["ResumeStyle"];
+        };
         /** ResumeUploadResponse */
         ResumeUploadResponse: {
             profile: components["schemas"]["Profile"];
@@ -711,6 +986,11 @@ export interface components {
             /** Message */
             message: string;
         };
+        /**
+         * SectionType
+         * @enum {string}
+         */
+        SectionType: "career" | "project" | "education" | "skill" | "award" | "certificate" | "language" | "activity" | "custom";
         /**
          * SignalType
          * @enum {string}
@@ -945,6 +1225,178 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResumeUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    templates_api_resume_templates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeTemplate"][];
+                };
+            };
+        };
+    };
+    seed_api_resume_seed_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeState"];
+                };
+            };
+        };
+    };
+    extract_api_resume_materials_extract_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_extract_api_resume_materials_extract_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeExtractResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_api_resume_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeChatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_resume_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeRenderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    render_api_resume_render_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeRenderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

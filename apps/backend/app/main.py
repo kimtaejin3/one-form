@@ -7,6 +7,7 @@ from app.forms.router import router as forms_router
 from app.jobs.router import router as jobs_router
 from app.notifications.router import router as notifications_router
 from app.profile.router import router as profile_router
+from app.resume.router import router as resume_router
 
 app = FastAPI(title="one-form API")
 
@@ -31,6 +32,7 @@ def health() -> dict[str, str]:
 for r in (
     jobs_router,
     profile_router,
+    resume_router,
     companies_router,
     essays_router,
     notifications_router,
