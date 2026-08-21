@@ -49,3 +49,42 @@ def test_render_pdf_returns_pdf():
 def test_list_templates_has_classic_and_modern():
     ids = {t.id for t in list_templates()}
     assert {"classic", "modern"} <= ids
+
+
+def test_chat_with_mock_keeps_state():
+    from app.resume.service import chat
+
+    s = asyncio.run(seed_state())
+    new_state, reply = asyncio.run(chat(s, [], "요약 써줘"))
+    assert new_state == s          # 목은 변경 없음
+    assert reply                    # 안내 문구는 있음
+
+
+def test_chat_applies_valid_llm_output(monkeypatch):
+    from app.resume.service import chat
+
+    s = asyncio.run(seed_state())
+    edited = s.model_copy(deep=True)
+    edited.doc.summary = "성과 지향 백엔드 개발자"
+
+    class FakeLlm:
+        async def complete_json(self, prompt, schema):
+            return edited.model_dump()
+
+    monkeypatch.setattr("app.resume.service.get_llm", lambda: FakeLlm())
+    new_state, reply = asyncio.run(chat(s, [], "요약 추가"))
+    assert new_state.doc.summary == "성과 지향 백엔드 개발자"
+
+
+def test_chat_rejects_invalid_llm_output(monkeypatch):
+    from app.resume.service import chat
+
+    s = asyncio.run(seed_state())
+
+    class BadLlm:
+        async def complete_json(self, prompt, schema):
+            return {"doc": {"header": {}}}  # name 누락 → 검증 실패
+
+    monkeypatch.setattr("app.resume.service.get_llm", lambda: BadLlm())
+    new_state, reply = asyncio.run(chat(s, [], "망가뜨려"))
+    assert new_state == s  # 옛 state 유지

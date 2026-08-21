@@ -2,7 +2,9 @@
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from pydantic import ValidationError
 
+from app.ai.llm import get_llm
 from app.profile.repository import get_profile
 from app.resume.render import html_to_pdf
 from app.resume.schemas import (
@@ -24,6 +26,15 @@ _PRESETS = {
     "classic": ResumeStyle(template="classic", heading_style="bar", accent_color="#334155"),
     "modern": ResumeStyle(template="modern", heading_style="plain", accent_color="#2563eb", font="Pretendard"),
 }
+
+_CHAT_PROMPT = (
+    "너는 이력서 편집기다. 아래 현재 이력서 상태(JSON)와 사용자 명령을 받아,\n"
+    "명령이 요구하는 최소 변경만 적용한 '전체 ResumeState JSON'을 반환하라.\n"
+    "- 내용 명령이면 doc를, 스타일 명령이면 style를 고친다. 나머지는 그대로 둔다.\n"
+    "- style 값은 스키마 enum만 사용한다(임의 CSS 금지).\n"
+    "- 참고 자료가 있으면 내용 보강에 활용하되 사실을 지어내지 않는다.\n\n"
+    "[현재 상태]\n{state}\n\n[참고 자료]\n{materials}\n\n[명령]\n{message}"
+)
 
 
 def _sections_from_profile(p: dict) -> list[ResumeSection]:
@@ -109,3 +120,19 @@ def render_html(state: ResumeState) -> str:
 
 def render_pdf(state: ResumeState) -> bytes:
     return html_to_pdf(render_html(state))
+
+
+async def chat(state, materials, message) -> tuple:
+    llm = get_llm()
+    prompt = _CHAT_PROMPT.format(
+        state=state.model_dump_json(),
+        materials="\n".join(f"- {m.label or m.kind}: {m.text}" for m in materials) or "(없음)",
+        message=message,
+    )
+    raw = await llm.complete_json(prompt, ResumeState.model_json_schema())
+    if not raw:
+        return state, "지금은 목 모드예요 — API 키를 넣으면 실제로 편집합니다."
+    try:
+        return ResumeState.model_validate(raw), "반영했어요."
+    except ValidationError:
+        return state, "요청을 반영하지 못했어요. 다시 시도해 주세요."
