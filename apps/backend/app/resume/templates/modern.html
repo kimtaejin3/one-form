@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: {{ margin }}; }
+  body { font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif;
+         font-size: {{ base_pt }}pt; color: #111827; line-height: 1.55; margin: 0; }
+  header { background: {{ style.accent_color }}; color: #fff; padding: 16px 18px; margin: 0 0 {{ gap }}px; }
+  header h1 { margin: 0; font-size: {{ base_pt + 10 }}pt; }
+  header .contact { color: rgba(255,255,255,.85); font-size: {{ base_pt - 1 }}pt; }
+  section { margin: 0 0 {{ gap }}px; }
+  h2 { font-size: {{ base_pt + 2 }}pt; color: {{ style.accent_color }}; margin: 0 0 6px;
+       text-transform: uppercase; letter-spacing: .04em; }
+  .item { margin-bottom: {{ gap // 2 }}px; }
+  .item .row { display: flex; justify-content: space-between; }
+  .item strong { font-weight: 600; } .item .org { color: #4b5563; }
+  .item .period { color: #9ca3af; font-size: {{ base_pt - 1 }}pt; }
+  ul { margin: 3px 0 0; padding-left: 16px; } .stack { color: #6b7280; font-size: {{ base_pt - 1 }}pt; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>{{ doc.header.name }}</h1>
+    <div class="contact">{{ doc.header.contact | join(' · ') }}{% for l in doc.header.links %} · {{ l.label }}{% endfor %}</div>
+  </header>
+  {% if doc.summary %}<div class="summary" style="margin:0 0 {{ gap }}px">{{ doc.summary }}</div>{% endif %}
+  {% for sec in sections %}
+  <section>
+    <h2>{{ sec.title }}</h2>
+    {% for it in sec.items %}
+    <div class="item">
+      <div class="row">
+        <span><strong>{{ it.title }}</strong>{% if it.org %} <span class="org">· {{ it.org }}</span>{% endif %}{% if it.name %}{{ it.name }}{% endif %}</span>
+        {% if it.period %}<span class="period">{{ it.period }}</span>{% endif %}
+      </div>
+      {% if it.note %}<div>{{ it.note }}</div>{% endif %}
+      {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+      {% if it.stack %}<div class="stack">{{ it.stack | join(' · ') }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</body>
+</html>

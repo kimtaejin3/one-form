@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: {{ margin }}; }
+  :root { }
+  body {
+    font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif;
+    font-size: {{ base_pt }}pt; color: #1f2937; line-height: 1.5; margin: 0;
+  }
+  h1 { font-size: {{ base_pt + 8 }}pt; margin: 0 0 2px; color: {{ style.accent_color }}; }
+  .contact { color: #6b7280; font-size: {{ base_pt - 1 }}pt; margin-bottom: {{ gap }}px; }
+  .summary { margin-bottom: {{ gap }}px; }
+  section { margin-bottom: {{ gap }}px; }
+  h2 {
+    font-size: {{ base_pt + 2 }}pt; margin: 0 0 6px; color: {{ style.accent_color }};
+    {% if style.heading_style.value == 'bar' %}border-left: 3px solid {{ style.accent_color }}; padding-left: 6px;{% endif %}
+    {% if style.heading_style.value == 'underline' %}border-bottom: 1px solid {{ style.accent_color }}; padding-bottom: 2px;{% endif %}
+  }
+  .item { margin-bottom: {{ gap // 2 }}px; }
+  .item .row { display: flex; justify-content: space-between; }
+  .item strong { font-weight: 600; }
+  .item .org { color: #4b5563; }
+  .item .period { color: #9ca3af; font-size: {{ base_pt - 1 }}pt; }
+  ul { margin: 3px 0 0; padding-left: 16px; }
+  .stack { color: #6b7280; font-size: {{ base_pt - 1 }}pt; }
+</style>
+</head>
+<body>
+  <h1>{{ doc.header.name }}</h1>
+  <div class="contact">
+    {{ doc.header.contact | join(' · ') }}
+    {% for l in doc.header.links %} · {{ l.label }}{% endfor %}
+  </div>
+  {% if doc.summary %}<div class="summary">{{ doc.summary }}</div>{% endif %}
+  {% for sec in sections %}
+  <section>
+    <h2>{{ sec.title }}</h2>
+    {% for it in sec.items %}
+    <div class="item">
+      <div class="row">
+        <span><strong>{{ it.title }}</strong>{% if it.org %} <span class="org">· {{ it.org }}</span>{% endif %}{% if it.name %}{{ it.name }}{% endif %}</span>
+        {% if it.period %}<span class="period">{{ it.period }}</span>{% endif %}
+      </div>
+      {% if it.note %}<div>{{ it.note }}</div>{% endif %}
+      {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+      {% if it.stack %}<div class="stack">{{ it.stack | join(' · ') }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</body>
+</html>

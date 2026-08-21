@@ -1,7 +1,7 @@
 import asyncio
 from app.resume.render import html_to_pdf
 from app.resume.schemas import ResumeState, ResumeStyle, Density
-from app.resume.service import seed_state
+from app.resume.service import seed_state, render_html, render_pdf, list_templates
 import pytest
 from pydantic import ValidationError
 
@@ -31,3 +31,21 @@ def test_seed_state_maps_profile_header_and_sections():
     # 섹션 순서는 0..n 연속
     orders = [sec.order for sec in s.doc.sections]
     assert orders == sorted(orders)
+
+
+def test_render_html_interpolates_name_and_accent():
+    s = asyncio.run(seed_state())
+    s.style.accent_color = "#1a3a6b"
+    html = render_html(s)
+    assert s.doc.header.name in html
+    assert "#1a3a6b" in html  # 스타일 토큰이 CSS에 보간됨
+
+
+def test_render_pdf_returns_pdf():
+    s = asyncio.run(seed_state())
+    assert render_pdf(s)[:4] == b"%PDF"
+
+
+def test_list_templates_has_classic_and_modern():
+    ids = {t.id for t in list_templates()}
+    assert {"classic", "modern"} <= ids
