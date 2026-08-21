@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.activities.router import router as activities_router
 from app.companies.router import router as companies_router
 from app.essays.router import router as essays_router
 from app.forms.router import router as forms_router
@@ -34,7 +33,6 @@ for r in (
     profile_router,
     companies_router,
     essays_router,
-    activities_router,
     notifications_router,
     forms_router,
 ):

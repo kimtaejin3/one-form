@@ -8,7 +8,6 @@ import { ProfilePage } from '@/pages/profile'
 import { CompaniesPage } from '@/pages/companies'
 import { EssaysPage } from '@/pages/essays'
 import { FormsPage } from '@/pages/forms'
-import { ActivitiesPage } from '@/pages/activities'
 import { AccountPage } from '@/pages/account'
 import { SettingsPage } from '@/pages/settings'
 import { NotificationsPage } from '@/pages/notifications'
@@ -20,7 +19,6 @@ const ROUTES: { path: string; element: ReactElement }[] = [
   { path: '/companies', element: <CompaniesPage /> },
   { path: '/essays', element: <EssaysPage /> },
   { path: '/forms', element: <FormsPage /> },
-  { path: '/activities', element: <ActivitiesPage /> },
   { path: '/account', element: <AccountPage /> },
   { path: '/settings', element: <SettingsPage /> },
   { path: '/notifications', element: <NotificationsPage /> },

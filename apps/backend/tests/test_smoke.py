@@ -7,7 +7,6 @@ def test_health(client):
 
 def test_get_endpoints(client):
     assert client.get("/api/profile").json()["personal"]["name"]
-    assert len(client.get("/api/activities").json()) == 20
     assert len(client.get("/api/notifications").json()) == 8
     assert client.get("/api/jobs/1").json()["match_analysis"]["matched_skills"] is not None
     questions = client.get("/api/essays/questions").json()
