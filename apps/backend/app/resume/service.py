@@ -5,6 +5,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import ValidationError
 
 from app.ai.llm import get_llm
+from app.core.pdf import pdf_pages
 from app.profile.repository import get_profile
 from app.resume.render import html_to_pdf
 from app.resume.schemas import (
@@ -136,3 +137,9 @@ async def chat(state, materials, message) -> tuple:
         return ResumeState.model_validate(raw), "반영했어요."
     except ValidationError:
         return state, "요청을 반영하지 못했어요. 다시 시도해 주세요."
+
+
+def extract_material(filename: str, data: bytes) -> str:
+    if filename.lower().endswith(".pdf"):
+        return "\n".join(pdf_pages(data))
+    return data.decode("utf-8", errors="ignore")

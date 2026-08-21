@@ -1,7 +1,7 @@
 import asyncio
 from app.resume.render import html_to_pdf
 from app.resume.schemas import ResumeState, ResumeStyle, Density
-from app.resume.service import seed_state, render_html, render_pdf, list_templates
+from app.resume.service import seed_state, render_html, render_pdf, list_templates, extract_material
 import pytest
 from pydantic import ValidationError
 
@@ -88,3 +88,7 @@ def test_chat_rejects_invalid_llm_output(monkeypatch):
     monkeypatch.setattr("app.resume.service.get_llm", lambda: BadLlm())
     new_state, reply = asyncio.run(chat(s, [], "망가뜨려"))
     assert new_state == s  # 옛 state 유지
+
+
+def test_extract_text_file():
+    assert extract_material("memo.txt", "안녕 이력".encode()) == "안녕 이력"
