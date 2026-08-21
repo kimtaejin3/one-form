@@ -3,11 +3,14 @@ import os
 import sys
 
 if sys.platform == "darwin":
-    _brew_lib = "/opt/homebrew/lib"
-    if os.path.isdir(_brew_lib):
-        os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = (
-            _brew_lib + os.pathsep + os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "")
-        ).rstrip(os.pathsep)
+    # cffi's dlopen doesn't search Homebrew's lib dir by default on macOS, so
+    # weasyprint's native libs (libgobject 등) fail to load without this.
+    # Prepend the Homebrew prefixes (arm64 /opt/homebrew, Intel /usr/local).
+    for _lib in ("/opt/homebrew/lib", "/usr/local/lib"):
+        if os.path.isdir(_lib):
+            os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = (
+                _lib + os.pathsep + os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "")
+            ).rstrip(os.pathsep)
 
 from weasyprint import HTML
 
