@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <style>
   @page { size: A4; margin: {{ margin }}; }
+  /* 화면 미리보기를 실제 PDF 종이처럼 — 회색 캔버스 위 A4 흰 종이.
+     weasyprint(print 미디어)는 이 블록을 무시하고 @page 여백을 쓰므로 PDF는 그대로. */
+  @media screen {
+    html { background: #e5e7eb; }
+    .page {
+      box-sizing: border-box;
+      width: 210mm;
+      max-width: 100%;
+      min-height: 297mm;
+      margin: 16px auto;
+      padding: {{ margin }};
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(15, 30, 52, 0.18);
+    }
+  }
   :root { }
   body {
     font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif;
@@ -28,6 +43,7 @@
 </style>
 </head>
 <body>
+  <div class="page">
   <h1>{{ doc.header.name }}</h1>
   <div class="contact">
     {{ doc.header.contact | join(' · ') }}
@@ -50,5 +66,6 @@
     {% endfor %}
   </section>
   {% endfor %}
+  </div>
 </body>
 </html>

@@ -1354,7 +1354,8 @@
   width: 100%;
   border: 1px solid var(--of-border);
   border-radius: 10px;
-  background: #fff;
+  /* 미리보기 내부(iframe html)가 회색 캔버스 위 A4 종이를 그린다 — 배경을 맞춰 흰 테두리 깜빡임 방지 */
+  background: #e5e7eb;
 }
 .resume-template-list {
   display: flex;
