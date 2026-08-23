@@ -1329,15 +1329,20 @@
   color: var(--of-warn);
 }
 
-/* resume builder */
+/* resume builder — 왼쪽 컨트롤(자료·템플릿·AI수정) + 오른쪽 넓은 미리보기 */
 .resume-builder {
   display: grid;
-  grid-template-columns: 280px 1fr 320px;
+  grid-template-columns: 300px 1fr;
   gap: 12px;
   height: calc(100vh - 120px);
 }
-.resume-materials,
-.resume-chat {
+.resume-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+.resume-materials {
   overflow-y: auto;
   padding: 12px;
   border: 1px solid var(--of-border);
@@ -1373,32 +1378,56 @@
   gap: 6px;
   flex-wrap: wrap;
 }
+
+/* AI 수정 — 버튼 누르면 말풍선(팝오버) 입력 */
 .resume-chat {
+  position: relative;
+  margin-top: auto;
+}
+.resume-chat-trigger {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--of-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+.resume-chat-trigger:hover {
+  opacity: 0.92;
+}
+.resume-chat-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--of-surface);
+  border: 1px solid var(--of-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 30, 52, 0.16);
 }
-.resume-chat-log {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
-}
-.resume-chat-log .msg.user {
-  align-self: flex-end;
-  background: var(--of-surface-alt);
-  border-radius: 8px;
-  padding: 6px 10px;
-}
-.resume-chat-log .msg.ai {
-  align-self: flex-start;
-  color: var(--of-body);
-}
-.resume-chat-input {
-  display: flex;
-  gap: 6px;
-}
-.resume-chat-input textarea {
-  flex: 1;
+.resume-chat-bubble textarea {
+  width: 100%;
+  min-height: 64px;
   resize: none;
+  box-sizing: border-box;
+}
+.resume-chat-reply {
+  font-size: 13px;
+  color: var(--of-body);
+  background: var(--of-accent-soft);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.resume-chat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
 }

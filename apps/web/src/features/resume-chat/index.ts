@@ -1,2 +1,2 @@
-export { ChatPanel } from './ui/ChatPanel'
+export { ChatBubble } from './ui/ChatBubble'
 export { useResumeChat } from './model'

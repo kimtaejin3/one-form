@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { resumeSeedQuery, type ResumeMaterial, type ResumeState } from '@/entities/resume'
 import { MaterialsPanel } from '@/features/resume-materials'
-import { ChatPanel } from '@/features/resume-chat'
+import { ChatBubble } from '@/features/resume-chat'
 
 export function ResumeBuilderPage() {
   const { data: seed } = useSuspenseQuery(resumeSeedQuery)
@@ -39,19 +39,21 @@ export function ResumeBuilderPage() {
 
   return (
     <div className="resume-builder">
-      <MaterialsPanel
-        state={state}
-        materials={materials}
-        onAddMaterial={(m) => setMaterials((ms) => [...ms, m])}
-        onTemplate={(preset) => setState((s) => ({ ...s, style: preset }))}
-      />
+      <div className="resume-side">
+        <MaterialsPanel
+          state={state}
+          materials={materials}
+          onAddMaterial={(m) => setMaterials((ms) => [...ms, m])}
+          onTemplate={(preset) => setState((s) => ({ ...s, style: preset }))}
+        />
+        <ChatBubble state={state} materials={materials} onState={setState} />
+      </div>
       <div className="resume-preview">
         <iframe title="이력서 미리보기" srcDoc={html} sandbox="" />
         <button className="resume-download" onClick={download}>
           📄 PDF 내려받기
         </button>
       </div>
-      <ChatPanel state={state} materials={materials} onState={setState} />
     </div>
   )
 }
