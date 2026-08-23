@@ -43,10 +43,10 @@ export function ResumeBuilderPage() {
         state={state}
         materials={materials}
         onAddMaterial={(m) => setMaterials((ms) => [...ms, m])}
-        onTemplate={(templateId) => setState((s) => ({ ...s, style: { ...s.style, template: templateId } }))}
+        onTemplate={(preset) => setState((s) => ({ ...s, style: preset }))}
       />
       <div className="resume-preview">
-        <iframe title="이력서 미리보기" srcDoc={html} />
+        <iframe title="이력서 미리보기" srcDoc={html} sandbox="" />
         <button className="resume-download" onClick={download}>
           📄 PDF 내려받기
         </button>

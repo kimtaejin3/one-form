@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Dropzone } from '@/shared/ui'
-import { resumeTemplatesQuery, type ResumeMaterial, type ResumeState } from '@/entities/resume'
+import {
+  resumeTemplatesQuery,
+  type ResumeMaterial,
+  type ResumeState,
+  type ResumeStyle,
+} from '@/entities/resume'
 import { useExtractMaterial } from '../model'
 
 interface Props {
   state: ResumeState
   materials: ResumeMaterial[]
   onAddMaterial: (m: ResumeMaterial) => void
-  onTemplate: (templateId: string) => void
+  onTemplate: (preset: ResumeStyle) => void
 }
 
 export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: Props) {
@@ -25,7 +30,7 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: 
             <button
               key={t.id}
               className={state.style.template === t.id ? 'active' : ''}
-              onClick={() => onTemplate(t.id)}
+              onClick={() => onTemplate(t.preset)}
             >
               {t.name}
             </button>
