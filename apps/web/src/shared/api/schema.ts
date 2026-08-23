@@ -707,11 +707,6 @@ export interface components {
             /** Date */
             date: string;
         };
-        /**
-         * Layout
-         * @enum {string}
-         */
-        Layout: "single" | "two-column";
         /** Link */
         Link: {
             /** Label */
@@ -936,7 +931,6 @@ export interface components {
              *       "accent_color": "#334155",
              *       "density": "normal",
              *       "heading_style": "bar",
-             *       "layout": "single",
              *       "font_scale": "M"
              *     }
              */
@@ -963,8 +957,6 @@ export interface components {
             density: components["schemas"]["Density"];
             /** @default bar */
             heading_style: components["schemas"]["HeadingStyle"];
-            /** @default single */
-            layout: components["schemas"]["Layout"];
             /** @default M */
             font_scale: components["schemas"]["FontScale"];
         };

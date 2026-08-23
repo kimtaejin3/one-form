@@ -1,7 +1,10 @@
 """이력서 빌더 도메인 스키마. 클래스명은 전역 유일해야 함(Resume 프리픽스)."""
+import re
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+_HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{3,8}$")
 
 
 class SectionType(str, Enum):
@@ -26,11 +29,6 @@ class HeadingStyle(str, Enum):
     plain = "plain"
     bar = "bar"
     underline = "underline"
-
-
-class Layout(str, Enum):
-    single = "single"
-    two_column = "two-column"
 
 
 class FontScale(str, Enum):
@@ -73,8 +71,13 @@ class ResumeStyle(BaseModel):
     accent_color: str = "#334155"
     density: Density = Density.normal
     heading_style: HeadingStyle = HeadingStyle.bar
-    layout: Layout = Layout.single
     font_scale: FontScale = FontScale.M
+
+    @field_validator("accent_color")
+    @classmethod
+    def _valid_hex(cls, v: str) -> str:
+        # ponytail: LLM이 이상한 값을 줘도 500 대신 기본색으로 폴백
+        return v if _HEX_COLOR.match(v) else "#334155"
 
 
 class ResumeState(BaseModel):
