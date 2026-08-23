@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '@one-form/design-system'
 import type { ResumeMaterial, ResumeState } from '@/entities/resume'
 import { useResumeChat } from '../model'
 
@@ -36,6 +37,7 @@ export function ChatBubble({ state, materials, onState }: Props) {
             reply && <div className="resume-chat-reply">{reply}</div>
           )}
           <textarea
+            className="of-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -48,10 +50,12 @@ export function ChatBubble({ state, materials, onState }: Props) {
             autoFocus
           />
           <div className="resume-chat-actions">
-            <button onClick={() => setOpen(false)}>닫기</button>
-            <button onClick={send} disabled={chat.isPending}>
+            <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+              닫기
+            </Button>
+            <Button size="sm" onClick={send} disabled={chat.isPending}>
               보내기
-            </button>
+            </Button>
           </div>
         </div>
       )}

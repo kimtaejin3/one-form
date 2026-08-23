@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { Button } from '@one-form/design-system'
 import { Dropzone } from '@/shared/ui'
 import {
   resumeTemplatesQuery,
@@ -29,7 +30,7 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: 
           {templates.map((t) => (
             <button
               key={t.id}
-              className={state.style.template === t.id ? 'active' : ''}
+              className={`filter-chip${state.style.template === t.id ? ' filter-chip--on' : ''}`}
               onClick={() => onTemplate(t.preset)}
             >
               {t.name}
@@ -53,11 +54,13 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: 
           }}
         />
         <textarea
+          className="of-input"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="메모·경험을 붙여넣기"
         />
-        <button
+        <Button
+          size="sm"
           disabled={!note.trim()}
           onClick={() => {
             onAddMaterial({ kind: 'note', label: '메모', text: note })
@@ -65,7 +68,7 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: 
           }}
         >
           메모 추가
-        </button>
+        </Button>
         <ul className="resume-material-chips">
           {materials.map((m, i) => (
             <li key={i}>{m.label || m.kind}</li>

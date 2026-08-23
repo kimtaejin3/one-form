@@ -1367,16 +1367,23 @@
   gap: 6px;
   flex-wrap: wrap;
 }
-.resume-template-list button.active {
-  border-color: var(--of-primary);
-  color: var(--of-primary);
+.resume-download {
+  width: 100%;
 }
 .resume-material-chips {
   list-style: none;
   padding: 0;
+  margin: 10px 0 0;
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+.resume-material-chips li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--of-surface-alt);
+  color: var(--of-body);
+  font-size: 12px;
 }
 
 /* AI 수정 — 버튼 누르면 말풍선(팝오버) 입력 */

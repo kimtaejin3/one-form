@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { Button } from '@one-form/design-system'
 import { resumeSeedQuery, type ResumeMaterial, type ResumeState } from '@/entities/resume'
 import { MaterialsPanel } from '@/features/resume-materials'
 import { ChatBubble } from '@/features/resume-chat'
@@ -50,9 +51,9 @@ export function ResumeBuilderPage() {
       </div>
       <div className="resume-preview">
         <iframe title="이력서 미리보기" srcDoc={html} sandbox="" />
-        <button className="resume-download" onClick={download}>
+        <Button className="resume-download" onClick={download}>
           📄 PDF 내려받기
-        </button>
+        </Button>
       </div>
     </div>
   )
