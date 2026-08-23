@@ -1,3 +1,4 @@
+import type { ChangeEvent } from 'react'
 import { Icon } from './Icon'
 
 type Props = {
@@ -7,7 +8,7 @@ type Props = {
   buttonLabel: string
   busy?: boolean
   busyLabel?: string
-  onFile: () => void
+  onFile: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
 export default function Dropzone({ title, desc, accept, buttonLabel, busy, busyLabel, onFile }: Props) {
