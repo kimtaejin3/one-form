@@ -48,6 +48,21 @@ class ResumeHeader(BaseModel):
     links: list[ResumeLink] = []
 
 
+# 입사지원서(형식 템플릿)용 인적사항 — 표준·포트폴리오 템플릿은 사용하지 않는다.
+class ResumePersonal(BaseModel):
+    photo: str = ""
+    email: str = ""
+    phone: str = ""
+    address: str = ""
+    birth: str = ""
+    nationality: str = ""
+    military_status: str = ""
+    military_branch: str = ""
+    military_period: str = ""
+    veteran: str = ""
+    discharge: str = ""
+
+
 class ResumeSection(BaseModel):
     id: str
     type: SectionType
@@ -61,6 +76,7 @@ class ResumeSection(BaseModel):
 
 class ResumeDoc(BaseModel):
     header: ResumeHeader
+    personal: ResumePersonal = ResumePersonal()
     summary: str = ""
     sections: list[ResumeSection] = []
 

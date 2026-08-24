@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <style>
-  /* 한국 표준 입사지원서 — dev/resume 의 application.css 표(table) 형식을 이식.
-     인적사항 표 + 섹션별(경력·학력·자격…) 구분 라벨 표. 무채색·회색 라벨·얇은 테두리. */
+  /* 한국 표준 입사지원서 — dev/resume 의 application.css 완전 이식.
+     인적사항 표(사진칸 포함) + 학력사항 표 + 경력사항 표 + 구분 라벨 표. 무채색. */
   @page { size: A4; margin: {{ margin }}; }
   @media screen {
     html { background: #e9ebee; }
@@ -27,10 +27,14 @@
   th, td { border: 0.7px solid #6b7280; padding: 4.5px 7px; vertical-align: middle; font-size: {{ base_pt - 2 }}pt; }
   th { background: #f1f2f5; font-weight: 600; text-align: center; white-space: nowrap; }
   td.c { text-align: center; }
-  .side { background: #f1f2f5; font-weight: 600; text-align: center; width: 13%; white-space: nowrap; }
-  .personal th { width: 13%; }
+  .side { background: #f1f2f5; font-weight: 600; text-align: center; width: 12%; white-space: nowrap; }
+  .personal th { width: 12%; }
+  .personal .photo {
+    width: 16%; text-align: center; color: #6b7280; font-size: {{ base_pt - 3 }}pt; padding: 6px;
+  }
+  .personal .photo img { display: block; width: 100%; max-width: 26mm; margin: 0 auto; object-fit: cover; }
   td.para { padding: 6px 8px; text-align: left; }
-  td.para p { margin-bottom: 4px; line-height: 1.62; }
+  td.para p { margin-bottom: 4px; line-height: 1.6; }
   td.para p:last-child { margin-bottom: 0; }
   td.para p.dot { padding-left: 10px; text-indent: -10px; }
   td.para p.dot::before { content: '· '; }
@@ -45,32 +49,67 @@
 
     <table class="personal">
       <tr>
+        <td class="photo" rowspan="6">{% if doc.personal.photo %}<img src="{{ doc.personal.photo }}" alt="사진">{% else %}(사진){% endif %}</td>
         <th>성 명</th><td>{{ doc.header.name }}</td>
+        <th>생년월일</th><td>{{ doc.personal.birth }}</td>
       </tr>
-      {% if doc.header.contact %}
-      <tr><th>연 락 처</th><td>{{ doc.header.contact | join('   ·   ') }}</td></tr>
-      {% endif %}
-      {% if doc.header.links %}
-      <tr><th>링 크</th><td>{% for l in doc.header.links %}{{ l.label }}{% if not loop.last %}   ·   {% endif %}{% endfor %}</td></tr>
-      {% endif %}
+      <tr><th>연 락 처</th><td>{{ doc.personal.phone }}</td><th>E-mail</th><td>{{ doc.personal.email }}</td></tr>
+      <tr><th>주 소</th><td colspan="3">{{ doc.personal.address }}</td></tr>
+      <tr><th>국 적</th><td>{{ doc.personal.nationality }}</td><th>병역구분</th><td>{{ doc.personal.military_status }}</td></tr>
+      <tr><th>군별/병과</th><td>{{ doc.personal.military_branch }}</td><th>군복무기간</th><td>{{ doc.personal.military_period }}</td></tr>
+      <tr><th>보훈대상</th><td>{{ doc.personal.veteran }}</td><th>전역사유</th><td>{{ doc.personal.discharge }}</td></tr>
     </table>
 
-    {% if doc.summary %}
-    <table>
-      <tr><th class="side">요 약</th><td class="para"><p>{{ doc.summary }}</p></td></tr>
-    </table>
+    {% if doc.header.links %}
+    <table><tr><th class="side">링 크</th><td>{% for l in doc.header.links %}{{ l.label }}{% if not loop.last %}   ·   {% endif %}{% endfor %}</td></tr></table>
     {% endif %}
 
-    {% for sec in sections %}
+    {% if doc.summary %}
+    <table><tr><th class="side">요 약</th><td class="para"><p>{{ doc.summary }}</p></td></tr></table>
+    {% endif %}
+
+    {# 입사지원서 순서: 학력 → 경력 → 나머지 (seed 순서와 무관하게 표준 양식 순서로) #}
+    {% for sec in sections if sec.type.value == 'education' %}
+    <table>
+      <tr><th class="side">구 분</th><th>입학</th><th>졸업</th><th>학위</th><th>학교명</th><th>전공</th><th>졸업여부</th></tr>
+      {% for it in sec.items %}
+      <tr>
+        {% if loop.first %}<td class="side" rowspan="{{ sec.items | length }}">학력사항</td>{% endif %}
+        <td class="c">{{ it.admission }}</td>
+        <td class="c">{{ it.graduation }}</td>
+        <td class="c">{{ it.degree }}</td>
+        <td class="c">{{ it.title }}</td>
+        <td class="c">{{ it.org }}</td>
+        <td class="c">{{ it.status }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endfor %}
+
+    {% for sec in sections if sec.type.value == 'career' %}
+    <table>
+      <tr><th class="side">구 분</th><th>입사</th><th>퇴사</th><th>회사명</th><th>직위</th><th>담당업무</th></tr>
+      {% for it in sec.items %}
+      <tr>
+        {% if loop.first %}<td class="side" rowspan="{{ sec.items | length }}">경력사항</td>{% endif %}
+        <td class="c">{{ it.period.split('~')[0] | trim }}</td>
+        <td class="c">{{ (it.period.split('~')[1] | trim) if '~' in it.period else '' }}</td>
+        <td class="c">{{ it.org }}</td>
+        <td class="c">{{ it.title }}</td>
+        <td class="para">{% for b in it.bullets %}{{ b }}{% if not loop.last %} / {% endif %}{% endfor %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endfor %}
+
+    {% for sec in sections if sec.type.value not in ['education', 'career'] %}
     <table>
       {% for it in sec.items %}
       <tr>
         {% if loop.first %}<th class="side" rowspan="{{ sec.items | length }}">{{ sec.title }}</th>{% endif %}
         <td class="c" style="width: 15%">{{ it.period or '' }}</td>
         <td class="para">
-          {% if it.title or it.name or it.org %}
-          <p><span class="r-title">{{ it.title }}{% if it.name %}{{ it.name }}{% endif %}</span>{% if it.org %} <span class="r-sub">· {{ it.org }}</span>{% endif %}</p>
-          {% endif %}
+          {% if it.title or it.name or it.org %}<p><span class="r-title">{{ it.title }}{% if it.name %}{{ it.name }}{% endif %}</span>{% if it.org %} <span class="r-sub">· {{ it.org }}</span>{% endif %}</p>{% endif %}
           {% if it.note %}<p>{{ it.note }}</p>{% endif %}
           {% for b in it.bullets %}<p class="dot">{{ b }}</p>{% endfor %}
           {% if it.stack %}<p class="r-stack">{{ it.stack | join('  ·  ') }}</p>{% endif %}

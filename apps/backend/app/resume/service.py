@@ -9,7 +9,7 @@ from app.core.pdf import pdf_pages
 from app.profile.repository import get_profile
 from app.resume.render import html_to_pdf
 from app.resume.schemas import (
-    ResumeDoc, ResumeHeader, ResumeLink, ResumeSection, ResumeState,
+    ResumeDoc, ResumeHeader, ResumeLink, ResumePersonal, ResumeSection, ResumeState,
     ResumeStyle, ResumeTemplate,
 )
 
@@ -67,7 +67,10 @@ def _sections_from_profile(p: dict) -> list[ResumeSection]:
     ])
     add("education", "학력", [
         {"title": e["school"], "org": e["major"], "period": e["period"],
-         "note": f'{e["status"]} · GPA {e["gpa"]}'}
+         "note": e["status"] + (f' · GPA {e["gpa"]}' if e.get("gpa") else ''),
+         # 입사지원서 학력 표용 세부(형식 템플릿이 사용)
+         "admission": e.get("admission", ""), "graduation": e.get("graduation", ""),
+         "degree": e.get("degree", ""), "status": e["status"]}
         for e in p["educations"]
     ])
     stacks = list(dict.fromkeys(
@@ -102,7 +105,16 @@ async def seed_state() -> ResumeState:
         contact=[x for x in (per["email"], per["phone"], per["address"]) if x],
         links=[ResumeLink(label=l["label"], url=l["url"]) for l in p["links"]],
     )
-    return ResumeState(doc=ResumeDoc(header=header, sections=_sections_from_profile(p)))
+    personal = ResumePersonal(
+        photo=per.get("photo", ""), email=per.get("email", ""), phone=per.get("phone", ""),
+        address=per.get("address", ""), birth=per.get("birth", ""), nationality=per.get("nationality", ""),
+        military_status=per.get("military_status", ""), military_branch=per.get("military_branch", ""),
+        military_period=per.get("military_period", ""), veteran=per.get("veteran", ""),
+        discharge=per.get("discharge", ""),
+    )
+    return ResumeState(
+        doc=ResumeDoc(header=header, personal=personal, sections=_sections_from_profile(p))
+    )
 
 
 def list_templates() -> list[ResumeTemplate]:

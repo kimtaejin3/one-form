@@ -596,6 +596,21 @@ export interface components {
             status: string;
             /** Gpa */
             gpa: string;
+            /**
+             * Admission
+             * @default
+             */
+            admission: string;
+            /**
+             * Graduation
+             * @default
+             */
+            graduation: string;
+            /**
+             * Degree
+             * @default
+             */
+            degree: string;
         };
         /**
          * FontScale
@@ -761,6 +776,41 @@ export interface components {
             emergency_phone: string;
             /** Emergency Relation */
             emergency_relation: string;
+            /**
+             * Birth
+             * @default
+             */
+            birth: string;
+            /**
+             * Nationality
+             * @default
+             */
+            nationality: string;
+            /**
+             * Military Status
+             * @default
+             */
+            military_status: string;
+            /**
+             * Military Branch
+             * @default
+             */
+            military_branch: string;
+            /**
+             * Military Period
+             * @default
+             */
+            military_period: string;
+            /**
+             * Veteran
+             * @default
+             */
+            veteran: string;
+            /**
+             * Discharge
+             * @default
+             */
+            discharge: string;
         };
         /** Profile */
         Profile: {
@@ -846,6 +896,22 @@ export interface components {
         ResumeDoc: {
             header: components["schemas"]["ResumeHeader"];
             /**
+             * @default {
+             *       "photo": "",
+             *       "email": "",
+             *       "phone": "",
+             *       "address": "",
+             *       "birth": "",
+             *       "nationality": "",
+             *       "military_status": "",
+             *       "military_branch": "",
+             *       "military_period": "",
+             *       "veteran": "",
+             *       "discharge": ""
+             *     }
+             */
+            personal: components["schemas"]["ResumePersonal"];
+            /**
              * Summary
              * @default
              */
@@ -894,6 +960,64 @@ export interface components {
             label: string;
             /** Text */
             text: string;
+        };
+        /** ResumePersonal */
+        ResumePersonal: {
+            /**
+             * Photo
+             * @default
+             */
+            photo: string;
+            /**
+             * Email
+             * @default
+             */
+            email: string;
+            /**
+             * Phone
+             * @default
+             */
+            phone: string;
+            /**
+             * Address
+             * @default
+             */
+            address: string;
+            /**
+             * Birth
+             * @default
+             */
+            birth: string;
+            /**
+             * Nationality
+             * @default
+             */
+            nationality: string;
+            /**
+             * Military Status
+             * @default
+             */
+            military_status: string;
+            /**
+             * Military Branch
+             * @default
+             */
+            military_branch: string;
+            /**
+             * Military Period
+             * @default
+             */
+            military_period: string;
+            /**
+             * Veteran
+             * @default
+             */
+            veteran: string;
+            /**
+             * Discharge
+             * @default
+             */
+            discharge: string;
         };
         /** ResumeRenderRequest */
         ResumeRenderRequest: {

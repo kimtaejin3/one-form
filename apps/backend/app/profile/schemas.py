@@ -11,6 +11,14 @@ class Personal(BaseModel):
     email: str
     emergency_phone: str
     emergency_relation: str
+    # 입사지원서용 확장 필드(기본값 "") — 표준 이력서 템플릿은 무시, 형식(입사지원서)만 사용
+    birth: str = ""  # 생년월일
+    nationality: str = ""  # 국적
+    military_status: str = ""  # 병역구분
+    military_branch: str = ""  # 군별/병과
+    military_period: str = ""  # 군복무기간
+    veteran: str = ""  # 보훈대상
+    discharge: str = ""  # 전역사유
 
 
 class Link(BaseModel):
@@ -24,6 +32,10 @@ class Education(BaseModel):
     period: str
     status: str
     gpa: str
+    # 입사지원서 학력사항 표용(기본값 "")
+    admission: str = ""  # 입학년월
+    graduation: str = ""  # 졸업년월
+    degree: str = ""  # 학위구분
 
 
 class Language(BaseModel):
