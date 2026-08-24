@@ -66,6 +66,7 @@
       <div class="r-sec-title">{{ sec.title }}</div>
       {% for it in sec.items %}
       <div class="r-entry">
+        {% if it.title or it.name or it.org or it.period %}
         <div class="r-entry__head">
           <div class="r-entry__lead">
             <span class="r-org">{{ it.title }}{% if it.name %}{{ it.name }}{% endif %}</span>
@@ -73,6 +74,7 @@
           </div>
           {% if it.period %}<span class="r-period">{{ it.period }}</span>{% endif %}
         </div>
+        {% endif %}
         {% if it.note %}<div class="r-note">{{ it.note }}</div>{% endif %}
         {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
         {% if it.stack %}<div class="r-stack">{% for s in it.stack %}<span>{{ s }}</span>{% endfor %}</div>{% endif %}

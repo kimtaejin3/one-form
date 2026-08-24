@@ -73,7 +73,8 @@ def _sections_from_profile(p: dict) -> list[ResumeSection]:
     stacks = list(dict.fromkeys(
         s for c in p["careers"] for s in c["stack"]
     ) | dict.fromkeys(s for pr in p["projects"] for s in pr["stack"]))
-    add("skill", "스킬", [{"name": s} for s in stacks])
+    # 스킬은 한 항목의 칩 묶음으로 — 스킬마다 한 줄 차지하지 않게.
+    add("skill", "스킬", [{"stack": stacks}] if stacks else [])
     add("certificate", "자격증", [
         {"title": c["name"], "org": c["issuer"], "period": c["date"]} for c in p["certificates"]
     ])

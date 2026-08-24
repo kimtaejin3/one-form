@@ -62,10 +62,12 @@
       <div class="r-sec-label">{{ sec.title }}</div>
       {% for it in sec.items %}
       <div class="r-item">
+        {% if it.title or it.name or it.org or it.period %}
         <div class="row">
           <span><strong>{{ it.title }}</strong>{% if it.org %} <span class="org">· {{ it.org }}</span>{% endif %}{% if it.name %}{{ it.name }}{% endif %}</span>
           {% if it.period %}<span class="period">{{ it.period }}</span>{% endif %}
         </div>
+        {% endif %}
         {% if it.note %}<div>{{ it.note }}</div>{% endif %}
         {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
         {% if it.stack %}<div class="stack">{{ it.stack | join(' · ') }}</div>{% endif %}
