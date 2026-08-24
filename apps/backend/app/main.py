@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.companies.router import router as companies_router
-from app.essays.router import router as essays_router
 from app.forms.router import router as forms_router
 from app.jobs.router import router as jobs_router
 from app.notifications.router import router as notifications_router
@@ -33,8 +31,6 @@ for r in (
     jobs_router,
     profile_router,
     resume_router,
-    companies_router,
-    essays_router,
     notifications_router,
     forms_router,
 ):

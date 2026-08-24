@@ -1,5 +1,5 @@
 export * from './model'
-export { resumeSeedQuery, resumeTemplatesQuery } from './api'
+export { resumeSeedQuery, resumeTemplatesQuery, resumeEssaySetsQuery } from './api'
 export {
   type SavedDoc,
   listSavedDocs,

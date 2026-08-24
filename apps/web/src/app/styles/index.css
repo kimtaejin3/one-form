@@ -1503,6 +1503,72 @@
   font-weight: 600;
 }
 
+/* 자소서 패널 — 기업 세트 선택 · 문항별 답변 · AI 초안 */
+.resume-essays__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--of-body);
+}
+.resume-essays__row select {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.resume-essays__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--of-body);
+  margin-bottom: 10px;
+}
+.resume-essays__note {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--of-accent-soft);
+  color: var(--of-body);
+  font-size: 12px;
+}
+.resume-essay-item {
+  border-top: 1px solid var(--of-border);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+.resume-essay-item__q {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--of-ink);
+  margin-bottom: 6px;
+}
+.resume-essay-item__q button {
+  border: 0;
+  background: none;
+  color: var(--of-faint);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.resume-essay-item textarea {
+  min-height: 90px;
+  resize: vertical;
+  font-size: 13px;
+}
+.resume-essay-item__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--of-muted);
+}
+
 /* 저장 바 (빌더 왼쪽 하단) */
 .resume-save {
   display: flex;

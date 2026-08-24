@@ -12,6 +12,7 @@ import {
   type ResumeState,
 } from '@/entities/resume'
 import { MaterialsPanel } from '@/features/resume-materials'
+import { EssaysPanel } from '@/features/resume-essays'
 import { ChatBubble } from '@/features/resume-chat'
 
 // 하나의 빌더가 이력서·포트폴리오를 모두 다룬다. 라우트로 구분:
@@ -86,6 +87,12 @@ export function ResumeBuilderPage() {
           onAddMaterial={(m) => setMaterials((ms) => [...ms, m])}
           onTemplate={(preset) => setState((s) => ({ ...s, style: preset }))}
         />
+        <div className="resume-materials">
+          <EssaysPanel
+            state={state}
+            onDoc={(patch) => setState((s) => ({ ...s, doc: { ...s.doc, ...patch } }))}
+          />
+        </div>
         <div className="resume-side-foot">
           <div className="resume-save">
             <input

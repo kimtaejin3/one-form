@@ -141,6 +141,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/resume/essay-sets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Essay Sets */
+        get: operations["essay_sets_api_resume_essay_sets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/essay-draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Essay Draft */
+        post: operations["essay_draft_api_resume_essay_draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/resume/chat": {
         parameters: {
             query?: never;
@@ -192,159 +226,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/companies/analyze": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Analyze Company */
-        post: operations["analyze_company_api_companies_analyze_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/companies/{normalized_name}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Company */
-        get: operations["get_company_api_companies__normalized_name__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/companies/{normalized_name}/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Refresh Company */
-        post: operations["refresh_company_api_companies__normalized_name__refresh_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/companies/{normalized_name}/sources": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Sources */
-        get: operations["get_sources_api_companies__normalized_name__sources_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/companies/{normalized_name}/jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Jobs */
-        get: operations["get_jobs_api_companies__normalized_name__jobs_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/companies/{normalized_name}/matches": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Matches */
-        get: operations["get_matches_api_companies__normalized_name__matches_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/essays/questions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Questions */
-        get: operations["list_questions_api_essays_questions_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/essays/draft": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Generate Draft */
-        post: operations["generate_draft_api_essays_draft_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/essays/questions/{question_id}/answer": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Save Answer */
-        put: operations["save_answer_api_essays_questions__question_id__answer_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -383,52 +264,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AnalysisJobStatus */
-        AnalysisJobStatus: {
-            /** Normalized Name */
-            normalized_name: string;
-            status: components["schemas"]["AnalysisStatus"];
-            /** Warnings */
-            warnings: string[];
-            /** Last Analyzed At */
-            last_analyzed_at: string | null;
-        };
-        /**
-         * AnalysisStatus
-         * @description 단계별 상태 — 수집 실패를 전체 실패로 만들지 않는다(계획서 §4).
-         * @enum {string}
-         */
-        AnalysisStatus: "queued" | "collecting" | "analyzing" | "ready" | "partial" | "failed";
-        /** AnswerSlot */
-        AnswerSlot: {
-            /** Company */
-            company: string;
-            /** Deadline */
-            deadline: string;
-            /**
-             * Content
-             * @default
-             */
-            content: string;
-            /**
-             * Status
-             * @default 미작성
-             * @enum {string}
-             */
-            status: "미작성" | "작성 중" | "초안 완료";
-        };
-        /** AnswerUpdate */
-        AnswerUpdate: {
-            /** Company */
-            company: string;
-            /** Content */
-            content: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "미작성" | "작성 중" | "초안 완료";
-        };
         /** Award */
         Award: {
             /** Title */
@@ -470,120 +305,11 @@ export interface components {
             /** Date */
             date: string;
         };
-        /** CompanyAnalyzeRequest */
-        CompanyAnalyzeRequest: {
-            /** Name */
-            name: string;
-            /** Job Url */
-            job_url?: string | null;
-            /**
-             * Force Refresh
-             * @default false
-             */
-            force_refresh: boolean;
-        };
-        /** CompanyIntelligence */
-        CompanyIntelligence: {
-            /** Name */
-            name: string;
-            /** Normalized Name */
-            normalized_name: string;
-            /** Domain */
-            domain: string;
-            summary: components["schemas"]["SourcedText"] | null;
-            stage: components["schemas"]["SourcedText"] | null;
-            /** Business Areas */
-            business_areas: components["schemas"]["SourcedText"][];
-            /** Products */
-            products: components["schemas"]["SourcedText"][];
-            /** Signals */
-            signals: components["schemas"]["IntelligenceSignal"][];
-            /** Jobs */
-            jobs: components["schemas"]["CompanyJob"][];
-            /** Sources */
-            sources: components["schemas"]["SourceSummary"][];
-            /** Source Count */
-            source_count: number;
-            /** Manual Urls */
-            manual_urls: string[];
-            status: components["schemas"]["AnalysisStatus"];
-            /** Warnings */
-            warnings: string[];
-            /** Needs Review */
-            needs_review: string[];
-            /** Last Analyzed At */
-            last_analyzed_at: string | null;
-            /** Fresh Until */
-            fresh_until: string | null;
-            /** Is Stale */
-            is_stale: boolean;
-        };
-        /**
-         * CompanyJob
-         * @description 공고/JD 구조화 결과. 모든 항목이 원문 공고(source_id) 하나에서 나온다.
-         */
-        CompanyJob: {
-            /** Id */
-            id: number;
-            /** Source Id */
-            source_id: number;
-            /** Title */
-            title: string;
-            /** Role Category */
-            role_category: string;
-            /** Location */
-            location: string;
-            /** Employment */
-            employment: string;
-            /** Deadline */
-            deadline: string;
-            /** Description */
-            description: string;
-            /** Requirements */
-            requirements: string[];
-            /** Preferred */
-            preferred: string[];
-            /** Core Skills */
-            core_skills: string[];
-            /** Problem Types */
-            problem_types: string[];
-        };
-        /**
-         * CompanyMatch
-         * @description 기업 요구 → 내 경험 → 근거. 점수보다 설명이 먼저다(계획서 §8).
-         */
-        CompanyMatch: {
-            /** Job Id */
-            job_id: number | null;
-            /** Company Need */
-            company_need: string;
-            /** Profile Evidence */
-            profile_evidence: string;
-            match_type: components["schemas"]["MatchType"];
-            /** Score */
-            score: number;
-            /** Reason */
-            reason: string;
-            /** Source Ids */
-            source_ids: number[];
-        };
         /**
          * Density
          * @enum {string}
          */
         Density: "compact" | "normal" | "relaxed";
-        /** DraftRequest */
-        DraftRequest: {
-            /** Question Id */
-            question_id: number;
-        };
-        /** DraftResponse */
-        DraftResponse: {
-            /** Question Id */
-            question_id: number;
-            /** Draft */
-            draft: string;
-        };
         /** Education */
         Education: {
             /** School */
@@ -627,20 +353,6 @@ export interface components {
          * @enum {string}
          */
         HeadingStyle: "plain" | "bar" | "underline";
-        /** IntelligenceSignal */
-        IntelligenceSignal: {
-            /** Label */
-            label: string;
-            /** Detail */
-            detail: string;
-            signal_type: components["schemas"]["SignalType"];
-            /** Confidence */
-            confidence: number;
-            /** Evidence Quote */
-            evidence_quote: string | null;
-            /** Source Ids */
-            source_ids: number[];
-        };
         /** Job */
         Job: {
             /** Id */
@@ -736,11 +448,6 @@ export interface components {
             /** Missing Skills */
             missing_skills: string[];
         };
-        /**
-         * MatchType
-         * @enum {string}
-         */
-        MatchType: "strength" | "gap" | "question";
         /** Notification */
         Notification: {
             /** Id */
@@ -862,19 +569,6 @@ export interface components {
             /** Stack */
             stack: string[];
         };
-        /** Question */
-        Question: {
-            /** Id */
-            id: number;
-            /** Tag */
-            tag: string;
-            /** Prompt */
-            prompt: string;
-            /** Char Limit */
-            char_limit: number | null;
-            /** Slots */
-            slots: components["schemas"]["AnswerSlot"][];
-        };
         /** ResumeChatRequest */
         ResumeChatRequest: {
             state: components["schemas"]["ResumeState"];
@@ -921,6 +615,79 @@ export interface components {
              * @default []
              */
             sections: components["schemas"]["ResumeSection"][];
+            /**
+             * Company
+             * @default
+             */
+            company: string;
+            /**
+             * Essays
+             * @default []
+             */
+            essays: components["schemas"]["ResumeEssay"][];
+            /**
+             * Include Essays
+             * @default true
+             */
+            include_essays: boolean;
+        };
+        /** ResumeEssay */
+        ResumeEssay: {
+            /** Question */
+            question: string;
+            /**
+             * Answer
+             * @default
+             */
+            answer: string;
+            /** Char Limit */
+            char_limit?: number | null;
+        };
+        /** ResumeEssayDraftRequest */
+        ResumeEssayDraftRequest: {
+            /** Company */
+            company: string;
+            /** Question */
+            question: string;
+            /** Char Limit */
+            char_limit?: number | null;
+            state: components["schemas"]["ResumeState"];
+        };
+        /** ResumeEssayDraftResponse */
+        ResumeEssayDraftResponse: {
+            /** Draft */
+            draft: string;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+        };
+        /** ResumeEssayQuestion */
+        ResumeEssayQuestion: {
+            /** Id */
+            id: number;
+            /** Tag */
+            tag: string;
+            /** Prompt */
+            prompt: string;
+            /** Char Limit */
+            char_limit?: number | null;
+        };
+        /** ResumeEssaySet */
+        ResumeEssaySet: {
+            /** Company */
+            company: string;
+            /**
+             * Deadline
+             * @default
+             */
+            deadline: string;
+            /**
+             * Questions
+             * @default []
+             */
+            questions: components["schemas"]["ResumeEssayQuestion"][];
         };
         /** ResumeExtractResponse */
         ResumeExtractResponse: {
@@ -1112,56 +879,6 @@ export interface components {
          * @enum {string}
          */
         SectionType: "career" | "project" | "education" | "skill" | "award" | "certificate" | "language" | "activity" | "custom";
-        /**
-         * SignalType
-         * @enum {string}
-         */
-        SignalType: "business" | "product" | "hiring" | "technology" | "risk" | "culture";
-        /**
-         * SourceKind
-         * @enum {string}
-         */
-        SourceKind: "official_site" | "careers" | "dart" | "newsroom" | "job_posting" | "user_url";
-        /** SourceSummary */
-        SourceSummary: {
-            /** Id */
-            id: number;
-            kind: components["schemas"]["SourceKind"];
-            /** Url */
-            url: string;
-            /** Title */
-            title: string;
-            /** Publisher */
-            publisher: string;
-            /** Published At */
-            published_at: string | null;
-            /**
-             * Fetched At
-             * Format: date-time
-             */
-            fetched_at: string;
-            trust_level: components["schemas"]["TrustLevel"];
-            /** Changed */
-            changed: boolean;
-        };
-        /**
-         * SourcedText
-         * @description 근거를 달고 다니는 사실 한 조각. source_ids가 비면 저장하지 않는다(계획서 §6.4).
-         *
-         *     요약·규모·사업 영역·제품 — 모든 사실 필드가 이 형태다. 평범한 str로 두면
-         *     "근거 없는 문장"이 조용히 섞여 들어온다.
-         */
-        SourcedText: {
-            /** Text */
-            text: string;
-            /** Source Ids */
-            source_ids: number[];
-        };
-        /**
-         * TrustLevel
-         * @enum {string}
-         */
-        TrustLevel: "primary" | "secondary" | "user_provided";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1432,6 +1149,59 @@ export interface operations {
             };
         };
     };
+    essay_sets_api_resume_essay_sets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeEssaySet"][];
+                };
+            };
+        };
+    };
+    essay_draft_api_resume_essay_draft_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeEssayDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumeEssayDraftResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     chat_api_resume_chat_post: {
         parameters: {
             query?: never;
@@ -1518,284 +1288,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    analyze_company_api_companies_analyze_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CompanyAnalyzeRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CompanyIntelligence"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_company_api_companies__normalized_name__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                normalized_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CompanyIntelligence"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    refresh_company_api_companies__normalized_name__refresh_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                normalized_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnalysisJobStatus"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_sources_api_companies__normalized_name__sources_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                normalized_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SourceSummary"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_jobs_api_companies__normalized_name__jobs_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                normalized_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CompanyJob"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_matches_api_companies__normalized_name__matches_get: {
-        parameters: {
-            query?: {
-                job_id?: number | null;
-            };
-            header?: never;
-            path: {
-                normalized_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CompanyMatch"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_questions_api_essays_questions_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Question"][];
-                };
-            };
-        };
-    };
-    generate_draft_api_essays_draft_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DraftRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DraftResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    save_answer_api_essays_questions__question_id__answer_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                question_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AnswerUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Question"];
                 };
             };
             /** @description Validation Error */

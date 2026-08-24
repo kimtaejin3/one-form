@@ -1,35 +1,18 @@
 """python -m app.seed — 목데이터를 DB에 시드(멱등). DATABASE_URL 필요.
 
-기존 목 dict/빌더를 시드 소스로 재사용. 유저 상태(essay_answer)는 시드하지 않는다.
+기존 목 dict/빌더를 시드 소스로 재사용.
 """
 import asyncio
 
-from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.core.db import get_sessionmaker
-from app.essays import repository as essays_repo
-from app.essays.models import EssayCompany, EssayQuestion
 from app.jobs.models import Job
 from app.jobs.repository import _build_jobs
 from app.notifications.models import Notification
 from app.notifications.repository import _NOTIFICATIONS
 from app.profile import repository as profile_repo
 from app.profile.models import Profile
-
-
-async def seed_essays(session) -> None:
-    # 참조 데이터는 현재 큐레이션과 정확히 맞춘다. 사용자 답변은 보존한다.
-    await session.execute(delete(EssayCompany))
-    await session.execute(delete(EssayQuestion))
-    for q in essays_repo._QUESTIONS:
-        await session.execute(pg_insert(EssayQuestion).values(**q))
-    for c in essays_repo._COMPANIES:
-        await session.execute(
-            pg_insert(EssayCompany).values(
-                name=c["name"], deadline=c["deadline"], question_ids=c["question_ids"]
-            )
-        )
 
 
 async def seed_profile(session) -> None:
@@ -72,7 +55,6 @@ async def main() -> None:
     if sm is None:
         raise SystemExit("DATABASE_URL이 설정돼 있어야 시드할 수 있습니다.")
     async with sm() as session:
-        await seed_essays(session)
         await seed_profile(session)
         await seed_jobs(session)
         await seed_notifications(session)

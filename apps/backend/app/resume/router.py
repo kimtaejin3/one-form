@@ -2,8 +2,8 @@ from fastapi import APIRouter, File, Response, UploadFile
 
 from app.resume import service
 from app.resume.schemas import (
-    ResumeChatRequest, ResumeChatResponse, ResumeExtractResponse,
-    ResumeRenderRequest, ResumeState, ResumeTemplate,
+    ResumeChatRequest, ResumeChatResponse, ResumeEssayDraftRequest, ResumeEssayDraftResponse,
+    ResumeEssaySet, ResumeExtractResponse, ResumeRenderRequest, ResumeState, ResumeTemplate,
 )
 
 router = APIRouter(prefix="/api/resume", tags=["resume"])
@@ -23,6 +23,17 @@ async def seed() -> ResumeState:
 async def extract(file: UploadFile = File(...)) -> ResumeExtractResponse:
     data = await file.read()
     return ResumeExtractResponse(text=service.extract_material(file.filename or "", data))
+
+
+@router.get("/essay-sets", response_model=list[ResumeEssaySet])
+def essay_sets() -> list[ResumeEssaySet]:
+    return service.list_essay_sets()
+
+
+@router.post("/essay-draft", response_model=ResumeEssayDraftResponse)
+async def essay_draft(req: ResumeEssayDraftRequest) -> ResumeEssayDraftResponse:
+    draft, note = await service.essay_draft(req.company, req.question, req.char_limit, req.state)
+    return ResumeEssayDraftResponse(draft=draft, note=note)
 
 
 @router.post("/chat", response_model=ResumeChatResponse)

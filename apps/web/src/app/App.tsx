@@ -7,8 +7,6 @@ import { JobDetailPage } from '@/pages/job-detail'
 import { ProfilePage } from '@/pages/profile'
 import { ResumeGalleryPage } from '@/pages/resume-gallery'
 import { ResumeBuilderPage } from '@/pages/resume-builder'
-import { CompaniesPage } from '@/pages/companies'
-import { EssaysPage } from '@/pages/essays'
 import { FormsPage } from '@/pages/forms'
 import { AccountPage } from '@/pages/account'
 import { SettingsPage } from '@/pages/settings'
@@ -21,8 +19,6 @@ const ROUTES: { path: string; element: ReactElement }[] = [
   { path: '/resume', element: <ResumeGalleryPage /> },
   { path: '/resume/new', element: <ResumeBuilderPage /> },
   { path: '/resume/edit/:id', element: <ResumeBuilderPage /> },
-  { path: '/companies', element: <CompaniesPage /> },
-  { path: '/essays', element: <EssaysPage /> },
   { path: '/forms', element: <FormsPage /> },
   { path: '/account', element: <AccountPage /> },
   { path: '/settings', element: <SettingsPage /> },

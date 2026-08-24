@@ -118,6 +118,19 @@
       {% endfor %}
     </table>
     {% endfor %}
+
+    {% if doc.include_essays and doc.essays %}
+    <h1 style="margin-top: 18px">자 기 소 개 서</h1>
+    {% if doc.company %}<table><tr><th class="side">지원 기업</th><td>{{ doc.company }}</td></tr></table>{% endif %}
+    <table>
+      {% for e in doc.essays %}
+      <tr>
+        <th class="side" style="width: 22%">{{ e.question }}{% if e.char_limit %}<br>({{ e.char_limit }}자 이내){% endif %}</th>
+        <td class="para"><p>{{ e.answer }}</p></td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
   </div>
 </body>
 </html>
