@@ -1502,3 +1502,93 @@
   padding: 8px 10px;
   font-weight: 600;
 }
+
+/* 저장 바 (빌더 왼쪽 하단) */
+.resume-save {
+  display: flex;
+  gap: 6px;
+}
+.resume-save .of-input {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+/* 갤러리 — 저장한 이력서·포트폴리오 목록 */
+.resume-gallery__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.resume-gallery__new {
+  display: flex;
+  gap: 8px;
+}
+.resume-gallery__empty {
+  padding: 56px 16px;
+  text-align: center;
+  color: var(--of-muted);
+  border: 1px dashed var(--of-border);
+  border-radius: 12px;
+}
+.resume-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.resume-doc-card {
+  position: relative;
+  border: 1px solid var(--of-border);
+  border-radius: 12px;
+  background: var(--of-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.resume-doc-card:hover {
+  border-color: var(--of-primary);
+  box-shadow: 0 6px 20px rgba(15, 30, 52, 0.08);
+}
+.resume-doc-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+}
+.resume-doc-card__badge {
+  align-self: flex-start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--of-accent-soft);
+  color: var(--of-primary);
+}
+.resume-doc-card__badge.is-portfolio {
+  background: #eef2ff;
+  color: #2b52e8;
+}
+.resume-doc-card__title {
+  font-size: 15px;
+  color: var(--of-ink);
+}
+.resume-doc-card__meta {
+  font-size: 12px;
+  color: var(--of-muted);
+}
+.resume-doc-card__del {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 0;
+  background: none;
+  color: var(--of-faint);
+  font-size: 12px;
+  cursor: pointer;
+}
+.resume-doc-card__del:hover {
+  color: var(--of-warn);
+}

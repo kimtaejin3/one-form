@@ -5,6 +5,7 @@ import { AsyncBoundary } from '@/shared/ui'
 import { JobsPage } from '@/pages/jobs'
 import { JobDetailPage } from '@/pages/job-detail'
 import { ProfilePage } from '@/pages/profile'
+import { ResumeGalleryPage } from '@/pages/resume-gallery'
 import { ResumeBuilderPage } from '@/pages/resume-builder'
 import { CompaniesPage } from '@/pages/companies'
 import { EssaysPage } from '@/pages/essays'
@@ -17,8 +18,9 @@ const ROUTES: { path: string; element: ReactElement }[] = [
   { path: '/', element: <JobsPage /> },
   { path: '/jobs/:id', element: <JobDetailPage /> },
   { path: '/profile', element: <ProfilePage /> },
-  { path: '/resume', element: <ResumeBuilderPage kind="resume" /> },
-  { path: '/portfolio', element: <ResumeBuilderPage kind="portfolio" /> },
+  { path: '/resume', element: <ResumeGalleryPage /> },
+  { path: '/resume/new', element: <ResumeBuilderPage /> },
+  { path: '/resume/edit/:id', element: <ResumeBuilderPage /> },
   { path: '/companies', element: <CompaniesPage /> },
   { path: '/essays', element: <EssaysPage /> },
   { path: '/forms', element: <FormsPage /> },
