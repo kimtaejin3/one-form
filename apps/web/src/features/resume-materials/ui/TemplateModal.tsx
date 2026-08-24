@@ -12,6 +12,7 @@ interface Props {
   onClose: () => void
   state: ResumeState
   onTemplate: (preset: ResumeStyle) => void
+  kind: string // resume | portfolio — 이 종류의 템플릿만 보여준다
 }
 
 // 각 템플릿을 현재 이력서 내용으로 실제 렌더해 A4 축소 미리보기로 보여준다.
@@ -54,12 +55,14 @@ function TemplateCard({
   )
 }
 
-export function TemplateModal({ open, onClose, state, onTemplate }: Props) {
+export function TemplateModal({ open, onClose, state, onTemplate, kind }: Props) {
   const { data: templates } = useSuspenseQuery(resumeTemplatesQuery)
   return (
     <Modal open={open} onClose={onClose} title="템플릿 선택">
       <div className="resume-tpl-grid">
-        {templates.map((t) => (
+        {templates
+          .filter((t) => t.kind === kind)
+          .map((t) => (
           <TemplateCard
             key={t.id}
             state={state}

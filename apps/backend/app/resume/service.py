@@ -23,15 +23,18 @@ _DENSITY_GAP = {"compact": 8, "normal": 14, "relaxed": 22}
 _SCALE_PT = {"S": 10, "M": 11, "L": 12}
 _DENSITY_MARGIN = {"compact": "12mm", "normal": "16mm", "relaxed": "20mm"}
 
+# dev/resume 의 실제 테마를 이식: style.css → 표준, application.css → 형식, portfolio.css → 포트폴리오
 _PRESETS = {
-    "classic": ResumeStyle(template="classic", heading_style="bar", accent_color="#334155"),
-    "modern": ResumeStyle(template="modern", heading_style="plain", accent_color="#2563eb", font="Pretendard"),
-    # 한국 표준 입사지원서 느낌 — 회색 라벨·테두리 박스·자간 넓은 제목, 무채색(dev/resume application.css 참고)
+    "classic": ResumeStyle(template="classic", heading_style="plain", accent_color="#1f4fd8"),
     "formal": ResumeStyle(
-        template="formal", heading_style="plain", accent_color="#374151",
-        density="compact", font="Pretendard",
+        template="formal", heading_style="plain", accent_color="#374151", density="compact",
+    ),
+    "portfolio": ResumeStyle(
+        template="portfolio", heading_style="plain", accent_color="#2b52e8", density="relaxed",
     ),
 }
+_KINDS = {"classic": "resume", "formal": "resume", "portfolio": "portfolio"}
+_NAMES = {"classic": "표준", "formal": "형식 · 입사지원서", "portfolio": "포트폴리오"}
 
 _CHAT_PROMPT = (
     "너는 이력서 편집기다. 아래 현재 이력서 상태(JSON)와 사용자 명령을 받아,\n"
@@ -102,9 +105,8 @@ async def seed_state() -> ResumeState:
 
 
 def list_templates() -> list[ResumeTemplate]:
-    names = {"classic": "클래식", "modern": "모던", "formal": "형식 · 입사지원서"}
     return [
-        ResumeTemplate(id=k, name=names[k], thumbnail=f"/thumbs/{k}.png", preset=v)
+        ResumeTemplate(id=k, name=_NAMES[k], kind=_KINDS[k], thumbnail=f"/thumbs/{k}.png", preset=v)
         for k, v in _PRESETS.items()
     ]
 

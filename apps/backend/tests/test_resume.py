@@ -46,9 +46,12 @@ def test_render_pdf_returns_pdf():
     assert render_pdf(s)[:4] == b"%PDF"
 
 
-def test_list_templates_has_classic_and_modern():
-    ids = {t.id for t in list_templates()}
-    assert {"classic", "modern"} <= ids
+def test_list_templates_has_resume_and_portfolio():
+    tpls = list_templates()
+    ids = {t.id for t in tpls}
+    assert {"classic", "formal", "portfolio"} <= ids
+    # 빌더가 kind로 거를 수 있어야 한다
+    assert {t.kind for t in tpls} == {"resume", "portfolio"}
 
 
 def test_chat_with_mock_keeps_state():

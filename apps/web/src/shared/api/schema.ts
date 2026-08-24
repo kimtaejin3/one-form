@@ -966,6 +966,11 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /**
+             * Kind
+             * @default resume
+             */
+            kind: string;
             /** Thumbnail */
             thumbnail: string;
             preset: components["schemas"]["ResumeStyle"];

@@ -1,13 +1,23 @@
 import { useMemo, useState } from 'react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { Button } from '@one-form/design-system'
-import { resumeSeedQuery, type ResumeMaterial, type ResumeState } from '@/entities/resume'
+import {
+  resumeSeedQuery,
+  resumeTemplatesQuery,
+  type ResumeMaterial,
+  type ResumeState,
+} from '@/entities/resume'
 import { MaterialsPanel } from '@/features/resume-materials'
 import { ChatBubble } from '@/features/resume-chat'
 
-export function ResumeBuilderPage() {
+// kind='resume'는 이력서 빌더, 'portfolio'는 포트폴리오 빌더 — 같은 UI를 기본 템플릿만 달리해 재사용.
+export function ResumeBuilderPage({ kind = 'resume' }: { kind?: string }) {
   const { data: seed } = useSuspenseQuery(resumeSeedQuery)
-  const [state, setState] = useState<ResumeState>(() => seed)
+  const { data: templates } = useSuspenseQuery(resumeTemplatesQuery)
+  const [state, setState] = useState<ResumeState>(() => {
+    const preset = templates.find((t) => t.kind === kind)?.preset
+    return preset ? { ...seed, style: preset } : seed
+  })
   const [materials, setMaterials] = useState<ResumeMaterial[]>([])
 
   // state가 바뀔 때마다 미리보기 HTML을 서버에서 재렌더.
@@ -33,7 +43,7 @@ export function ResumeBuilderPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'resume.pdf'
+    a.download = kind === 'portfolio' ? 'portfolio.pdf' : 'resume.pdf'
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -44,6 +54,7 @@ export function ResumeBuilderPage() {
         <MaterialsPanel
           state={state}
           materials={materials}
+          kind={kind}
           onAddMaterial={(m) => setMaterials((ms) => [...ms, m])}
           onTemplate={(preset) => setState((s) => ({ ...s, style: preset }))}
         />

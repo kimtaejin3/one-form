@@ -94,6 +94,7 @@ class ResumeMaterial(BaseModel):
 class ResumeTemplate(BaseModel):
     id: str
     name: str
+    kind: str = "resume"  # resume | portfolio — 빌더가 이 값으로 템플릿을 거른다
     thumbnail: str
     preset: ResumeStyle
 

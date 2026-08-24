@@ -3,69 +3,83 @@
 <head>
 <meta charset="utf-8">
 <style>
+  /* 표준 이력서 — dev/resume 의 style.css 를 충실히 이식.
+     파란 악센트, 하단 보더 섹션 제목, org-bold·role-dot·우측 period, 스택 칩, 커스텀 불릿. */
   @page { size: A4; margin: {{ margin }}; }
-  /* 화면 미리보기를 실제 PDF 종이처럼 — 회색 캔버스 위 A4 흰 종이.
-     weasyprint(print 미디어)는 이 블록을 무시하고 @page 여백을 쓰므로 PDF는 그대로. */
   @media screen {
-    html { background: #e5e7eb; }
+    html { background: #eceef1; }
     .page {
-      box-sizing: border-box;
-      width: 210mm;
-      max-width: 100%;
-      min-height: 297mm;
-      margin: 16px auto;
-      padding: {{ margin }};
-      background: #fff;
+      box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm;
+      margin: 16px auto; padding: {{ margin }}; background: #fff;
       box-shadow: 0 4px 20px rgba(15, 30, 52, 0.18);
     }
   }
-  :root { }
   body {
     font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif;
-    font-size: {{ base_pt }}pt; color: #1f2937; line-height: 1.5; margin: 0;
+    font-size: {{ base_pt - 1 }}pt; color: #33373f; line-height: 1.5;
+    letter-spacing: -0.01em; word-break: keep-all; margin: 0;
   }
-  h1 { font-size: {{ base_pt + 8 }}pt; margin: 0 0 2px; color: {{ style.accent_color }}; }
-  .contact { color: #6b7280; font-size: {{ base_pt - 1 }}pt; margin-bottom: {{ gap }}px; }
-  .summary { margin-bottom: {{ gap }}px; }
-  section { margin-bottom: {{ gap }}px; }
-  h2 {
-    font-size: {{ base_pt + 2 }}pt; margin: 0 0 6px; color: {{ style.accent_color }};
-    {% if style.heading_style.value == 'bar' %}border-left: 3px solid {{ style.accent_color }}; padding-left: 6px;{% endif %}
-    {% if style.heading_style.value == 'underline' %}border-bottom: 1px solid {{ style.accent_color }}; padding-bottom: 2px;{% endif %}
+  .r-header { padding-bottom: 11px; border-bottom: 1.6px solid #16181d; margin-bottom: {{ gap }}px; }
+  .r-name { font-size: {{ base_pt + 10 }}pt; font-weight: 700; color: #16181d; line-height: 1.15; letter-spacing: -0.028em; }
+  .r-contact { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: {{ base_pt - 2 }}pt; color: #33373f; }
+  .r-contact a { color: {{ style.accent_color }}; text-decoration: none; border-bottom: 0.6px solid #c9ccd3; }
+  .r-summary { margin: 0 0 2px; color: #33373f; }
+  section { margin-top: {{ gap }}px; }
+  .r-sec-title {
+    font-size: {{ base_pt + 1 }}pt; font-weight: 700; color: #16181d; letter-spacing: -0.025em;
+    padding-bottom: 5px; margin-bottom: 8px; border-bottom: 0.9px solid #e4e6ea;
   }
-  .item { margin-bottom: {{ gap // 2 }}px; }
-  .item .row { display: flex; justify-content: space-between; }
-  .item strong { font-weight: 600; }
-  .item .org { color: #4b5563; }
-  .item .period { color: #9ca3af; font-size: {{ base_pt - 1 }}pt; }
-  ul { margin: 3px 0 0; padding-left: 16px; }
-  .stack { color: #6b7280; font-size: {{ base_pt - 1 }}pt; }
+  .r-entry { margin-bottom: 9px; }
+  .r-entry:last-child { margin-bottom: 0; }
+  .r-entry__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .r-entry__lead { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .r-org { font-size: {{ base_pt }}pt; font-weight: 700; color: #16181d; letter-spacing: -0.022em; line-height: 1.35; }
+  .r-role { font-size: {{ base_pt - 1 }}pt; font-weight: 500; color: #767c88; }
+  .r-role::before {
+    content: ''; display: inline-block; width: 2.5px; height: 2.5px; border-radius: 50%;
+    background: #c9ccd3; vertical-align: 2.5px; margin-right: 7px;
+  }
+  .r-period { flex: none; font-size: {{ base_pt - 2 }}pt; font-weight: 500; color: #767c88; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .r-note { margin-top: 2px; color: #33373f; }
+  ul { list-style: none; margin-top: 3px; padding: 0; }
+  li { position: relative; padding-left: 11px; margin-bottom: 2px; }
+  li::before { content: ''; position: absolute; left: 1px; top: 0.62em; width: 3px; height: 3px; border-radius: 50%; background: #c9ccd3; }
+  .r-stack { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .r-stack span {
+    font-size: {{ base_pt - 3 }}pt; font-weight: 500; color: #4c5361; background: #f3f4f7;
+    border: 0.5px solid #e4e6ea; border-radius: 3px; padding: 1.5px 6px; line-height: 1.5;
+  }
 </style>
 </head>
 <body>
   <div class="page">
-  <h1>{{ doc.header.name }}</h1>
-  <div class="contact">
-    {{ doc.header.contact | join(' · ') }}
-    {% for l in doc.header.links %} · {{ l.label }}{% endfor %}
-  </div>
-  {% if doc.summary %}<div class="summary">{{ doc.summary }}</div>{% endif %}
-  {% for sec in sections %}
-  <section>
-    <h2>{{ sec.title }}</h2>
-    {% for it in sec.items %}
-    <div class="item">
-      <div class="row">
-        <span><strong>{{ it.title }}</strong>{% if it.org %} <span class="org">· {{ it.org }}</span>{% endif %}{% if it.name %}{{ it.name }}{% endif %}</span>
-        {% if it.period %}<span class="period">{{ it.period }}</span>{% endif %}
+    <header class="r-header">
+      <div class="r-name">{{ doc.header.name }}</div>
+      <div class="r-contact">
+        {% for c in doc.header.contact %}<span>{{ c }}</span>{% endfor %}
+        {% for l in doc.header.links %}<a href="{{ l.url }}">{{ l.label }}</a>{% endfor %}
       </div>
-      {% if it.note %}<div>{{ it.note }}</div>{% endif %}
-      {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
-      {% if it.stack %}<div class="stack">{{ it.stack | join(' · ') }}</div>{% endif %}
-    </div>
+    </header>
+    {% if doc.summary %}<p class="r-summary">{{ doc.summary }}</p>{% endif %}
+    {% for sec in sections %}
+    <section>
+      <div class="r-sec-title">{{ sec.title }}</div>
+      {% for it in sec.items %}
+      <div class="r-entry">
+        <div class="r-entry__head">
+          <div class="r-entry__lead">
+            <span class="r-org">{{ it.title }}{% if it.name %}{{ it.name }}{% endif %}</span>
+            {% if it.org %}<span class="r-role">{{ it.org }}</span>{% endif %}
+          </div>
+          {% if it.period %}<span class="r-period">{{ it.period }}</span>{% endif %}
+        </div>
+        {% if it.note %}<div class="r-note">{{ it.note }}</div>{% endif %}
+        {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+        {% if it.stack %}<div class="r-stack">{% for s in it.stack %}<span>{{ s }}</span>{% endfor %}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
     {% endfor %}
-  </section>
-  {% endfor %}
   </div>
 </body>
 </html>

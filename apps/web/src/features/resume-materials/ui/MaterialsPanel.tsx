@@ -16,9 +16,10 @@ interface Props {
   materials: ResumeMaterial[]
   onAddMaterial: (m: ResumeMaterial) => void
   onTemplate: (preset: ResumeStyle) => void
+  kind: string // resume | portfolio
 }
 
-export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: Props) {
+export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate, kind }: Props) {
   const { data: templates } = useSuspenseQuery(resumeTemplatesQuery)
   const extract = useExtractMaterial(onAddMaterial)
   const [note, setNote] = useState('')
@@ -40,6 +41,7 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: 
           onClose={() => setTplOpen(false)}
           state={state}
           onTemplate={onTemplate}
+          kind={kind}
         />
       </section>
 
