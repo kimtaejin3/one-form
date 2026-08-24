@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Button } from '@one-form/design-system'
 import { Dropzone } from '@/shared/ui'
+import { TemplateModal } from './TemplateModal'
 import {
   resumeTemplatesQuery,
   type ResumeMaterial,
@@ -21,22 +22,25 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate }: 
   const { data: templates } = useSuspenseQuery(resumeTemplatesQuery)
   const extract = useExtractMaterial(onAddMaterial)
   const [note, setNote] = useState('')
+  const [tplOpen, setTplOpen] = useState(false)
+  const current = templates.find((t) => t.id === state.style.template)
 
   return (
     <aside className="resume-materials">
       <section>
         <h3>템플릿</h3>
-        <div className="resume-template-list">
-          {templates.map((t) => (
-            <button
-              key={t.id}
-              className={`filter-chip${state.style.template === t.id ? ' filter-chip--on' : ''}`}
-              onClick={() => onTemplate(t.preset)}
-            >
-              {t.name}
-            </button>
-          ))}
+        <div className="resume-template-current">
+          <span className="resume-template-name">{current?.name ?? state.style.template}</span>
+          <Button size="sm" variant="ghost" onClick={() => setTplOpen(true)}>
+            변경
+          </Button>
         </div>
+        <TemplateModal
+          open={tplOpen}
+          onClose={() => setTplOpen(false)}
+          state={state}
+          onTemplate={onTemplate}
+        />
       </section>
 
       <section>

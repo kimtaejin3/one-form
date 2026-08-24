@@ -47,13 +47,15 @@ export function ResumeBuilderPage() {
           onAddMaterial={(m) => setMaterials((ms) => [...ms, m])}
           onTemplate={(preset) => setState((s) => ({ ...s, style: preset }))}
         />
-        <ChatBubble state={state} materials={materials} onState={setState} />
+        <div className="resume-side-foot">
+          <ChatBubble state={state} materials={materials} onState={setState} />
+          <Button className="resume-download" onClick={download}>
+            📄 PDF 내려받기
+          </Button>
+        </div>
       </div>
       <div className="resume-preview">
         <iframe title="이력서 미리보기" srcDoc={html} sandbox="" />
-        <Button className="resume-download" onClick={download}>
-          📄 PDF 내려받기
-        </Button>
       </div>
     </div>
   )

@@ -26,6 +26,11 @@ _DENSITY_MARGIN = {"compact": "12mm", "normal": "16mm", "relaxed": "20mm"}
 _PRESETS = {
     "classic": ResumeStyle(template="classic", heading_style="bar", accent_color="#334155"),
     "modern": ResumeStyle(template="modern", heading_style="plain", accent_color="#2563eb", font="Pretendard"),
+    # 한국 표준 입사지원서 느낌 — 회색 라벨·테두리 박스·자간 넓은 제목, 무채색(dev/resume application.css 참고)
+    "formal": ResumeStyle(
+        template="formal", heading_style="plain", accent_color="#374151",
+        density="compact", font="Pretendard",
+    ),
 }
 
 _CHAT_PROMPT = (
@@ -97,7 +102,7 @@ async def seed_state() -> ResumeState:
 
 
 def list_templates() -> list[ResumeTemplate]:
-    names = {"classic": "클래식", "modern": "모던"}
+    names = {"classic": "클래식", "modern": "모던", "formal": "형식 · 입사지원서"}
     return [
         ResumeTemplate(id=k, name=names[k], thumbnail=f"/thumbs/{k}.png", preset=v)
         for k, v in _PRESETS.items()

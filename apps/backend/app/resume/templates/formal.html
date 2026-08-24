@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 한국 표준 입사지원서 느낌 — 무채색·회색 라벨·테두리 박스·자간 넓은 제목
+     (dev/resume 의 application.css 형식적 스타일 참고) */
+  @page { size: A4; margin: {{ margin }}; }
+  @media screen {
+    html { background: #e9ebee; }
+    .page {
+      box-sizing: border-box;
+      width: 210mm;
+      max-width: 100%;
+      min-height: 297mm;
+      margin: 16px auto;
+      padding: {{ margin }};
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(15, 30, 52, 0.18);
+    }
+  }
+  body {
+    font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif;
+    font-size: {{ base_pt - 1 }}pt; color: #14171d; line-height: 1.55;
+    letter-spacing: -0.012em; word-break: keep-all; margin: 0;
+  }
+  .r-title {
+    text-align: center; font-size: {{ base_pt + 6 }}pt; font-weight: 700;
+    letter-spacing: 0.3em; text-indent: 0.3em; margin: 0 0 4px;
+  }
+  .r-contact {
+    text-align: center; color: #4b5563; font-size: {{ base_pt - 2 }}pt;
+    margin-bottom: {{ gap }}px;
+  }
+  .r-summary {
+    border: 0.7px solid #6b7280; padding: 8px 10px; margin-bottom: {{ gap }}px;
+    font-size: {{ base_pt - 1 }}pt; line-height: 1.6;
+  }
+  section { margin-bottom: {{ gap }}px; break-inside: avoid; }
+  .r-sec-label {
+    background: #f1f2f5; border: 0.7px solid #6b7280; font-weight: 700;
+    text-align: center; padding: 5px; font-size: {{ base_pt - 1 }}pt; letter-spacing: 0.05em;
+  }
+  .r-item { border: 0.7px solid #6b7280; border-top: 0; padding: 6px 8px; }
+  .r-item .row { display: flex; justify-content: space-between; gap: 10px; }
+  .r-item strong { font-weight: 700; }
+  .r-item .org { color: #4b5563; font-weight: 500; }
+  .r-item .period { color: #6b7280; font-size: {{ base_pt - 2 }}pt; white-space: nowrap; }
+  .r-item ul { margin: 3px 0 0; padding-left: 15px; }
+  .r-item .stack { color: #6b7280; font-size: {{ base_pt - 2 }}pt; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="r-title">{{ doc.header.name }}</div>
+    <div class="r-contact">
+      {{ doc.header.contact | join('   |   ') }}{% for l in doc.header.links %}   |   {{ l.label }}{% endfor %}
+    </div>
+    {% if doc.summary %}<div class="r-summary">{{ doc.summary }}</div>{% endif %}
+    {% for sec in sections %}
+    <section>
+      <div class="r-sec-label">{{ sec.title }}</div>
+      {% for it in sec.items %}
+      <div class="r-item">
+        <div class="row">
+          <span><strong>{{ it.title }}</strong>{% if it.org %} <span class="org">· {{ it.org }}</span>{% endif %}{% if it.name %}{{ it.name }}{% endif %}</span>
+          {% if it.period %}<span class="period">{{ it.period }}</span>{% endif %}
+        </div>
+        {% if it.note %}<div>{{ it.note }}</div>{% endif %}
+        {% if it.bullets %}<ul>{% for b in it.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+        {% if it.stack %}<div class="stack">{{ it.stack | join(' · ') }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+</body>
+</html>
