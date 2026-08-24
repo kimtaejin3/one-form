@@ -237,6 +237,12 @@
   margin: 0 auto;
   padding: 36px 32px 64px;
 }
+/* 이력서 빌더는 워크스페이스 — 부모 .content 폭 제약(1200px)을 벗고 화면 너비를 꽉 채운다 */
+.content:has(.resume-builder) {
+  max-width: none;
+  padding-left: 16px;
+  padding-right: 16px;
+}
 
 /* job feed */
 .job-filters {
