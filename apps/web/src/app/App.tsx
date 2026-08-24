@@ -11,9 +11,11 @@ import { FormsPage } from '@/pages/forms'
 import { AccountPage } from '@/pages/account'
 import { SettingsPage } from '@/pages/settings'
 import { NotificationsPage } from '@/pages/notifications'
+import { HomePage } from '@/pages/home'
 
 const ROUTES: { path: string; element: ReactElement }[] = [
-  { path: '/', element: <JobsPage /> },
+  { path: '/', element: <HomePage /> },
+  { path: '/jobs', element: <JobsPage /> },
   { path: '/jobs/:id', element: <JobDetailPage /> },
   { path: '/profile', element: <ProfilePage /> },
   { path: '/resume', element: <ResumeGalleryPage /> },

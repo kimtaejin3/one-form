@@ -83,20 +83,6 @@
     </section>
     {% endfor %}
 
-    {% if doc.include_essays and doc.essays %}
-    <section>
-      <div class="r-sec-title">자기소개서{% if doc.company %} · {{ doc.company }}{% endif %}</div>
-      {% for e in doc.essays %}
-      <div class="r-entry">
-        <div class="r-entry__head">
-          <div class="r-entry__lead"><span class="r-org">{{ e.question }}</span></div>
-          {% if e.char_limit %}<span class="r-period">{{ e.char_limit }}자 이내</span>{% endif %}
-        </div>
-        {% if e.answer %}<div class="r-note">{{ e.answer }}</div>{% endif %}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
   </div>
 </body>
 </html>

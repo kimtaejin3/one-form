@@ -1,10 +1,10 @@
 export * from './model'
-export { resumeSeedQuery, resumeTemplatesQuery, resumeEssaySetsQuery } from './api'
+export { resumeSeedQuery, resumeTemplatesQuery, resumeEssayQuestionsQuery } from './api'
 export {
-  type SavedDoc,
-  listSavedDocs,
-  getSavedDoc,
-  upsertSavedDoc,
-  removeSavedDoc,
-  newDocId,
+  type SavedApplication,
+  listSavedApplications,
+  getSavedApplication,
+  upsertSavedApplication,
+  removeSavedApplication,
+  newApplicationId,
 } from './storage'

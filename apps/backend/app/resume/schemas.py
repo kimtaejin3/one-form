@@ -37,6 +37,12 @@ class FontScale(str, Enum):
     L = "L"
 
 
+class ResumeDocumentKind(str, Enum):
+    resume = "resume"
+    career = "career"
+    essay = "essay"
+
+
 class ResumeLink(BaseModel):
     label: str
     url: str
@@ -86,9 +92,7 @@ class ResumeDoc(BaseModel):
     personal: ResumePersonal = ResumePersonal()
     summary: str = ""
     sections: list[ResumeSection] = []
-    company: str = ""  # 지원 기업 — 자소서 세트의 기준이자 AI 초안의 기업 분석 대상
     essays: list[ResumeEssay] = []
-    include_essays: bool = True  # PDF·미리보기에 자소서를 포함할지
 
 
 class ResumeStyle(BaseModel):
@@ -111,6 +115,12 @@ class ResumeState(BaseModel):
     style: ResumeStyle = ResumeStyle()
 
 
+class ResumeApplicationDocuments(BaseModel):
+    resume: ResumeState
+    career: ResumeState
+    essay: ResumeState
+
+
 class ResumeMaterial(BaseModel):
     kind: str  # file | note | link
     label: str = ""
@@ -120,7 +130,7 @@ class ResumeMaterial(BaseModel):
 class ResumeTemplate(BaseModel):
     id: str
     name: str
-    kind: str = "resume"  # resume | portfolio — 빌더가 이 값으로 템플릿을 거른다
+    kind: str = "resume"
     thumbnail: str
     preset: ResumeStyle
 
@@ -133,14 +143,7 @@ class ResumeEssayQuestion(BaseModel):
     char_limit: int | None = None
 
 
-class ResumeEssaySet(BaseModel):
-    company: str
-    deadline: str = ""
-    questions: list[ResumeEssayQuestion] = []
-
-
 class ResumeEssayDraftRequest(BaseModel):
-    company: str
     question: str
     char_limit: int | None = None
     state: ResumeState
@@ -164,6 +167,19 @@ class ResumeChatResponse(BaseModel):
 
 class ResumeRenderRequest(BaseModel):
     state: ResumeState
+    kind: ResumeDocumentKind = ResumeDocumentKind.resume
+
+
+class ResumeBundleRenderRequest(BaseModel):
+    documents: ResumeApplicationDocuments
+    included: list[ResumeDocumentKind]
+
+    @field_validator("included")
+    @classmethod
+    def _at_least_one_document(cls, value: list[ResumeDocumentKind]) -> list[ResumeDocumentKind]:
+        if not value:
+            raise ValueError("PDF에 포함할 문서를 하나 이상 선택해 주세요.")
+        return list(dict.fromkeys(value))
 
 
 class ResumeExtractResponse(BaseModel):

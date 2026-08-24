@@ -1,6 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
 import { Icon, ThemeToggle } from '@/shared/ui'
-import TabBar from './TabBar'
 import NotificationBell from './NotificationBell'
 
 export default function Header() {
@@ -21,7 +20,6 @@ export default function Header() {
           </NavLink>
         </div>
       </div>
-      <TabBar />
     </header>
   )
 }

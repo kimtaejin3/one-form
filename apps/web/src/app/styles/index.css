@@ -19,7 +19,7 @@
 .topbar {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px 32px 6px;
+  padding: 14px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -196,52 +196,161 @@
     animation: none;
   }
 }
-.tabbar {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  overflow-x: auto;
-  padding: 6px 32px 10px;
-}
-.tabbar a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--of-radius-md);
-  color: var(--of-body);
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.tab-icon {
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-.tabbar a.active .tab-icon {
-  opacity: 1;
-}
-.tabbar a:hover {
-  background: var(--of-surface-alt);
-  color: var(--of-ink);
-}
-.tabbar a.active {
-  background: var(--of-accent-soft);
-  color: var(--of-primary);
-  font-weight: 700;
-}
 .content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 36px 32px 64px;
 }
+
+/* 메인 기능 허브 */
+.home-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.home-primary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 36px;
+  align-items: center;
+  padding: 42px;
+  border: 1px solid var(--of-border);
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--of-surface), var(--of-accent-soft));
+}
+.home-primary h1 {
+  max-width: 720px;
+  margin: 12px 0;
+  color: var(--of-ink);
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.16;
+  letter-spacing: -0.045em;
+}
+.home-primary p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--of-body);
+  line-height: 1.75;
+}
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+.home-docs {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--of-primary) 18%, var(--of-border));
+  border-radius: 14px;
+  background: var(--of-surface);
+  box-shadow: 0 12px 32px rgba(15, 30, 52, 0.08);
+}
+.home-docs span,
+.home-docs strong {
+  padding: 11px 13px;
+  border-radius: 8px;
+  background: var(--of-surface-alt);
+  font-size: 14px;
+}
+.home-docs strong {
+  background: var(--of-primary);
+  color: #fff;
+  text-align: center;
+}
+.home-core {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.home-feature {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 22px;
+  border: 1px solid var(--of-border);
+  border-radius: 14px;
+  background: var(--of-surface);
+  color: var(--of-body);
+  text-decoration: none;
+}
+.home-feature:hover,
+.home-jobs:hover {
+  border-color: var(--of-primary);
+  box-shadow: 0 8px 24px rgba(15, 30, 52, 0.07);
+}
+.home-feature svg {
+  color: var(--of-primary);
+}
+.home-feature strong {
+  color: var(--of-ink);
+  font-size: 17px;
+}
+.home-feature p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.home-feature > span {
+  color: var(--of-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.home-jobs {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 24px;
+  border: 1px solid var(--of-border);
+  border-radius: 14px;
+  background: var(--of-surface);
+  color: var(--of-body);
+  text-decoration: none;
+}
+.home-jobs__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--of-accent-soft);
+  color: var(--of-primary);
+}
+.home-jobs h2 {
+  margin: 4px 0;
+  color: var(--of-ink);
+  font-size: 20px;
+}
+.home-jobs p {
+  margin: 0;
+  font-size: 13px;
+}
+.home-jobs > strong {
+  color: var(--of-primary);
+  font-size: 14px;
+}
+@media (max-width: 760px) {
+  .home-primary {
+    grid-template-columns: 1fr;
+    padding: 28px 22px;
+  }
+  .home-core {
+    grid-template-columns: 1fr;
+  }
+  .home-jobs {
+    grid-template-columns: auto 1fr;
+  }
+  .home-jobs > strong {
+    grid-column: 2;
+  }
+}
 /* 이력서 빌더는 워크스페이스 — 부모 .content 폭 제약(1200px)을 벗고 화면 너비를 꽉 채운다 */
-.content:has(.resume-builder) {
+.content:has(.application-workspace) {
   max-width: none;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 16px;
 }
 
 /* job feed */
@@ -1335,18 +1444,100 @@
   color: var(--of-warn);
 }
 
-/* resume builder — 왼쪽 컨트롤(자료·템플릿·AI수정) + 오른쪽 넓은 미리보기 */
+/* 입사지원서 워크스페이스 — 문서 전환 + 현재 문서 편집 + PDF 미리보기 */
+.application-workspace {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 104px);
+  min-height: 640px;
+}
+.application-workspace__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--of-border);
+  border-radius: 10px 10px 0 0;
+  background: var(--of-surface);
+}
+.application-workspace__title {
+  width: min(420px, 55vw);
+  padding: 9px 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.application-workspace__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.application-workspace__actions {
+  display: flex;
+  gap: 8px;
+}
+.application-doc-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--of-border);
+  border-top: 0;
+  background: var(--of-surface);
+}
+.application-doc-tabs button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--of-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.application-doc-tabs button:hover {
+  background: var(--of-surface-alt);
+  color: var(--of-ink);
+}
+.application-doc-tabs button.is-active {
+  background: var(--of-primary);
+  color: #fff;
+}
 .resume-builder {
+  flex: 1;
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: minmax(440px, 34vw) 1fr;
   gap: 12px;
-  height: calc(100vh - 120px);
+  min-height: 0;
+  padding-top: 12px;
 }
 .resume-side {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+}
+.application-doc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--of-border);
+  border-radius: 10px;
+  background: var(--of-surface);
+}
+.application-doc-head h3 {
+  margin: 3px 0 0;
+}
+.application-doc-head label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--of-muted);
+  font-size: 13px;
+  white-space: nowrap;
 }
 .resume-materials {
   flex: 1;
@@ -1355,25 +1546,47 @@
   border: 1px solid var(--of-border);
   border-radius: 10px;
 }
-/* 왼쪽 하단 액션 묶음 — AI 수정 · PDF 내려받기 */
-.resume-side-foot {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 .resume-preview {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--of-border);
+  border-radius: 10px;
+  background: #e5e7eb;
+}
+.resume-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--of-border);
+  background: var(--of-surface);
+  color: var(--of-body);
+  font-size: 14px;
+  font-weight: 600;
 }
 .resume-preview iframe {
   flex: 1;
   width: 100%;
-  border: 1px solid var(--of-border);
-  border-radius: 10px;
-  /* 미리보기 내부(iframe html)가 회색 캔버스 위 A4 종이를 그린다 — 배경을 맞춰 흰 테두리 깜빡임 방지 */
+  border: 0;
   background: #e5e7eb;
+}
+@media (max-width: 900px) {
+  .application-workspace {
+    height: auto;
+  }
+  .resume-builder {
+    grid-template-columns: 1fr;
+  }
+  .resume-side {
+    min-height: 620px;
+  }
+  .resume-preview {
+    height: 75vh;
+    min-height: 620px;
+  }
 }
 .resume-template-current {
   display: flex;
@@ -1387,9 +1600,6 @@
 .resume-template-name {
   font-weight: 600;
   color: var(--of-body);
-}
-.resume-download {
-  width: 100%;
 }
 .resume-material-chips {
   list-style: none;
@@ -1470,10 +1680,15 @@
   gap: 16px;
 }
 .resume-tpl-card {
+  padding: 0;
   border: 1px solid var(--of-border);
   border-radius: 10px;
   overflow: hidden;
   background: var(--of-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 .resume-tpl-card.active {
   border-color: var(--of-primary);
@@ -1502,6 +1717,16 @@
   padding: 8px 10px;
   font-weight: 600;
 }
+.resume-tpl-foot span:last-child {
+  color: var(--of-primary);
+  font-size: 12px;
+}
+.resume-tpl-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
 
 /* 자소서 패널 — 기업 세트 선택 · 문항별 답변 · AI 초안 */
 .resume-essays__row {
@@ -1516,13 +1741,15 @@
   padding: 8px 10px;
   font-size: 14px;
 }
-.resume-essays__toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--of-body);
+.resume-essays__picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
   margin-bottom: 10px;
+}
+.resume-essays__picker .resume-essays__row {
+  margin-bottom: 0;
 }
 .resume-essays__note {
   margin: 0 0 10px;
@@ -1569,18 +1796,7 @@
   color: var(--of-muted);
 }
 
-/* 저장 바 (빌더 왼쪽 하단) */
-.resume-save {
-  display: flex;
-  gap: 6px;
-}
-.resume-save .of-input {
-  flex: 1;
-  padding: 8px 10px;
-  font-size: 14px;
-}
-
-/* 갤러리 — 저장한 이력서·포트폴리오 목록 */
+/* 갤러리 — 저장한 입사지원서 워크스페이스 목록 */
 .resume-gallery__head {
   display: flex;
   align-items: center;
@@ -1588,6 +1804,15 @@
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 20px;
+}
+.resume-gallery__head h2,
+.resume-gallery__head p {
+  margin: 0;
+}
+.resume-gallery__head p {
+  margin-top: 5px;
+  color: var(--of-muted);
+  font-size: 14px;
 }
 .resume-gallery__new {
   display: flex;
@@ -1633,13 +1858,13 @@
   background: var(--of-accent-soft);
   color: var(--of-primary);
 }
-.resume-doc-card__badge.is-portfolio {
-  background: #eef2ff;
-  color: #2b52e8;
-}
 .resume-doc-card__title {
   font-size: 15px;
   color: var(--of-ink);
+}
+.resume-doc-card__documents {
+  color: var(--of-muted);
+  font-size: 12px;
 }
 .resume-doc-card__meta {
   font-size: 12px;

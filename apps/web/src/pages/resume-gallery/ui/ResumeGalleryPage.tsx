@@ -1,45 +1,52 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@one-form/design-system'
-import { listSavedDocs, removeSavedDoc, type SavedDoc } from '@/entities/resume'
+import {
+  listSavedApplications,
+  removeSavedApplication,
+  type SavedApplication,
+} from '@/entities/resume'
 
-// 저장한 이력서·포트폴리오를 모아 보여주고, 골라서 열거나 새로 만든다.
+// 한 워크스페이스에서 이력서·경력기술서·자기소개서를 함께 관리한다.
 export function ResumeGalleryPage() {
   const navigate = useNavigate()
-  const [docs, setDocs] = useState<SavedDoc[]>(() => listSavedDocs())
+  const [applications, setApplications] = useState<SavedApplication[]>(
+    () => listSavedApplications(),
+  )
 
   const remove = (id: string) => {
-    removeSavedDoc(id)
-    setDocs(listSavedDocs())
+    removeSavedApplication(id)
+    setApplications(listSavedApplications())
   }
 
   return (
     <div className="resume-gallery">
       <div className="resume-gallery__head">
-        <h2>내 이력서 · 포트폴리오</h2>
+        <div>
+          <h2>입사지원서 빌더</h2>
+          <p>이력서·경력기술서·자기소개서를 한 곳에서 관리하세요.</p>
+        </div>
         <div className="resume-gallery__new">
-          <Button onClick={() => navigate('/resume/new?kind=resume')}>+ 새 이력서</Button>
-          <Button variant="ghost" onClick={() => navigate('/resume/new?kind=portfolio')}>
-            + 새 포트폴리오
-          </Button>
+          <Button onClick={() => navigate('/resume/new')}>+ 새 입사지원서</Button>
         </div>
       </div>
 
-      {docs.length === 0 ? (
+      {applications.length === 0 ? (
         <div className="resume-gallery__empty">
-          아직 만든 문서가 없습니다. <strong>새 이력서</strong>로 시작해 보세요.
+          아직 만든 입사지원서가 없습니다. <strong>새 입사지원서</strong>로 시작해 보세요.
         </div>
       ) : (
         <div className="resume-gallery__grid">
-          {docs.map((d) => (
-            <div key={d.id} className="resume-doc-card">
-              <Link to={`/resume/edit/${d.id}`} className="resume-doc-card__body">
-                <span className={`resume-doc-card__badge is-${d.kind}`}>
-                  {d.kind === 'portfolio' ? '포트폴리오' : '이력서'}
+          {applications.map((application) => (
+            <div key={application.id} className="resume-doc-card">
+              <Link to={`/resume/edit/${application.id}`} className="resume-doc-card__body">
+                <span className="resume-doc-card__badge">입사지원서</span>
+                <strong className="resume-doc-card__title">{application.title}</strong>
+                <span className="resume-doc-card__documents">
+                  이력서 · 경력기술서 · 자기소개서
                 </span>
-                <strong className="resume-doc-card__title">{d.title}</strong>
                 <span className="resume-doc-card__meta">
-                  {new Date(d.updatedAt).toLocaleString('ko-KR', {
+                  {new Date(application.updatedAt).toLocaleString('ko-KR', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
@@ -48,7 +55,7 @@ export function ResumeGalleryPage() {
                   })}
                 </span>
               </Link>
-              <button className="resume-doc-card__del" onClick={() => remove(d.id)}>
+              <button className="resume-doc-card__del" onClick={() => remove(application.id)}>
                 삭제
               </button>
             </div>

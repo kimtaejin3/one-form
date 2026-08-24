@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 0; }
+  @media screen {
+    html { background: #e4e7ec; }
+    .page { box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 16px auto; background: #fff; box-shadow: 0 4px 20px rgba(15,30,52,.18); }
+  }
+  body { margin: 0; color: #283142; font-family: "{{ style.font }}", -apple-system, sans-serif; font-size: {{ base_pt - 1 }}pt; line-height: 1.58; word-break: keep-all; }
+  header { padding: 18mm {{ margin }} 13mm; color: #fff; background: {{ style.accent_color }}; }
+  h1 { margin: 0; font-size: {{ base_pt + 13 }}pt; letter-spacing: -.035em; }
+  .contact { display: flex; flex-wrap: wrap; gap: 5px 16px; margin-top: 9px; opacity: .9; font-size: {{ base_pt - 2 }}pt; }
+  .contact a { color: #fff; text-decoration: none; }
+  main { padding: 12mm {{ margin }} {{ margin }}; }
+  .summary { margin: 0 0 15px; padding: 11px 13px; border-left: 4px solid {{ style.accent_color }}; background: #f5f7fb; }
+  section { margin-top: {{ gap }}px; }
+  h2 { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; color: #172033; font-size: {{ base_pt + 2 }}pt; }
+  h2::before { content: ''; width: 18px; height: 4px; border-radius: 2px; background: {{ style.accent_color }}; }
+  article { margin: 0 0 12px 27px; }
+  .head { display: flex; justify-content: space-between; gap: 12px; }
+  .title { font-weight: 750; color: #172033; }
+  .org { color: #667085; }
+  .period { flex: none; color: #7a8290; font-size: {{ base_pt - 2 }}pt; }
+  .note { margin-top: 3px; }
+  ul { margin: 4px 0 0; padding-left: 17px; }
+  li { margin-bottom: 2px; }
+  .stack { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .stack span { padding: 2px 7px; border-radius: 4px; color: {{ style.accent_color }}; background: #eef2ff; font-size: {{ base_pt - 3 }}pt; font-weight: 650; }
+</style>
+</head>
+<body><div class="page">
+  <header><h1>{{ doc.header.name }}</h1><div class="contact">{% for c in doc.header.contact %}<span>{{ c }}</span>{% endfor %}{% for link in doc.header.links %}<a href="{{ link.url }}">{{ link.label }}</a>{% endfor %}</div></header>
+  <main>
+    {% if doc.summary %}<p class="summary">{{ doc.summary }}</p>{% endif %}
+    {% for sec in sections %}<section><h2>{{ sec.title }}</h2>
+      {% for item in sec.items %}<article>
+        {% if item.title or item.name or item.org or item.period %}<div class="head"><div><span class="title">{{ item.title or item.name }}</span>{% if item.org %}<span class="org"> · {{ item.org }}</span>{% endif %}</div>{% if item.period %}<span class="period">{{ item.period }}</span>{% endif %}</div>{% endif %}
+        {% if item.note %}<div class="note">{{ item.note }}</div>{% endif %}
+        {% if item.bullets %}<ul>{% for bullet in item.bullets %}<li>{{ bullet }}</li>{% endfor %}</ul>{% endif %}
+        {% if item.stack %}<div class="stack">{% for skill in item.stack %}<span>{{ skill }}</span>{% endfor %}</div>{% endif %}
+      </article>{% endfor %}
+    </section>{% endfor %}
+  </main>
+</div></body>
+</html>

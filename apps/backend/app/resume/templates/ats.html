@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: {{ margin }}; }
+  @media screen {
+    html { background: #eceef1; }
+    .page { box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 16px auto; padding: {{ margin }}; background: #fff; box-shadow: 0 4px 20px rgba(15,30,52,.18); }
+  }
+  body { margin: 0; color: #111; font-family: "{{ style.font }}", Arial, sans-serif; font-size: {{ base_pt - 1 }}pt; line-height: 1.45; word-break: keep-all; }
+  header { text-align: center; margin-bottom: 12px; }
+  h1 { margin: 0; font-size: {{ base_pt + 9 }}pt; letter-spacing: .01em; }
+  .contact { margin-top: 5px; font-size: {{ base_pt - 2 }}pt; }
+  .contact span:not(:last-child)::after, .contact a:not(:last-child)::after { content: ' | '; color: #777; }
+  .contact a { color: #111; text-decoration: none; }
+  .summary { margin: 0 0 10px; }
+  section { margin-top: {{ gap }}px; }
+  h2 { margin: 0 0 7px; padding-bottom: 3px; border-bottom: 1.2px solid #111; font-size: {{ base_pt }}pt; text-transform: uppercase; letter-spacing: .06em; }
+  article { margin-bottom: 8px; }
+  .head { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; }
+  .org { font-weight: 500; }
+  .period { flex: none; font-size: {{ base_pt - 2 }}pt; font-weight: 500; }
+  .note { margin-top: 1px; }
+  ul { margin: 2px 0 0; padding-left: 17px; }
+  li { margin-bottom: 1px; }
+  .stack { margin-top: 2px; font-size: {{ base_pt - 2 }}pt; }
+</style>
+</head>
+<body><div class="page">
+  <header>
+    <h1>{{ doc.header.name }}</h1>
+    <div class="contact">
+      {% for c in doc.header.contact %}<span>{{ c }}</span>{% endfor %}
+      {% for link in doc.header.links %}<a href="{{ link.url }}">{{ link.label }}</a>{% endfor %}
+    </div>
+  </header>
+  {% if doc.summary %}<p class="summary">{{ doc.summary }}</p>{% endif %}
+  {% for sec in sections %}
+  <section>
+    <h2>{{ sec.title }}</h2>
+    {% for item in sec.items %}
+    <article>
+      {% if item.title or item.name or item.org or item.period %}
+      <div class="head"><span>{{ item.title or item.name }}{% if item.org %} <span class="org">· {{ item.org }}</span>{% endif %}</span>{% if item.period %}<span class="period">{{ item.period }}</span>{% endif %}</div>
+      {% endif %}
+      {% if item.note %}<div class="note">{{ item.note }}</div>{% endif %}
+      {% if item.bullets %}<ul>{% for bullet in item.bullets %}<li>{{ bullet }}</li>{% endfor %}</ul>{% endif %}
+      {% if item.stack %}<div class="stack"><strong>Skills:</strong> {{ item.stack | join(', ') }}</div>{% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div></body>
+</html>

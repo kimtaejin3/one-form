@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 0; }
+  @media screen {
+    html { background: #e4e7ec; }
+    .page { box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 16px auto; background: #fff; box-shadow: 0 4px 20px rgba(15,30,52,.18); }
+  }
+  body { margin: 0; color: #24313a; font-family: "{{ style.font }}", -apple-system, sans-serif; font-size: {{ base_pt - 1 }}pt; line-height: 1.58; word-break: keep-all; }
+  .page { display: grid; grid-template-columns: 31% 69%; }
+  aside { min-height: 297mm; padding: 18mm 10mm; box-sizing: border-box; color: #ecfdf5; background: #163f3b; }
+  h1 { margin: 0; color: #fff; font-size: {{ base_pt + 11 }}pt; line-height: 1.15; }
+  .contact { margin-top: 16px; font-size: {{ base_pt - 2 }}pt; line-height: 1.8; overflow-wrap: anywhere; }
+  .contact a { display: block; color: #d1fae5; text-decoration: none; }
+  aside section { margin-top: 22px; }
+  aside h2 { margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,.3); color: #fff; font-size: {{ base_pt }}pt; }
+  .side-item { margin-bottom: 9px; }
+  .side-title { font-weight: 700; }
+  .side-note { opacity: .82; font-size: {{ base_pt - 2 }}pt; }
+  .side-stack { display: flex; flex-wrap: wrap; gap: 4px; }
+  .side-stack span { padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,.13); font-size: {{ base_pt - 3 }}pt; }
+  main { padding: 18mm 14mm; }
+  .summary { margin: 0 0 18px; color: #475467; font-size: {{ base_pt }}pt; }
+  main section { margin-top: {{ gap }}px; }
+  main h2 { margin: 0 0 10px; color: {{ style.accent_color }}; font-size: {{ base_pt + 2 }}pt; }
+  article { margin-bottom: 13px; }
+  .head { display: flex; justify-content: space-between; gap: 10px; }
+  .title { font-weight: 750; color: #172b29; }
+  .org { color: #667085; }
+  .period { flex: none; color: #7d8490; font-size: {{ base_pt - 2 }}pt; }
+  .note { margin-top: 3px; }
+  ul { margin: 4px 0 0; padding-left: 17px; }
+  li { margin-bottom: 2px; }
+  .stack { margin-top: 5px; color: {{ style.accent_color }}; font-size: {{ base_pt - 2 }}pt; font-weight: 650; }
+</style>
+</head>
+<body><div class="page">
+  <aside>
+    <h1>{{ doc.header.name }}</h1>
+    <div class="contact">{% for c in doc.header.contact %}<div>{{ c }}</div>{% endfor %}{% for link in doc.header.links %}<a href="{{ link.url }}">{{ link.label }}</a>{% endfor %}</div>
+    {% for sec in sections if sec.type.value in ['skill', 'certificate', 'language'] %}
+    <section><h2>{{ sec.title }}</h2>{% for item in sec.items %}<div class="side-item">
+      {% if item.title or item.name %}<div class="side-title">{{ item.title or item.name }}</div>{% endif %}
+      {% if item.org or item.note %}<div class="side-note">{{ item.org }}{% if item.org and item.note %} · {% endif %}{{ item.note }}</div>{% endif %}
+      {% if item.stack %}<div class="side-stack">{% for skill in item.stack %}<span>{{ skill }}</span>{% endfor %}</div>{% endif %}
+    </div>{% endfor %}</section>
+    {% endfor %}
+  </aside>
+  <main>
+    {% if doc.summary %}<p class="summary">{{ doc.summary }}</p>{% endif %}
+    {% for sec in sections if sec.type.value not in ['skill', 'certificate', 'language'] %}
+    <section><h2>{{ sec.title }}</h2>{% for item in sec.items %}<article>
+      {% if item.title or item.name or item.org or item.period %}<div class="head"><div><span class="title">{{ item.title or item.name }}</span>{% if item.org %}<span class="org"> · {{ item.org }}</span>{% endif %}</div>{% if item.period %}<span class="period">{{ item.period }}</span>{% endif %}</div>{% endif %}
+      {% if item.note %}<div class="note">{{ item.note }}</div>{% endif %}
+      {% if item.bullets %}<ul>{% for bullet in item.bullets %}<li>{{ bullet }}</li>{% endfor %}</ul>{% endif %}
+      {% if item.stack %}<div class="stack">{{ item.stack | join(' · ') }}</div>{% endif %}
+    </article>{% endfor %}</section>
+    {% endfor %}
+  </main>
+</div></body>
+</html>

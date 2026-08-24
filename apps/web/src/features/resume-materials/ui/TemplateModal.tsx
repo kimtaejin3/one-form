@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useSuspenseQuery, useQuery } from '@tanstack/react-query'
 import { Button, Modal } from '@one-form/design-system'
 import {
@@ -12,7 +13,6 @@ interface Props {
   onClose: () => void
   state: ResumeState
   onTemplate: (preset: ResumeStyle) => void
-  kind: string // resume | portfolio — 이 종류의 템플릿만 보여준다
 }
 
 // 템플릿 미리보기는 '샘플' 데이터로 렌더한다 — 내 실제 이력서가 아니라 템플릿 스타일을 고르는 화면이므로.
@@ -54,12 +54,12 @@ const SAMPLE_DOC = {
 // 각 템플릿을 샘플 데이터로 렌더해 A4 축소 미리보기로 보여준다.
 function TemplateCard({
   template,
-  active,
+  selected,
   onSelect,
 }: {
   template: ResumeTemplate
-  active: boolean
-  onSelect: (p: ResumeStyle) => void
+  selected: boolean
+  onSelect: () => void
 }) {
   const { data: html = '' } = useQuery({
     queryKey: ['resume-tpl-sample', template.id],
@@ -71,43 +71,64 @@ function TemplateCard({
       }).then((r) => r.text()),
   })
   return (
-    <div className={`resume-tpl-card${active ? ' active' : ''}`}>
+    <button
+      type="button"
+      className={`resume-tpl-card${selected ? ' active' : ''}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
       <div className="resume-tpl-frame">
         <iframe title={template.name} srcDoc={html} sandbox="" />
       </div>
       <div className="resume-tpl-foot">
         <span>{template.name}</span>
-        <Button
-          size="sm"
-          variant={active ? 'ghost' : 'solid'}
-          onClick={() => onSelect(template.preset)}
-        >
-          {active ? '선택됨' : '선택'}
-        </Button>
+        <span>{selected ? '선택됨' : ''}</span>
       </div>
-    </div>
+    </button>
   )
 }
 
-export function TemplateModal({ open, onClose, state, onTemplate, kind }: Props) {
+function TemplatePicker({
+  state,
+  onClose,
+  onTemplate,
+}: Omit<Props, 'open'>) {
   const { data: templates } = useSuspenseQuery(resumeTemplatesQuery)
+  const [selectedId, setSelectedId] = useState(state.style.template)
+  const selected = templates.find((template) => template.id === selectedId) ?? templates[0]
+
+  return (
+    <>
+      <div className="resume-tpl-grid">
+        {templates.map((t) => (
+          <TemplateCard
+            key={t.id}
+            template={t}
+            selected={selected?.id === t.id}
+            onSelect={() => setSelectedId(t.id)}
+          />
+        ))}
+      </div>
+      <div className="resume-tpl-actions">
+        <Button variant="ghost" onClick={onClose}>취소</Button>
+        <Button
+          disabled={!selected}
+          onClick={() => {
+            if (selected) onTemplate(selected.preset)
+            onClose()
+          }}
+        >
+          선택
+        </Button>
+      </div>
+    </>
+  )
+}
+
+export function TemplateModal({ open, onClose, state, onTemplate }: Props) {
   return (
     <Modal open={open} onClose={onClose} title="템플릿 선택">
-      <div className="resume-tpl-grid">
-        {templates
-          .filter((t) => t.kind === kind)
-          .map((t) => (
-            <TemplateCard
-              key={t.id}
-              template={t}
-              active={state.style.template === t.id}
-              onSelect={(preset) => {
-                onTemplate(preset)
-                onClose()
-              }}
-            />
-          ))}
-      </div>
+      {open && <TemplatePicker state={state} onClose={onClose} onTemplate={onTemplate} />}
     </Modal>
   )
 }

@@ -1,7 +1,15 @@
 import asyncio
 from app.resume.render import html_to_pdf
-from app.resume.schemas import ResumeState, ResumeStyle, Density
-from app.resume.service import seed_state, render_html, render_pdf, list_templates, extract_material
+from app.resume.schemas import ResumeDocumentKind, ResumeState, ResumeStyle, Density
+from app.resume.service import (
+    extract_material,
+    list_templates,
+    render_bundle_pdf,
+    render_html,
+    render_pdf,
+    seed_documents,
+    seed_state,
+)
 import pytest
 from pydantic import ValidationError
 
@@ -46,12 +54,36 @@ def test_render_pdf_returns_pdf():
     assert render_pdf(s)[:4] == b"%PDF"
 
 
-def test_list_templates_has_resume_and_portfolio():
+def test_document_templates_are_separate():
+    docs = asyncio.run(seed_documents())
+    docs.essay.doc.essays = [{"question": "지원 동기", "answer": "답변"}]
+
+    resume = render_html(docs.resume, ResumeDocumentKind.resume)
+    career = render_html(docs.career, ResumeDocumentKind.career)
+    essay = render_html(docs.essay, ResumeDocumentKind.essay)
+
+    assert "자기소개서" not in resume
+    assert "경력기술서" in career
+    assert "자기소개서" in essay
+    assert "지원 동기" in essay and "답변" in essay
+
+
+def test_bundle_pdf_merges_only_selected_documents():
+    docs = asyncio.run(seed_documents())
+    pdf = render_bundle_pdf(docs, [ResumeDocumentKind.resume, ResumeDocumentKind.career])
+    assert pdf[:4] == b"%PDF"
+
+
+def test_list_templates_are_resume_styles():
     tpls = list_templates()
     ids = {t.id for t in tpls}
-    assert {"classic", "formal", "portfolio"} <= ids
+    assert ids == {"classic", "formal", "ats", "modern", "sidebar"}
     # 빌더가 kind로 거를 수 있어야 한다
-    assert {t.kind for t in tpls} == {"resume", "portfolio"}
+    assert {t.kind for t in tpls} == {"resume"}
+    state = asyncio.run(seed_state())
+    for template in tpls:
+        state.style = template.preset
+        assert state.doc.header.name in render_html(state)
 
 
 def test_chat_with_mock_keeps_state():
@@ -99,11 +131,17 @@ def test_extract_text_file():
 
 def test_endpoints_smoke(client):
     assert client.get("/api/resume/templates").json()[0]["id"]
-    state = client.get("/api/resume/seed").json()
-    assert "doc" in state and "style" in state
-    html = client.post("/api/resume/preview", json={"state": state})
+    documents = client.get("/api/resume/seed").json()
+    assert set(documents) == {"resume", "career", "essay"}
+    state = documents["resume"]
+    html = client.post("/api/resume/preview", json={"state": state, "kind": "resume"})
     assert html.status_code == 200 and state["doc"]["header"]["name"] in html.text
-    pdf = client.post("/api/resume/render", json={"state": state})
+    pdf = client.post("/api/resume/render", json={"state": state, "kind": "resume"})
     assert pdf.status_code == 200 and pdf.content[:4] == b"%PDF"
+    bundle = client.post(
+        "/api/resume/render-bundle",
+        json={"documents": documents, "included": ["resume", "career"]},
+    )
+    assert bundle.status_code == 200 and bundle.content[:4] == b"%PDF"
     chat = client.post("/api/resume/chat", json={"state": state, "materials": [], "message": "요약 써줘"})
     assert "state" in chat.json() and "reply" in chat.json()

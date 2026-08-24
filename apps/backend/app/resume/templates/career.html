@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: {{ margin }}; }
+  @media screen {
+    html { background: #e9ebee; }
+    .page { box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 16px auto; padding: {{ margin }}; background: #fff; box-shadow: 0 4px 20px rgba(15,30,52,.18); }
+  }
+  body { margin: 0; color: #20242c; font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif; font-size: {{ base_pt - 1 }}pt; line-height: 1.65; word-break: keep-all; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 10px; border-bottom: 2px solid #20242c; }
+  h1 { margin: 0; font-size: {{ base_pt + 10 }}pt; }
+  .name { color: #69707d; font-size: {{ base_pt }}pt; font-weight: 600; }
+  section { margin-top: {{ gap }}px; }
+  h2 { margin: 0 0 10px; padding-bottom: 5px; border-bottom: 1px solid #e1e4e9; font-size: {{ base_pt + 2 }}pt; }
+  article { margin-bottom: 15px; }
+  .head { display: flex; justify-content: space-between; gap: 14px; }
+  .title { font-weight: 700; }
+  .org { margin-left: 7px; color: #6f7683; }
+  .period { color: #757c88; font-size: {{ base_pt - 2 }}pt; white-space: nowrap; }
+  .note { margin-top: 4px; }
+  ul { margin: 5px 0 0; padding-left: 18px; }
+  li { margin-bottom: 3px; }
+  .stack { margin-top: 6px; color: {{ style.accent_color }}; font-size: {{ base_pt - 2 }}pt; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header><h1>경력기술서</h1><span class="name">{{ doc.header.name }}</span></header>
+    {% for sec in sections %}
+    <section>
+      <h2>{{ sec.title }}</h2>
+      {% for it in sec.items %}
+      <article>
+        <div class="head">
+          <div><span class="title">{{ it.title or it.name }}</span>{% if it.org %}<span class="org">· {{ it.org }}</span>{% endif %}</div>
+          {% if it.period %}<span class="period">{{ it.period }}</span>{% endif %}
+        </div>
+        {% if it.note %}<div class="note">{{ it.note }}</div>{% endif %}
+        {% if it.bullets %}<ul>{% for bullet in it.bullets %}<li>{{ bullet }}</li>{% endfor %}</ul>{% endif %}
+        {% if it.stack %}<div class="stack">{{ it.stack | join(' · ') }}</div>{% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+</body>
+</html>

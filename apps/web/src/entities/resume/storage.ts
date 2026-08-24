@@ -1,42 +1,87 @@
-import type { ResumeState } from './model'
+import type {
+  ResumeApplicationDocuments,
+  ResumeDocumentKind,
+  ResumeState,
+} from './model'
 
-// 저장된 이력서/포트폴리오 — 개인 도구라 localStorage에 보관(브라우저별). 나중에 서버로 교체 가능.
-export interface SavedDoc {
+export interface SavedApplication {
   id: string
   title: string
-  kind: string // resume | portfolio
-  template: string // 표시용 템플릿 id
+  documents: ResumeApplicationDocuments
+  included: ResumeDocumentKind[]
+  updatedAt: number
+}
+
+interface LegacySavedDoc {
+  id: string
+  title: string
   state: ResumeState
   updatedAt: number
 }
 
 const KEY = 'oneform.resumes'
+const ALL_DOCUMENTS: ResumeDocumentKind[] = ['resume', 'career', 'essay']
 
-export function listSavedDocs(): SavedDoc[] {
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
+function migrate(doc: LegacySavedDoc): SavedApplication {
+  const resume = clone(doc.state)
+  if (resume.style.template === 'portfolio') resume.style.template = 'classic'
+  const career = clone(doc.state)
+  career.doc.summary = ''
+  career.doc.essays = []
+  career.doc.sections = career.doc.sections.filter(
+    (section) => section.type === 'career' || section.type === 'project',
+  )
+  const essay = clone(doc.state)
+  essay.doc.summary = ''
+  essay.doc.sections = []
+
+  return {
+    id: doc.id,
+    title: doc.title,
+    documents: { resume, career, essay },
+    included: ALL_DOCUMENTS,
+    updatedAt: doc.updatedAt,
+  }
+}
+
+function normalize(application: SavedApplication): SavedApplication {
+  if (application.documents.resume.style.template !== 'portfolio') return application
+  const next = clone(application)
+  next.documents.resume.style.template = 'classic'
+  return next
+}
+
+export function listSavedApplications(): SavedApplication[] {
   try {
     const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as SavedDoc[]) : []
+    if (!raw) return []
+    return (JSON.parse(raw) as Array<SavedApplication | LegacySavedDoc>).map((item) =>
+      normalize('documents' in item ? item : migrate(item)),
+    )
   } catch {
     return []
   }
 }
 
-export function getSavedDoc(id: string): SavedDoc | undefined {
-  return listSavedDocs().find((d) => d.id === id)
+export function getSavedApplication(id: string): SavedApplication | undefined {
+  return listSavedApplications().find((application) => application.id === id)
 }
 
-export function upsertSavedDoc(doc: SavedDoc): void {
-  const rest = listSavedDocs().filter((d) => d.id !== doc.id)
-  const next = [doc, ...rest]
+export function upsertSavedApplication(application: SavedApplication): void {
+  const rest = listSavedApplications().filter((item) => item.id !== application.id)
   try {
-    localStorage.setItem(KEY, JSON.stringify(next))
+    localStorage.setItem(KEY, JSON.stringify([application, ...rest]))
   } catch {
-    // 저장 실패(용량 등)는 조용히 무시 — 미리보기/다운로드는 그대로 동작.
+    // 저장 공간 부족이어도 편집·PDF 다운로드는 계속 사용할 수 있다.
   }
 }
 
-export function removeSavedDoc(id: string): void {
-  const next = listSavedDocs().filter((d) => d.id !== id)
+export function removeSavedApplication(id: string): void {
+  const next = listSavedApplications().filter((application) => application.id !== id)
   try {
     localStorage.setItem(KEY, JSON.stringify(next))
   } catch {
@@ -44,6 +89,6 @@ export function removeSavedDoc(id: string): void {
   }
 }
 
-export function newDocId(): string {
+export function newApplicationId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }

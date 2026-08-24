@@ -16,10 +16,18 @@ interface Props {
   materials: ResumeMaterial[]
   onAddMaterial: (m: ResumeMaterial) => void
   onTemplate: (preset: ResumeStyle) => void
-  kind: string // resume | portfolio
+  documentLabel: string
+  showTemplate?: boolean
 }
 
-export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate, kind }: Props) {
+export function MaterialsPanel({
+  state,
+  materials,
+  onAddMaterial,
+  onTemplate,
+  documentLabel,
+  showTemplate = true,
+}: Props) {
   const { data: templates } = useSuspenseQuery(resumeTemplatesQuery)
   const extract = useExtractMaterial(onAddMaterial)
   const [note, setNote] = useState('')
@@ -28,7 +36,7 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate, ki
 
   return (
     <aside className="resume-materials">
-      <section>
+      {showTemplate && <section>
         <h3>템플릿</h3>
         <div className="resume-template-current">
           <span className="resume-template-name">{current?.name ?? state.style.template}</span>
@@ -41,14 +49,13 @@ export function MaterialsPanel({ state, materials, onAddMaterial, onTemplate, ki
           onClose={() => setTplOpen(false)}
           state={state}
           onTemplate={onTemplate}
-          kind={kind}
         />
-      </section>
+      </section>}
 
       <section>
         <h3>자료 추가</h3>
         <Dropzone
-          title="이력서 자료를 올려보세요"
+          title={`${documentLabel} 자료를 올려보세요`}
           desc="PDF · TXT · MD 지원 — 텍스트를 추출해 AI 편집에 씁니다."
           accept=".pdf,.txt,.md"
           buttonLabel="파일 선택"

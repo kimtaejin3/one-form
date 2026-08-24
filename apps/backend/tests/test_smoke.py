@@ -9,8 +9,8 @@ def test_get_endpoints(client):
     assert client.get("/api/profile").json()["personal"]["name"]
     assert len(client.get("/api/notifications").json()) == 8
     assert client.get("/api/jobs/1").json()["match_analysis"]["matched_skills"] is not None
-    sets = client.get("/api/resume/essay-sets").json()
-    assert sets and all(s["company"] and s["questions"] for s in sets)
+    questions = client.get("/api/resume/essay-questions").json()
+    assert questions and all(q["tag"] and q["prompt"] for q in questions)
 
 
 def test_post_endpoints(client):

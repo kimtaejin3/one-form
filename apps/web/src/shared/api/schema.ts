@@ -141,15 +141,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/resume/essay-sets": {
+    "/api/resume/essay-questions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Essay Sets */
-        get: operations["essay_sets_api_resume_essay_sets_get"];
+        /** Essay Questions */
+        get: operations["essay_questions_api_resume_essay_questions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -220,6 +220,23 @@ export interface paths {
         put?: never;
         /** Render */
         post: operations["render_api_resume_render_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/resume/render-bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Render Bundle */
+        post: operations["render_bundle_api_resume_render_bundle_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -569,6 +586,18 @@ export interface components {
             /** Stack */
             stack: string[];
         };
+        /** ResumeApplicationDocuments */
+        ResumeApplicationDocuments: {
+            resume: components["schemas"]["ResumeState"];
+            career: components["schemas"]["ResumeState"];
+            essay: components["schemas"]["ResumeState"];
+        };
+        /** ResumeBundleRenderRequest */
+        ResumeBundleRenderRequest: {
+            documents: components["schemas"]["ResumeApplicationDocuments"];
+            /** Included */
+            included: components["schemas"]["ResumeDocumentKind"][];
+        };
         /** ResumeChatRequest */
         ResumeChatRequest: {
             state: components["schemas"]["ResumeState"];
@@ -616,21 +645,16 @@ export interface components {
              */
             sections: components["schemas"]["ResumeSection"][];
             /**
-             * Company
-             * @default
-             */
-            company: string;
-            /**
              * Essays
              * @default []
              */
             essays: components["schemas"]["ResumeEssay"][];
-            /**
-             * Include Essays
-             * @default true
-             */
-            include_essays: boolean;
         };
+        /**
+         * ResumeDocumentKind
+         * @enum {string}
+         */
+        ResumeDocumentKind: "resume" | "career" | "essay";
         /** ResumeEssay */
         ResumeEssay: {
             /** Question */
@@ -645,8 +669,6 @@ export interface components {
         };
         /** ResumeEssayDraftRequest */
         ResumeEssayDraftRequest: {
-            /** Company */
-            company: string;
             /** Question */
             question: string;
             /** Char Limit */
@@ -673,21 +695,6 @@ export interface components {
             prompt: string;
             /** Char Limit */
             char_limit?: number | null;
-        };
-        /** ResumeEssaySet */
-        ResumeEssaySet: {
-            /** Company */
-            company: string;
-            /**
-             * Deadline
-             * @default
-             */
-            deadline: string;
-            /**
-             * Questions
-             * @default []
-             */
-            questions: components["schemas"]["ResumeEssayQuestion"][];
         };
         /** ResumeExtractResponse */
         ResumeExtractResponse: {
@@ -789,6 +796,8 @@ export interface components {
         /** ResumeRenderRequest */
         ResumeRenderRequest: {
             state: components["schemas"]["ResumeState"];
+            /** @default resume */
+            kind: components["schemas"]["ResumeDocumentKind"];
         };
         /** ResumeSection */
         ResumeSection: {
@@ -1111,7 +1120,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResumeState"];
+                    "application/json": components["schemas"]["ResumeApplicationDocuments"];
                 };
             };
         };
@@ -1149,7 +1158,7 @@ export interface operations {
             };
         };
     };
-    essay_sets_api_resume_essay_sets_get: {
+    essay_questions_api_resume_essay_questions_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1164,7 +1173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResumeEssaySet"][];
+                    "application/json": components["schemas"]["ResumeEssayQuestion"][];
                 };
             };
         };
@@ -1278,6 +1287,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ResumeRenderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    render_bundle_api_resume_render_bundle_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeBundleRenderRequest"];
             };
         };
         responses: {

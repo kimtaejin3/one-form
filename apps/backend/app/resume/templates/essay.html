@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: {{ margin }}; }
+  @media screen {
+    html { background: #e9ebee; }
+    .page { box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 16px auto; padding: {{ margin }}; background: #fff; box-shadow: 0 4px 20px rgba(15,30,52,.18); }
+  }
+  body { margin: 0; color: #20242c; font-family: "{{ style.font }}", -apple-system, "Apple SD Gothic Neo", sans-serif; font-size: {{ base_pt }}pt; line-height: 1.8; word-break: keep-all; }
+  header { padding-bottom: 12px; border-bottom: 2px solid #20242c; }
+  h1 { margin: 0; font-size: {{ base_pt + 10 }}pt; }
+  .meta { display: flex; gap: 12px; margin-top: 7px; color: #737b88; font-size: {{ base_pt - 2 }}pt; }
+  article { margin-top: {{ gap + 4 }}px; break-inside: avoid; }
+  .question { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; padding-bottom: 7px; border-bottom: 1px solid #e1e4e9; font-size: {{ base_pt + 1 }}pt; font-weight: 700; line-height: 1.55; }
+  .limit { flex: none; color: #818895; font-size: {{ base_pt - 2 }}pt; font-weight: 500; }
+  .answer { margin-top: 10px; white-space: pre-wrap; }
+  .empty { color: #9aa0aa; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>자기소개서</h1>
+      <div class="meta"><span>{{ doc.header.name }}</span>{% for c in doc.header.contact %}<span>{{ c }}</span>{% endfor %}</div>
+    </header>
+    {% for essay in doc.essays %}
+    <article>
+      <div class="question">
+        <span>{{ essay.question }}</span>
+        {% if essay.char_limit %}<span class="limit">{{ essay.char_limit }}자 이내</span>{% endif %}
+      </div>
+      <div class="answer{% if not essay.answer %} empty{% endif %}">{{ essay.answer or '답변을 작성해 주세요.' }}</div>
+    </article>
+    {% endfor %}
+  </div>
+</body>
+</html>

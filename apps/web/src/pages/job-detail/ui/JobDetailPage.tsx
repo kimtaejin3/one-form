@@ -24,7 +24,7 @@ export default function JobDetailPage() {
 
   return (
     <div className="job-detail">
-      <Link to="/" className="of-mono job-detail__back">
+      <Link to="/jobs" className="of-mono job-detail__back">
         ← 공고 목록
       </Link>
 

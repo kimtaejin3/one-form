@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Button } from '@one-form/design-system'
 import {
-  resumeEssaySetsQuery,
+  resumeEssayQuestionsQuery,
   type ResumeEssay,
   type ResumeState,
 } from '@/entities/resume'
@@ -13,12 +13,12 @@ interface Props {
   onDoc: (patch: Partial<ResumeState['doc']>) => void
 }
 
-// 자소서 = 특정 기업에 대한 세트. 기업 세트를 고르면 그 기업 문항이 구성되고,
-// 문항별로 답변을 쓰거나 AI 초안(기업 분석 반영)을 받는다. PDF 포함 여부도 여기서.
+// 공통 질문은행에서 필요한 문항만 골라 자기소개서를 구성한다.
 export function EssaysPanel({ state, onDoc }: Props) {
-  const { data: sets } = useSuspenseQuery(resumeEssaySetsQuery)
-  const { company, essays, include_essays: include } = state.doc
+  const { data: questions } = useSuspenseQuery(resumeEssayQuestionsQuery)
+  const { essays } = state.doc
   const [note, setNote] = useState('')
+  const [selectedId, setSelectedId] = useState('')
 
   const draft = useEssayDraft((index, text, msg) => {
     if (text) {
@@ -28,17 +28,15 @@ export function EssaysPanel({ state, onDoc }: Props) {
     setNote(msg)
   })
 
-  const pickSet = (name: string) => {
-    const set = sets.find((s) => s.company === name)
-    if (!set) return onDoc({ company: '', essays: [] })
-    onDoc({
-      company: set.company,
-      essays: set.questions.map((q) => ({
-        question: q.prompt,
-        answer: '',
-        char_limit: q.char_limit ?? null,
-      })) as ResumeEssay[],
-    })
+  const addQuestion = () => {
+    const question = questions.find((item) => String(item.id) === selectedId)
+    if (!question || essays.some((essay) => essay.question === question.prompt)) return
+    onDoc({ essays: [...essays, {
+      question: question.prompt,
+      answer: '',
+      char_limit: question.char_limit ?? null,
+    } as ResumeEssay] })
+    setSelectedId('')
   }
 
   const setAnswer = (i: number, answer: string) =>
@@ -50,26 +48,26 @@ export function EssaysPanel({ state, onDoc }: Props) {
     <section className="resume-essays">
       <h3>자기소개서</h3>
 
-      <label className="resume-essays__row">
-        <span>지원 기업</span>
-        <select className="of-input" value={company} onChange={(e) => pickSet(e.target.value)}>
-          <option value="">선택 안 함</option>
-          {sets.map((s) => (
-            <option key={s.company} value={s.company}>
-              {s.company} ({s.questions.length}문항)
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="resume-essays__toggle">
-        <input
-          type="checkbox"
-          checked={include}
-          onChange={(e) => onDoc({ include_essays: e.target.checked })}
-        />
-        PDF에 자소서 포함
-      </label>
+      <div className="resume-essays__picker">
+        <label className="resume-essays__row">
+          <span>문항 선택</span>
+          <select
+            className="of-input"
+            value={selectedId}
+            onChange={(event) => setSelectedId(event.target.value)}
+          >
+            <option value="">문항을 선택하세요</option>
+            {questions.map((question) => (
+              <option key={question.id} value={question.id}>
+                [{question.tag}] {question.prompt}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Button size="sm" disabled={!selectedId} onClick={addQuestion}>
+          문항 추가
+        </Button>
+      </div>
 
       {note && <p className="resume-essays__note">{note}</p>}
 
@@ -99,7 +97,6 @@ export function EssaysPanel({ state, onDoc }: Props) {
               onClick={() =>
                 draft.mutate({
                   index: i,
-                  company,
                   question: e.question,
                   char_limit: e.char_limit ?? null,
                   state,
