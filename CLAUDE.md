@@ -67,9 +67,10 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
   - `app` — 진입점·라우팅·프로바이더·전역 스타일 (`app/App.tsx`, `app/providers`, `app/styles`)
   - `pages/<page>/ui/<Page>.tsx` — feature·entity를 조합만. 페이지는 얇게.
   - `widgets/<widget>` — 복합 UI 블록 (`widgets/header`: Header + TabBar)
-  - `features/<action>` — 사용자 액션 (`analyze-company`·`generate-draft`·`upload-resume`·`convert-form`).
+  - `features/<action>` — 사용자 액션 (`resume-chat`·`resume-essays`·`resume-materials`·
+    `edit-profile`·`upload-resume`·`convert-form`).
     `model`(mutation 훅)과 `ui`로 나눈다.
-  - `entities/<entity>` — 도메인 (`job`·`profile`·`essay`·`activity`). `model`(타입)·`api`(queryOptions)·`ui`(카드).
+  - `entities/<entity>` — 도메인 (`job`·`profile`·`resume`·`notification`). `model`(타입)·`api`(queryOptions)·`ui`(카드).
   - `shared` — 도메인 무관 (`shared/api` 클라이언트, `shared/ui`: Icon·Loading·AsyncBoundary·Dropzone).
     아이콘 path는 `shared/ui/Icon` 한 곳. `@one-form/design-system`(Button·Card·Input)은 별개 외부 패키지.
 - **슬라이스는 `index.ts`(public API)로만 노출**하고, 다른 슬라이스는 `@/<layer>/<slice>`로 임포트한다
@@ -96,21 +97,22 @@ pnpm dev              # uv run uvicorn app.main:app --reload --port 8000
 - **API 경로는 FastAPI 안에서부터 `/api` 프리픽스를 갖는다** (예: `/api/health`).
   web의 Vite dev 서버가 `/api/*`를 경로 재작성 없이 8000번으로 프록시하기 때문
   (`apps/web/vite.config.ts`). 새 엔드포인트도 `/api/...`로 만들 것.
-- **백엔드는 도메인별 레이어 구조다.** `app/<도메인>/`(jobs·profile·companies·essays·
-  activities·notifications·forms)마다 `router`(HTTP)·`repository`(데이터 접근)로 나뉘고,
-  POST 바디가 있으면 `schemas`(Pydantic), 로직이 있으면 `service`가 붙는다(현재 jobs만 —
-  필터·페이지네이션). `main.py`는 CORS + `include_router`만. 도메인 추가 시 이 4파일 패턴을 따를 것.
-- **백엔드는 목(mock) 단계다.** 데이터 접근이 `app/core/mock.py`의 `mock()` 헬퍼로 1초 지연 후
-  더미를 반환한다 (DB 없음). 실제 구현 시 각 `repository`의 `mock()` 호출을 진짜 쿼리로 바꾸면
-  된다 (router·service·schemas는 그대로). 페이지↔API 매핑과 IA는 `docs/IA.md` 참고.
+- **백엔드는 도메인별 레이어 구조다.** `app/<도메인>/`(jobs·profile·resume·notifications·forms)마다
+  `router`(HTTP)·`repository`(데이터 접근)로 나뉘고, POST 바디가 있으면 `schemas`(Pydantic),
+  로직이 있으면 `service`가 붙는다(jobs=필터·매칭, profile=PDF 추출, resume=렌더·채팅 편집).
+  `main.py`는 CORS + `include_router`만. 도메인 추가 시 이 4파일 패턴을 따를 것.
+- **데이터 소스는 도메인마다 다르다.** profile·notifications·jobs는 `DATABASE_URL`이 있으면
+  PostgreSQL(SQLAlchemy async + Alembic), 없으면 모듈 상수로 폴백한다 — 개발·CI가 DB 없이 돈다.
+  forms만 아직 `app/core/mock.py`의 `mock()`(지연 후 더미)이고, 실제 구현 시 그 호출을 쿼리로
+  바꾸면 된다(router·service·schemas는 그대로). 페이지↔API 매핑과 IA는 `docs/IA.md` 참고.
 - **FE↔BE 타입은 백엔드가 단일 소스다.** 백엔드 Pydantic(`app/<도메인>/schemas.py`)이 원본이고,
   프론트 타입은 여기서 생성된다: `gen_openapi.py`가 OpenAPI를 덤프 → `openapi-typescript`가
   `apps/web/src/shared/api/schema.ts`로 변환 → `entities/*/model.ts`가 `components['schemas'][...]`를
   재-export. **프론트에 타입을 손으로 쓰지 말 것.** 새 응답 타입이 필요하면 백엔드 라우터에
   `response_model=`을 지정하고 `pnpm gen:api`(루트)로 재생성. 필드명이 어긋나면 프론트가 컴파일
   에러로 죽는다. `openapi.json`은 중간물(gitignore), `schema.ts`는 커밋(체크아웃 즉시 타입체크되게).
-  → 도메인당 `schemas.py` 클래스명은 전역 유일해야 한다(OpenAPI 스키마명 충돌 방지, 예: 프로필의
-  `ProfileActivity` vs activities의 `Activity`).
+  → 도메인당 `schemas.py` 클래스명은 전역 유일해야 한다(OpenAPI 스키마명 충돌 방지 — 그래서
+  프로필은 `ProfileActivity`, 이력서는 `Resume*` 접두사를 쓴다).
 - **포트는 CORS와 결합돼 있다.** `apps/backend/app/main.py`의 CORS 허용 목록이
   localhost:3000(landing)/3001(web)로 고정. 포트를 바꾸면 양쪽을 같이 바꿔야 한다.
 - **design-system 임포트는 두 갈래다.** 컴포넌트는 `import { Button } from '@one-form/design-system'`,
