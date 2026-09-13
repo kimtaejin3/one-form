@@ -22,10 +22,26 @@ const SAMPLE_DOC = {
     contact: ['hong@example.com', '010-1234-5678', '서울특별시'],
     links: [{ label: 'GitHub', url: '#' }],
   },
+  // 국문 표 양식은 인적사항·학력 표를 채우므로 샘플에도 값이 있어야 빈 칸으로 보이지 않는다.
+  personal: {
+    email: 'hong@example.com', phone: '010-1234-5678', address: '서울특별시 중구 세종대로 1',
+    birth: '1996.03.12', nationality: '대한민국',
+    military_status: '군필', military_branch: '육군 · 보병',
+    military_period: '2016.05 ~ 2018.02', veteran: '해당없음', discharge: '만기전역',
+  },
   summary: '사용자 경험을 고민하는 개발자입니다. 구조와 도구로 팀 생산성을 높여왔습니다.',
   sections: [
     {
-      id: 'career', type: 'career', title: '경력', order: 0, visible: true,
+      id: 'education', type: 'education', title: '학력', order: 0, visible: true,
+      items: [
+        {
+          title: '샘플대학교', org: '컴퓨터공학과', period: '2015.03 ~ 2021.02',
+          admission: '2015.03', graduation: '2021.02', degree: '학사', status: '졸업',
+        },
+      ],
+    },
+    {
+      id: 'career', type: 'career', title: '경력', order: 1, visible: true,
       items: [
         {
           title: '프론트엔드 개발', org: '샘플컴퍼니', period: '2022.01 ~ 현재',
@@ -35,7 +51,7 @@ const SAMPLE_DOC = {
       ],
     },
     {
-      id: 'project', type: 'project', title: '프로젝트', order: 1, visible: true,
+      id: 'project', type: 'project', title: '프로젝트', order: 2, visible: true,
       items: [
         {
           title: '디자인 시스템 구축', org: '사내', period: '2023',
@@ -45,7 +61,7 @@ const SAMPLE_DOC = {
       ],
     },
     {
-      id: 'skill', type: 'skill', title: '스킬', order: 2, visible: true,
+      id: 'skill', type: 'skill', title: '스킬', order: 3, visible: true,
       items: [{ stack: ['React', 'TypeScript', 'Next.js', 'Node.js', 'CSS'] }],
     },
   ],
