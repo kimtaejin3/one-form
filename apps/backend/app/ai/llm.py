@@ -27,7 +27,7 @@ class Llm(Protocol):
     async def complete_json(self, prompt: str, schema: dict) -> dict:
         """JSON 스키마에 맞는 구조화 출력. 못 하면 빈 dict(호출부가 폴백한다).
 
-        companies/analysis.py가 쓴다 — 목 어댑터는 사실을 지어내지 않으려고 {}를 준다.
+        resume/service.py의 채팅 편집이 쓴다 — 목 어댑터는 사실을 지어내지 않으려고 {}를 준다.
         """
         ...
 

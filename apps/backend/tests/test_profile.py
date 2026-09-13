@@ -106,7 +106,7 @@ def _inline_image_pdf() -> bytes:
 
 
 def test_profile_from_pdf_extracts_safe_contact_fields(monkeypatch):
-    # PDF 텍스트 추출은 app.core.pdf로 옮겼다(companies 공고 수집과 공유).
+    # PDF 텍스트 추출은 app.core.pdf로 옮겼다(resume 자료 첨부와 공유).
     monkeypatch.setattr(pdf, "PdfReader", _Reader)
 
     profile = service.profile_from_pdf(b"pdf bytes")

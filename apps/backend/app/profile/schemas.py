@@ -74,7 +74,7 @@ class Project(BaseModel):
     stack: list[str]
 
 
-# ponytail: activities 도메인의 Activity와 이름 충돌 방지 — OpenAPI 스키마명이 겹치면 안 됨.
+# Profile 접두사 유지 — OpenAPI 스키마명은 도메인을 가로질러 유일해야 한다(CLAUDE.md).
 class ProfileActivity(BaseModel):
     type: str
     title: str

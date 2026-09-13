@@ -6,12 +6,7 @@ PDF 레이아웃은 작성 도구마다 달라 정규식으로 모든 항목을 
 from __future__ import annotations
 
 from app.core.config import settings
-from app.core.pdf import (  # noqa: F401 — 상수는 기존 임포트 호환
-    MAX_FILE_SIZE,
-    MAX_PAGES,
-    pdf_pages,
-    pdf_photo_data_url,
-)
+from app.core.pdf import pdf_pages, pdf_photo_data_url
 from app.profile.extractors import get_profile_extractor
 from app.profile import repository
 

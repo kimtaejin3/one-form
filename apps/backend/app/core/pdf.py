@@ -1,7 +1,7 @@
-"""PDF 바이트 → 페이지별 텍스트. 이력서(profile)와 채용공고(companies)가 함께 쓴다.
+"""PDF 바이트 → 페이지별 텍스트. 이력서(profile)와 이력서 자료 첨부(resume)가 함께 쓴다.
 
 # ponytail: layout 모드는 표에서 좌표 순서를 보존한다 — 이력서에선 이름이 학력보다 앞에
-#   오는지가, 공고에선 '자격요건/우대사항' 열이 섞이지 않는지가 여기서 갈린다.
+#   오는지가, 첨부 자료에선 표의 열이 섞이지 않는지가 여기서 갈린다.
 """
 from base64 import b64encode
 from io import BytesIO
